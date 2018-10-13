@@ -1,0 +1,8 @@
+[submodule "shape-producer"]
+	path = shape-producer
+	url = https://github.com/KIT-CMS/shape-producer.git
+	branch = master
+[submodule "datacard-producer"]
+	path = datacard-producer
+	url = https://github.com/KIT-CMS/datacard-producer.git
+	branch = master
