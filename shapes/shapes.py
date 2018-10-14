@@ -35,7 +35,7 @@ class Shapes(object):
                  skip_systematic_variations=None,
                  tag=None,
                  tt_friend_directory=None,
-                 **kwargs):
+                 ):
         self.ofset = ofset
         self.directory = directory
         self.datasets = datasets
@@ -54,8 +54,6 @@ class Shapes(object):
         self.skip_systematic_variations = skip_systematic_variations
         self.tag = tag
         self.tt_friend_directory = tt_friend_directory
-
-        self.__dict__.update(kwargs)
 
         assert type(directory) is None, "Shapes::directory not set"
         assert type(datasets) is None, "Shapes::datasets not set"
