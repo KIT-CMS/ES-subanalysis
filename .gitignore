@@ -102,3 +102,16 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+*.root
+*.xml
+*.png
+*.pdf
+*.log
+*.txt
+.nfs*
+output/
+CMSSW_*/
+temp_*
+delme_*
