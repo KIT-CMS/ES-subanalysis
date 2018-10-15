@@ -1,4 +1,6 @@
 #!/bin/bash
+set +e
+
 declare -a modules=(
     $PWD
     $PWD/shape-producer

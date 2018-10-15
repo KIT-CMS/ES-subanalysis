@@ -1,4 +1,8 @@
 #!/bin/bash
+set +e
 
-source utils/setup_cvmfs_sft.sh
-source utils/setup_python.sh
+EXECFROM_DIR="$( dirname "${BASH_SOURCE[0]}" )"
+
+source $EXECFROM_DIR/setup_cvmfs_sft.sh
+
+source $EXECFROM_DIR/setup_python.sh
