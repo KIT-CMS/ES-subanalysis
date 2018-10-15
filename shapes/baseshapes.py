@@ -70,31 +70,50 @@ class Shapes(object):
         return output
 
     @staticmethod
-    def parse_arguments():
+    def parse_arguments(include_defaults=True):
+        defaultArguments = {}
         parser = argparse.ArgumentParser(description='shapes.py parser')
-        parser.add_argument("--directory", required=True, type=str, help="Directory with Artus outputs.")
-        parser.add_argument("--datasets", required=True, type=str, help="Kappa datsets database.")
-        parser.add_argument("--binning", required=True, type=str, help="Binning configuration.")
 
-        parser.add_argument("--channels", default=[], nargs='+', type=str, help="Channels to be considered.")
+        # Required for every run
+        parser.add_argument("--directory", type=str, help="Directory with Artus outputs.")
+        parser.add_argument("--datasets", type=str, help="Kappa datsets database.")
+        parser.add_argument("--binning", type=str, help="Binning configuration.")
+
+        # Arguments with None or none default
         parser.add_argument("--era", type=str, help="Experiment era.")
-        parser.add_argument("--gof-channel", default=None, type=str, help="Channel for goodness of fit shapes.")
         parser.add_argument("--gof-variable", type=str, help="Variable for goodness of fit shapes.")
-        parser.add_argument("--num-threads", default=32, type=int, help="Number of threads to be used.")
-        parser.add_argument("--backend", default="classic", choices=["classic", "tdf"], type=str, help="Backend. Use classic or tdf.")
-        parser.add_argument("--tag", default="ERA_CHANNEL", type=str, help="Tag of output files.")
-        parser.add_argument("--skip-systematic-variations", default=False, type=str, help="Do not produce the systematic variations.")
+        parser.add_argument("--gof-channel", type=str, help="Channel for goodness of fit shapes.")
+        parser.add_argument("--et-friend-directory", type=str, help="Directory containing a friend tree for et.")
+        parser.add_argument("--mt-friend-directory", type=str, help="Directory containing a friend tree for mt.")
+        parser.add_argument("--tt-friend-directory", type=str, help="Directory containing a friend tree for tt.")
+        parser.add_argument("--fake-factor-friend-directory", type=str, help="Directory containing friend trees to data files with FF.")
 
-        parser.add_argument("--et-friend-directory", default=None, type=str, help="Directory containing a friend tree for et.")
-        parser.add_argument("--mt-friend-directory", default=None, type=str, help="Directory containing a friend tree for mt.")
-        parser.add_argument("--tt-friend-directory", default=None, type=str, help="Directory containing a friend tree for tt.")
-        parser.add_argument("--fake-factor-friend-directory", default=None, type=str, help="Directory containing friend trees to data files with FF.")
+        # Arguments with defaults that might be changed in the config file
+        parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
+        parser.add_argument("--num-threads", type=int, help="Number of threads to be used.")
+        parser.add_argument("--backend", choices=["classic", "tdf"], type=str, help="Backend. Use classic or tdf.")
+        parser.add_argument("--tag", type=str, help="Tag of output files.")
+        parser.add_argument("--skip-systematic-variations", type=str, help="Do not produce the systematic variations.")
 
+        defaultArguments['channels'] = []
+        defaultArguments['num_threads'] = 32
+        defaultArguments['backend'] = 'classic'
+        defaultArguments['tag'] = 'ERA_CHANNEL'
+        defaultArguments['skip_systematic_variations'] = False
+
+        # Arguments with defaults that can not be changed in the config file
         parser.add_argument('--dry', action='store_true', default=False, help='dry run')
         parser.add_argument('--debug', action='store_true', default=False, help='cherry-debug')
 
         args = parser.parse_args()
-        return vars(args)
+        configuration = dict((k, v) for k, v in vars(args).iteritems() if v is not None)
+
+        if include_defaults:
+            for argument, default in defaultArguments.iteritems():
+                if argument not in configuration:
+                    configuration[argument] = default
+
+        return configuration
 
     @staticmethod
     def setup_logging(output_file, level=logging.DEBUG):
