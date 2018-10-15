@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 """
 """
 import argparse
+import yaml
 
 """Script to copy files after the skim from * to nfs."""
 # import os
@@ -127,6 +128,43 @@ class Shapes(object):
         file_handler = logging.FileHandler(output_file, "w")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
+    @staticmethod
+    def getHostKey():
+        import socket
+        hostname = socket.gethostname()
+        known_hosts = ['naf', 'cern', 'ekp', 'rwth']
+        for host in known_hosts:
+            if host in hostname:
+                return host
+        return 'unknown_host'
+
+    @staticmethod
+    def readConfig(config_file=None):
+        if isinstance(config_file, basestring):
+            if config_file[-5:] == '.yaml' or config_file[-4:] == '.yml':
+                with open(config_file, 'r') as stream:
+                    try:
+                        import getpass
+                        username = getpass.getuser()
+                        hostname = Shapes.getHostKey()
+
+                        config = yaml.load(stream)
+                        for user_specific_key in config['user_specific'].keys():
+                            user_specific = config['user_specific'][user_specific_key]
+                            config[user_specific_key] = user_specific['default']
+                            if username in user_specific and hostname in user_specific[username]:
+                                config[user_specific_key] = user_specific[username][hostname]
+                        del config['user_specific']
+
+                        return config
+
+                    except yaml.YAMLError as exc:
+                        print('Shapes::readConfig: yaml config couldn\' be loaded', exc)
+            else:
+                raise ValueError('Shapes::readConfig: config path is not yaml format')
+        else:
+            raise ValueError('Shapes::readConfig: config obj of unset type')
 
     def run(self):
         pass
