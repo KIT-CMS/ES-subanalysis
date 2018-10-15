@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-logger = logging.getLogger(__name__)
 """
 """
 import argparse
@@ -60,8 +59,10 @@ class Shapes(object):
         assert type(self.datasets) is not None, "Shapes::datasets not set"
         assert type(self.binning) is not None, "Shapes::binning not set"
 
+        self.logger = logging.getLogger(__name__)
+
     def __str__(self):
-        logger.debug("Shapes ofset:", self.ofset)
+        self.logger.debug("Shapes ofset:", self.ofset)
         print "ofset", self.ofset
         output = (
             self.ofset * "\t" + " Shapes(" + "\n" +
@@ -117,7 +118,7 @@ class Shapes(object):
         return configuration
 
     @staticmethod
-    def setup_logging(output_file, level=logging.DEBUG):
+    def setup_logging(output_file=None, level=logging.DEBUG, logger=None):
         logger.setLevel(level)
         formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
 
