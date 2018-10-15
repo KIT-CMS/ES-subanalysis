@@ -1,0 +1,34 @@
+backend: 'classic'
+channels: ['et']
+num_threads: 1
+binning: binning.yaml
+era: 2017
+tag: "ERA_CHANNEL"
+skip_systematic_variations: True
+
+gof-channel: Null
+gof-variable: Null
+
+et-friend-directory: Null
+mt-friend-directory: Null
+tt-friend-directory: Null
+fake-factor-friend-directory: Null
+
+
+user_specific:
+  directory:
+    default: Null
+    glusheno:
+      naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/merged_all_pipes/
+      # naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/merged_all_pipes_shifts
+      # naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/merged_all_pipes
+      # naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/2018-10-08_00-10_etaufake_tes_nom_10000ev/merged
+      # naf: /nfs/dust/cms/user/glusheno/htautau/artus//ETauFakeES/2018-10-08_21-45_etaufake_gr1_10000ev/merged
+      # naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/2018-10-08_00-02_etaufake_gr2_10000ev/merged
+      # naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/2018-10-08_00-05_etaufake_gr3_10000ev/merged
+      # naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/2018-10-08_00-06_etaufake_gr4_10000ev/merged
+
+  datasets:
+    default: Null
+    glusheno:
+      naf: /afs/desy.de/user/g/glusheno/RWTH/KIT/Artus/CMSSW_9_4_9/src/Kappa/Skimming/data/datasets.json
