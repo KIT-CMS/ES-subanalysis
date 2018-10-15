@@ -2,6 +2,7 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 from shapes.etau_fes import etau_fes
+from shape_producer.systematics import Systematics
 
 
 def prepareConfig(config_file='data/et_fes_config.yaml'):
@@ -21,9 +22,17 @@ def main():
     config = prepareConfig()
 
     shapes = etau_fes.ETauFES(**config)
-    print shapes
+    shapes.setup_logging(output_file="{}_etau_fes.log".format(shapes.tag), level=logging.INFO, logger=shapes.logger)
 
-    shapes.run()
+    systematics = Systematics(
+        "{}_shapes.root".format(shapes.tag),
+        num_threads=shapes.num_threads,
+        skip_systematic_variations=shapes.skip_systematic_variations
+    )
+
+    shapes.evaluateEra()
+
+    # shapes.run()
 
 
 if __name__ == '__main__':
