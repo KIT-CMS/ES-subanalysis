@@ -6,13 +6,13 @@ era: 2017
 tag: "ERA_CHANNEL"
 skip_systematic_variations: True
 
-gof-channel: Null
-gof-variable: Null
+gof_channel: Null
+gof_variable: Null
 
-et-friend-directory: Null
-mt-friend-directory: Null
-tt-friend-directory: Null
-fake-factor-friend-directory: Null
+et_friend_directory: Null
+mt_friend_directory: Null
+tt_friend_directory: Null
+fake_factor_friend_directory: Null
 
 
 user_specific:
