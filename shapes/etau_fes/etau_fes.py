@@ -2,9 +2,9 @@ from shapes import Shapes
 
 
 class ETauFES(Shapes):
-    def __init__(self):
+    def __init__(self, **args):
         print "init ETauFES"
-        super(ETauFES, self).__init__()
+        super(ETauFES, self).__init__(**args)
 
 
 if __name__ == '__main__':
