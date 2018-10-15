@@ -56,9 +56,9 @@ class Shapes(object):
         self.tag = tag
         self.tt_friend_directory = tt_friend_directory
 
-        assert type(directory) is None, "Shapes::directory not set"
-        assert type(datasets) is None, "Shapes::datasets not set"
-        assert type(binning) is None, "Shapes::binning not set"
+        assert type(self.directory) is not None, "Shapes::directory not set"
+        assert type(self.datasets) is not None, "Shapes::datasets not set"
+        assert type(self.binning) is not None, "Shapes::binning not set"
 
     def __str__(self):
         logger.debug("Shapes ofset:", self.ofset)
