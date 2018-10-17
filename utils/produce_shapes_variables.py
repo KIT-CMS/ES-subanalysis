@@ -1,3 +1,4 @@
+import logging
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -17,22 +18,23 @@ def prepareConfig(config_file='data/et_fes_config.yaml'):
 
 
 def main():
-    print "Start"
+    print 'Start'
 
+    print '# 1 - prepareConfig'
     config = prepareConfig()
 
+    print '# 2 - setup_logging'
     shapes = etau_fes.ETauFES(**config)
-    shapes.setup_logging(output_file="{}_etau_fes.log".format(shapes.tag), level=logging.INFO, logger=shapes.logger)
+    shapes.setup_logging(output_file="{}_etau_fes.log".format(shapes._tag), level=logging.INFO, logger=shapes._logger)
 
-    systematics = Systematics(
-        "{}_shapes.root".format(shapes.tag),
-        num_threads=shapes.num_threads,
-        skip_systematic_variations=shapes.skip_systematic_variations
-    )
-
+    print '# 3 - Era evaluation'
     shapes.evaluateEra()
 
-    # shapes.run()
+    print '# 4 - import necessary estimation methods'
+    shapes.importEstimationMethods()
+
+    print '# 5 - evaluating channels (processes, variables,cattegories)'
+    shapes.evaluateChannels()
 
 
 if __name__ == '__main__':
