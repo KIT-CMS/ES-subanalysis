@@ -1,10 +1,34 @@
-backend: 'classic'
-channels: ['et']
+backend: classic
+channels: [et]
 num_threads: 1
-binning: binning.yaml
-era: 2017
-tag: "ERA_CHANNEL"
+binning: data/binning.yaml
+era: '2017'
+tag: ERA_CHANNEL
 skip_systematic_variations: True
+context_analysis: etFes
+variables_names: [
+  m_1, m_2,
+  mt_1, mt_2,
+  # pt_1, pt_2,
+  # eta_1, eta_2,
+  # jpt_1, jpt_2,
+  # jeta_1, jeta_2,
+  # decayMode_1, decayMode_2,
+  # iso_1, iso_2,
+  # d0_1, d0_2,
+  # dZ_1, dZ_2
+  m_vis,
+  mt_tot,
+  # ptvis,
+  # npv,
+  njets,
+  nbtag,
+  # met,
+  # mjj,
+  # dijetpt,
+  # pZetaMissVis,
+  # rho,
+]
 
 gof_channel: Null
 gof_variable: Null
@@ -32,3 +56,170 @@ user_specific:
     default: Null
     glusheno:
       naf: /afs/desy.de/user/g/glusheno/RWTH/KIT/Artus/CMSSW_9_4_9/src/Kappa/Skimming/data/datasets.json
+
+
+_known_estimation_methods:
+  '2016': Null
+  '2017':
+      mssm:
+          module: Null
+          et: Null
+            # methods: Null
+              # # susy_masses = ["250", "300", "700", "2300"]
+              # bbH_250: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM250_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_250 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM250_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_300: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_300 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_700: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM700_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_700 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM700_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_2300: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_2300 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_100: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM100_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_110: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM110_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_2600: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_1200: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_2900: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_120: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM120_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_130: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM130_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_3200: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM3200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_1400: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_350: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM350_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_140: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM140_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_400: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_1500: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1500_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_450: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM450_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_1600: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_600: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_160: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM160_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_1800: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_800: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_180: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM180_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_80: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM80_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_2000: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2000_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_900: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_200: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # bbH_90: SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM90_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_100 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM100_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_110 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM110_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_2600 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_1200 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_2900 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_120 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM120_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_130 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM130_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_3200 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM3200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_1400 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_350 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM350_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_140 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM140_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_400 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_1500 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1500_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_450 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM450_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_1600 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_600 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_1800 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_180 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM180_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_800 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_2000 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2000_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_80 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM80_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_200 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_900 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+              # ggH_90 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM90_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+      sm:
+        module: shape_producer.estimation_methods_Fall17
+        et:
+          renaming:      # user_ame : combine_name
+            data_obs                : data
+            jetFakes                : FAKES  # ! (era, directory, et, friend_directory=[et_friend_directory, ff_friend_directory])),
+            ggH125                  : ggH
+            qqH125                  : qqH
+            ggH_0J125               : ggH_0J
+            ggH_1J_PTH_0_60125      : ggH_1J_PTH_0_60
+            ggH_1J_PTH_60_120125    : ggH_1J_PTH_60_120
+            ggH_1J_PTH_120_200125   : ggH_1J_PTH_120_200
+            ggH_1J_PTH_GT200125     : ggH_1J_PTH_GT200
+            ggH_GE2J_PTH_0_60125    : ggH_GE2J_PTH_0_60
+            ggH_GE2J_PTH_60_120125  : ggH_GE2J_PTH_60_120
+            ggH_GE2J_PTH_120_200125 : ggH_GE2J_PTH_120_200
+            ggH_GE2J_PTH_GT200125   : ggH_GE2J_PTH_GT200
+            ggH_VBFTOPO_JET3VETO125 : ggH_VBFTOPO_JET3VETO
+            ggH_VBFTOPO_JET3125     : ggH_VBFTOPO_JET3
+            qqH_VBFTOPO_JET3VETO125 : qqH_VBFTOPO_JET3VETO
+            qqH_VBFTOPO_JET3125     : qqH_VBFTOPO_JET3
+            qqH_REST125             : qqH_REST
+            qqH_VH2JET125           : qqH_VH2JET
+            qqH_PTJET1_GT200125     : qqH_PTJET1_GT200
+
+          methods:   # combine_name : estimethion_method_name
+            data_obs                : DataEstimation
+            ZTT                     : ZTTEstimation
+            EMB                     : ZTTEmbeddedEstimation  # embedding swallows processes with T in the end TTT and VVJ
+            ZJ                      : ZJEstimation
+            ZL                      : ZLEstimation
+            TTT                     : TTTEstimation
+            TTJ                     : TTJEstimation
+            TTL                     : TTLEstimation
+            VVT                     : VVTEstimation
+            VVJ                     : VVJEstimation
+            VVL                     : VVLEstimation
+            W                       : WEstimation
+            EWKT                    : EWKTEstimation
+            EWKJ                    : EWKJEstimation
+            EWKL                    : EWKLEstimation
+            jetFakes                : FakeEstimationLT  # FF  : swallows the processes with "J" in the end
+            ggH125                  : ggHEstimation
+            qqH125                  : qqHEstimation
+            ggH_0J125               : ggHEstimation_0J
+            ggH_1J_PTH_0_60125      : ggHEstimation_1J_PTH_0_60
+            ggH_1J_PTH_60_120125    : ggHEstimation_1J_PTH_60_120
+            ggH_1J_PTH_120_200125   : ggHEstimation_1J_PTH_120_200
+            ggH_1J_PTH_GT200125     : ggHEstimation_1J_PTH_GT200
+            ggH_GE2J_PTH_0_60125    : ggHEstimation_GE2J_PTH_0_60
+            ggH_GE2J_PTH_60_120125  : ggHEstimation_GE2J_PTH_60_120
+            ggH_GE2J_PTH_120_200125 : ggHEstimation_GE2J_PTH_120_200
+            ggH_GE2J_PTH_GT200125   : ggHEstimation_GE2J_PTH_GT200
+            ggH_VBFTOPO_JET3VETO125 : ggHEstimation_VBFTOPO_JET3VETO
+            ggH_VBFTOPO_JET3125     : ggHEstimation_VBFTOPO_JET3
+            qqH_VBFTOPO_JET3VETO125 : qqHEstimation_VBFTOPO_JET3VETO
+            qqH_VBFTOPO_JET3125     : qqHEstimation_VBFTOPO_JET3
+            qqH_REST125             : qqHEstimation_REST
+            qqH_VH2JET125           : qqHEstimation_VH2JET
+            qqH_PTJET1_GT200125     : qqHEstimation_PTJET1_GT200
+        mt: Null
+        tt: Null
+        em: Null
+
+      # Currently the FF and Emb is not used
+      etFes:  # used in 2016 processes: "W", "ZTT", "ZL", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ", "ZL"
+        module: shape_producer.estimation_methods_Fall17
+        et:
+          renaming:
+            data_obs                : data
+          methods:
+            ZL                      : ZLEstimation  # combine; Signal
+            data_obs                : DataEstimation  # combine
+            ZTT                     : ZTTEstimation  # combine; needed for class. QCD & W
+            TTT                     : TTTEstimation  # combine
+            VVT                     : VVTEstimation  # combine
+            W                       : WEstimationWithQCD  # combine
+            QCD                     : QCDEstimationWithW  # combine
+            # for classical QCD & W
+            TT                      : TTEstimation  # needed for class. QCD & W (NOT IN CASE OF EMBEDDING!); sum(TTL, TTJ, TTT)
+            VV                      : VVEstimation  # needed for class. QCD & W (NOT IN CASE OF EMBEDDING!); sum(VVT, VVL, VVJ)
+            EWK                     : EWKEstimation  # needed for class. QCD & W (NOT IN CASE OF EMBEDDING!); sum(EWKT, EWKJ, EWKL)
+            WMC                     :        WEstimation  # needed for class. QCD & W
+            # for QCD & W with embedding
+            ZJ                      : ZJEstimation  # combine ; needed for class. QCD & W ; emb wcd
+            TTJ                     : TTJEstimation  # combine
+            VVJ                     : VVJEstimation  # combine
+            TTL                     : TTLEstimation
+            VVL                     : VVLEstimation
+            EWKL                    : EWKLEstimation
+            EWKJ                    : EWKJEstimation
+            # alternative to class. QCD & W
+            WEMB                    : WEstimationWithQCD
+            QCDEMB                  : QCDEstimationWithW
+            # Other
+            EMB                     : ZTTEmbeddedEstimation  # alternative to ZTT; embedding swallows processes with T in the end (TTT and VVT)
+            ZLL                     : ZLLEstimation  # needed for QCD & W
+            # HTT                   : HTTEstimation  # not needed for FES
+            # EWKT                  : EWKTEstimation  # not needed with EMB
+            # FAKES                 : FF swallows the processes with "J" in the end
