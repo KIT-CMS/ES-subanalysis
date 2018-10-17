@@ -3,7 +3,6 @@
 import logging
 """
 """
-import argparse
 import yaml
 
 """Script to copy files after the skim from * to nfs."""
@@ -14,8 +13,15 @@ pp = pprint.PrettyPrinter(indent=4)
 # import tempfile
 # import hashlib
 
+from shape_producer.systematics import Systematics
+from channelholder import ChannelHolder
+# from inidecorator import inidecorator
+
 
 class Shapes(object):
+    _complexEstimationMethods = ['WEstimationWithQCD', 'QCDEstimationWithW']
+
+    # @inidecorator   # TODO: TEST
     def __init__(self,
                  ofset=0,
                  directory=None,
@@ -35,44 +41,97 @@ class Shapes(object):
                  skip_systematic_variations=None,
                  tag=None,
                  tt_friend_directory=None,
+                 context_analysis=None,
+                 variables_names=None,
+                 _known_estimation_methods=None
                  ):
-        self.ofset = ofset
-        self.directory = directory
-        self.datasets = datasets
-        self.binning = binning
-        self.backend = backend
-        self.channels = channels
-        self.debug = debug
-        self.dry = dry
-        self.era = era
-        self.et_friend_directory = et_friend_directory
-        self.fake_factor_friend_directory = fake_factor_friend_directory
-        self.gof_channel = gof_channel
-        self.gof_variable = gof_variable
-        self.mt_friend_directory = mt_friend_directory
-        self.num_threads = num_threads
-        self.skip_systematic_variations = skip_systematic_variations
-        self.tag = tag
-        self.tt_friend_directory = tt_friend_directory
+        # TODO: Can be commented out if @inidecorator will be used
+        self._ofset = ofset
+        self._directory = directory
+        self._datasets = datasets
+        self._binning = binning
+        self._backend = backend
+        self._channels_key = channels
+        self._debug = debug
+        self._dry = dry
+        self._era_name = era
+        self._et_friend_directory = et_friend_directory
+        self._fake_factor_friend_directory = fake_factor_friend_directory
+        self._gof_channel = gof_channel
+        self._gof_variable = gof_variable
+        self._mt_friend_directory = mt_friend_directory
+        self._num_threads = num_threads
+        self._skip_systematic_variations = skip_systematic_variations
+        self._tag = tag
+        self._tt_friend_directory = tt_friend_directory
+        self._context_analysis = context_analysis
+        self._variables_names = variables_names
+        self._known_estimation_methods = _known_estimation_methods
 
-        assert type(self.directory) is not None, "Shapes::directory not set"
-        assert type(self.datasets) is not None, "Shapes::datasets not set"
-        assert type(self.binning) is not None, "Shapes::binning not set"
+        assert type(self._directory) is not None, "Shapes::directory not set"
+        assert type(self._datasets) is not None, "Shapes::datasets not set"
+        assert type(self._binning) is not None, "Shapes::binning not set"
+        print "self._binning:", self._binning
 
-        self.logger = logging.getLogger(__name__)
+        self._binning = yaml.load(open(self._binning))
+
+        self._logger = logging.getLogger(__name__)
+        self._channels = {}
+
+        self._systematics = Systematics(
+            "{}_shapes.root".format(self._tag),
+            num_threads=self._num_threads,
+            skip_systematic_variations=self._skip_systematic_variations
+        )
+
+    @property
+    def binning(self):
+        return self._binning
+
+    @property
+    def era(self):
+        return self._era
+
+    @era.setter
+    def era(self, value):
+        from shape_producer.era import Era
+        if isinstance(value, Era):
+            self._era = value
+        else:
+            raise ValueError('Shapes::era: tried to set era not to type Era')
+
+    @era.deleter
+    def era(self):
+        del self._era
+
+    @property
+    def channels(self):
+        return self._channels
+
+    def addChannel(self, name, cuts, processes, categorries):
+        self._channels[name] = ChannelHolder(
+            ofset=self._ofset + 1,
+            logger=self._logger,
+            debug=self._logger,
+            name=name,
+            cuts=cuts,
+            processes=processes,
+            categorries=categorries,
+        )
 
     def __str__(self):
-        self.logger.debug("Shapes ofset:", self.ofset)
-        print "ofset", self.ofset
+        self._logger.debug("Shapes ofset:", self._ofset)
+        print "ofset", self._ofset
         output = (
-            self.ofset * "\t" + " Shapes(" + "\n" +
-            self.ofset * "\t" + "    debug = " + str(self.debug) + "\n" +
-            self.ofset * "\t" + " )"
+            self._ofset * "\t" + " Shapes(" + "\n" +
+            self._ofset * "\t" + "    debug = " + str(self.debug) + "\n" +
+            self._ofset * "\t" + " )"
         )
         return output
 
     @staticmethod
     def parse_arguments(include_defaults=True):
+        import argparse
         defaultArguments = {}
         parser = argparse.ArgumentParser(description='shapes.py parser')
 
@@ -89,6 +148,8 @@ class Shapes(object):
         parser.add_argument("--mt-friend-directory", type=str, help="Directory containing a friend tree for mt.")
         parser.add_argument("--tt-friend-directory", type=str, help="Directory containing a friend tree for tt.")
         parser.add_argument("--fake-factor-friend-directory", type=str, help="Directory containing friend trees to data files with FF.")
+        parser.add_argument("--context-analysis", type=str, help="Context analysis.")
+        parser.add_argument("--variables-names", nargs='*', type=str, help="Variable names.")
 
         # Arguments with defaults that might be changed in the config file
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
@@ -102,6 +163,7 @@ class Shapes(object):
         defaultArguments['backend'] = 'classic'
         defaultArguments['tag'] = 'ERA_CHANNEL'
         defaultArguments['skip_systematic_variations'] = False
+        defaultArguments['context_analysis'] = 'etFes'
 
         # Arguments with defaults that can not be changed in the config file
         parser.add_argument('--dry', action='store_true', default=False, help='dry run')
@@ -167,37 +229,20 @@ class Shapes(object):
         else:
             raise ValueError('Shapes::readConfig: config obj of unset type')
 
+    def evaluateChannel(self, channel):
+        pass  # self._channels.add()
+
+    def evaluateChannels(self):
+        pass
+
     def evaluateEra(self):
-        print "Era selection"
-        if "2017" in self.era:
-            from shape_producer.estimation_methods_Fall17 import (
-                DataEstimation, ZTTEstimation, ZTTEmbeddedEstimation,
-                ZLEstimation, ZJEstimation, TTLEstimation,
-                TTJEstimation, TTTEstimation, VVLEstimation,
-                VVTEstimation, VVJEstimation, WEstimation,
-                ggHEstimation, ggHEstimation_0J, ggHEstimation_1J_PTH_0_60,
-                ggHEstimation_1J_PTH_60_120, ggHEstimation_1J_PTH_120_200,
-                ggHEstimation_1J_PTH_GT200, ggHEstimation_GE2J_PTH_0_60,
-                ggHEstimation_GE2J_PTH_60_120, ggHEstimation_GE2J_PTH_120_200,
-                ggHEstimation_GE2J_PTH_GT200, ggHEstimation_VBFTOPO_JET3,
-                ggHEstimation_VBFTOPO_JET3VETO, qqHEstimation, qqHEstimation_VBFTOPO_JET3VETO,
-                qqHEstimation_VBFTOPO_JET3, qqHEstimation_REST, qqHEstimation_VH2JET,
-                qqHEstimation_PTJET1_GT200, QCDEstimation_ABCD_TT_ISO2,
-                QCDEstimation_SStoOS_MTETEM, EWKTEstimation, EWKJEstimation, EWKTEstimation)
+        pass
 
-            from shape_producer.era import Run2017ReReco31Mar as Run2017
-            self.era = Run2017(self.datasets)
-
-        else:
-            self.logger.critical("Era {} is not implemented.".format(self.era))
-            raise Exception
-
-        def run(self):
-            pass
+    def getProcessesDict(self, channel_name=None):  # TODO: use a set of parameters; TODO: add a fn to re-set the QCD estimation method
+        pass
 
 
 if __name__ == '__main__':
     args = Shapes.parse_arguments()
     shapes = Shapes(**args)
     print shapes
-    shapes.run()
