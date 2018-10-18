@@ -78,6 +78,7 @@ class Shapes(object):
         self._logger = logging.getLogger(__name__)
         self._channels = {}
 
+        # Holds Systematics for all the channels. TODO: add the per-channel systematics to ChannelHolder
         self._systematics = Systematics(
             "{}_shapes.root".format(self._tag),
             num_threads=self._num_threads,
@@ -241,6 +242,8 @@ class Shapes(object):
     def getProcessesDict(self, channel_name=None):  # TODO: use a set of parameters; TODO: add a fn to re-set the QCD estimation method
         pass
 
+    def produceShapes():
+        pass
 
 if __name__ == '__main__':
     args = Shapes.parse_arguments()

@@ -8,6 +8,8 @@ from shape_producer.variable import Variable  # move to ChannelsHolder
 from shape_producer.binning import VariableBinning  # move to ChannelsHolder
 from shape_producer.categories import Category  # move to ChannelsHolder
 from shape_producer.cutstring import Cut, Cuts  # move to ChannelsHolder
+from shape_producer.systematics import Systematic
+from shape_producer.systematic_variations import Nominal
 
 
 class ETauFES(Shapes):
@@ -137,6 +139,7 @@ class ETauFES(Shapes):
                         qcd_ss_to_os_extrapolation_factor=1.09,
                     ))
                 else:
+                    if key == 'ZL': print '-->getProcesses::', key, type(parameters_list['channel'])
                     processes[key] = Process(combine_name, self._estimation_methods[estimation_method](*parameters_list))
             else:  # TODO: add the check of the config
                 print "Key added in list of processes twice. channel: " + channel_name + "; key:" + key
@@ -167,7 +170,7 @@ class ETauFES(Shapes):
         Returns dict of Cattegories for Channel
         """
         categories = []
-        for name, var in channel_holder.variables.iteritems():
+        for name, var in channel_holder._variables.iteritems():
             if name == "mt_1":
                 cuts = Cuts(Cut("njets == 0", "nojets"))
             else:
@@ -186,6 +189,12 @@ class ETauFES(Shapes):
 
         return categories
 
+    def getSystematics(self, channel_holder):  # NOTE: for a single channel
+        """
+        Setting systematics ro associated channel
+        """
+        pass
+
     def getEvaluatedChannel(self, channel, variables):
         """
         Creates and returns channel_holder for requested channel
@@ -200,18 +209,26 @@ class ETauFES(Shapes):
                 channel_obj=ETMSSM2017(),
                 friend_directory=self._et_friend_directory,
             )
-            channel_holder.processes = self.getProcesses(
+            print "self._logger.debug('...getProcesses')"
+            channel_holder._processes = self.getProcesses(
                 channel_obj=channel_holder._channel_obj,
                 friend_directory=self._et_friend_directory
             )
-            channel_holder.variables = self.getVariables(
+            print "self._logger.debug('...getVariables')"
+            channel_holder._variables = self.getVariables(
                 channel_obj=channel_holder._channel_obj,
                 variable_names=variables,
                 binning=self.binning["control"][channel_holder._channel_obj._name]
             )
-            channel_holder.categorries = self.getCategorries(
+            print "self._logger.debug('...getCategorries')"
+            channel_holder._categorries = self.getCategorries(
                 channel_holder=channel_holder
             )
+            print "self._logger.debug('...getSystematics')"
+            channel_holder._systematics = self.getSystematics(  # NOTE: for a single channel
+                channel_holder=channel_holder
+            )
+
             return channel_holder
         else:
             raise KeyError("getEvaluatedChannel: channel not setup. channel:" + channel +
@@ -237,6 +254,27 @@ class ETauFES(Shapes):
             self._channels[name] = channel_holder
         else:
             raise 'addChannel can\'t add non-ChannelHolder objects'
+
+    def evaluateSystematics(self):
+        for channel_name, channel_holder in self._channels.iteritems():
+            processes = channel_holder._processes.values()
+            categories = channel_holder._categorries
+
+            from itertools import product
+            for process, category in product(processes, categories):
+                self._systematics.add(
+                    Systematic(
+                        category=category,
+                        process=process,
+                        analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
+                        era=self.era,
+                        variation=Nominal(),
+                        mass="125",  # TODO : check if this is used anywhere
+                    )
+                )
+
+    def produce(self):
+        self._systematics.produce()
 
 
 if __name__ == '__main__':

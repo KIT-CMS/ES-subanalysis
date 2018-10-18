@@ -36,6 +36,12 @@ def main():
     print '# 5 - evaluating channels (processes, variables,cattegories)'
     shapes.evaluateChannels()
 
+    print '# 6 - add systematics'
+    shapes.evaluateSystematics()
+
+    print '# 7 - produce shapes'
+    shapes.produce()
+
 
 if __name__ == '__main__':
     main()

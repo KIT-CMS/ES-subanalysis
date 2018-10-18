@@ -39,7 +39,9 @@ class ChannelHolder(object):
                  name=None,
                  cuts=None,
                  processes=None,
+                 variables=None,
                  categorries=None,
+                 systematics=None,
                  friend_directory=None,
                  ):
         self._ofset = ofset
@@ -50,7 +52,9 @@ class ChannelHolder(object):
         self._name = name
         self._cuts = cuts  # Channel()._cuts
         self._processes = processes
+        self._variables = variables
         self._categorries = categorries
+        self._systematics = systematics
         self._friend_directory = friend_directory
 
         # assert type(self._cuts) is not None, "ChannelHolder::_cuts not set"
