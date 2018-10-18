@@ -29,7 +29,7 @@ def main():
 
     print '# 3 - Era evaluation'
     shapes.evaluateEra()
-
+    shapes._nominal_folder = 'eleTauEsOneProngPiZerosShift_0'
     print '# 4 - import necessary estimation methods'
     shapes.importEstimationMethods()
 
@@ -37,7 +37,10 @@ def main():
     shapes.evaluateChannels()
 
     print '# 6 - add systematics'
-    shapes.evaluateSystematics()
+    shapes.evaluateSystematics(
+        'nominal',
+        'TES',
+    )
 
     print '# 7 - produce shapes'
     shapes.produce()
