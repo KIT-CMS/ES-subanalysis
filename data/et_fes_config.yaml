@@ -33,10 +33,10 @@ variables_names: [
 gof_channel: Null
 gof_variable: Null
 
-et_friend_directory: Null
-mt_friend_directory: Null
-tt_friend_directory: Null
-fake_factor_friend_directory: Null
+et_friend_directory: []
+mt_friend_directory: []
+tt_friend_directory: []
+fake_factor_friend_directory: []
 
 
 user_specific:
