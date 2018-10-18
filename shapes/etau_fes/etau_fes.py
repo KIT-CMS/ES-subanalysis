@@ -140,7 +140,7 @@ class ETauFES(Shapes):
                     ))
                 else:
                     if key == 'ZL': print '-->getProcesses::', key, type(parameters_list['channel'])
-                    processes[key] = Process(combine_name, self._estimation_methods[estimation_method](*parameters_list))
+                    processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
             else:  # TODO: add the check of the config
                 print "Key added in list of processes twice. channel: " + channel_name + "; key:" + key
 
