@@ -9,7 +9,7 @@ from shape_producer.binning import VariableBinning  # move to ChannelsHolder
 from shape_producer.categories import Category  # move to ChannelsHolder
 from shape_producer.cutstring import Cut, Cuts  # move to ChannelsHolder
 from shape_producer.systematics import Systematic
-from shape_producer.systematic_variations import Nominal
+from shape_producer.systematic_variations import Nominal, DifferentPipeline, create_systematic_variations
 
 
 class ETauFES(Shapes):
@@ -95,6 +95,7 @@ class ETauFES(Shapes):
             'directory': self._directory,
             'channel': channel_obj,
             'friend_directory': friend_directory,
+            'folder': self._nominal_folder,
         }
         channel_name = channel_obj._name
         context = self._context_analysis
@@ -255,23 +256,42 @@ class ETauFES(Shapes):
         else:
             raise 'addChannel can\'t add non-ChannelHolder objects'
 
-    def evaluateSystematics(self):
+    # TODO: split to call corresponding functions instead of passing list of strings
+    def evaluateSystematics(self, *argv):
         for channel_name, channel_holder in self._channels.iteritems():
             processes = channel_holder._processes.values()
             categories = channel_holder._categorries
 
-            from itertools import product
-            for process, category in product(processes, categories):
-                self._systematics.add(
-                    Systematic(
-                        category=category,
-                        process=process,
-                        analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
-                        era=self.era,
-                        variation=Nominal(),
-                        mass="125",  # TODO : check if this is used anywhere
+            if 'nominal' in argv:
+                from itertools import product
+                for process, category in product(processes, categories):
+                    self._systematics.add(
+                        Systematic(
+                            category=category,
+                            process=process,
+                            analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
+                            era=self.era,
+                            variation=Nominal(),
+                            mass="125",  # TODO : check if this is used anywhere
+                        )
                     )
-                )
+
+            if 'TES' in argv:
+                print 'TES...'
+                tau_es_3prong_variations = create_systematic_variations("CMS_scale_t_3prong_13TeV", "tauEsThreeProng", DifferentPipeline)
+                tau_es_1prong_variations = create_systematic_variations("CMS_scale_t_1prong_13TeV", "tauEsOneProng", DifferentPipeline)
+                tau_es_1prong1pizero_variations = create_systematic_variations("CMS_scale_t_1prong1pizero_13TeV", "tauEsOneProngOnePiZero", DifferentPipeline)
+                for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
+                    # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
+                    print 'variation:', variation
+                    print 'proc:', list(set(["ZTT", "TTT", "TTL", "VVT", "EWKT", "EMB"]) & set(channel_holder._processes.keys()))
+                    for process_nick in list(set(["ZTT", "TTT", "TTL", "VVT", "EWKT", "EMB"]) & set(channel_holder._processes.keys())):
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
 
     def produce(self):
         self._systematics.produce()

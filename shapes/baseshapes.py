@@ -43,7 +43,8 @@ class Shapes(object):
                  tt_friend_directory=None,
                  context_analysis=None,
                  variables_names=None,
-                 _known_estimation_methods=None
+                 _known_estimation_methods=None,
+                 nominal_folder='nominal',
                  ):
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
@@ -67,6 +68,7 @@ class Shapes(object):
         self._context_analysis = context_analysis
         self._variables_names = variables_names
         self._known_estimation_methods = _known_estimation_methods
+        self._nominal_folder = nominal_folder
 
         assert type(self._directory) is not None, "Shapes::directory not set"
         assert type(self._datasets) is not None, "Shapes::datasets not set"
