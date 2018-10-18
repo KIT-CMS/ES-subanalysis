@@ -215,10 +215,10 @@ _known_estimation_methods:
             EWKL                    : EWKLEstimation
             EWKJ                    : EWKJEstimation
             # alternative to class. QCD & W
-            WEMB                    : WEstimationWithQCD
-            QCDEMB                  : QCDEstimationWithW
+            # WEMB                    : WEstimationWithQCD; TODO: add the missing EMB files to artus list
+            # QCDEMB                  : QCDEstimationWithW; TODO: add the missing EMB files to artus list
             # Other
-            EMB                     : ZTTEmbeddedEstimation  # alternative to ZTT; embedding swallows processes with T in the end (TTT and VVT)
+            # EMB                     : ZTTEmbeddedEstimation  # alternative to ZTT; embedding swallows processes with T in the end (TTT and VVT); TODO: add the missing EMB files to artus list
             ZLL                     : ZLLEstimation  # needed for QCD & W
             # HTT                   : HTTEstimation  # not needed for FES
             # EWKT                  : EWKTEstimation  # not needed with EMB
