@@ -45,6 +45,7 @@ class Shapes(object):
                  variables_names=None,
                  _known_estimation_methods=None,
                  nominal_folder='nominal',
+                 tes_sys_processes=None,
                  ):
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
@@ -69,6 +70,7 @@ class Shapes(object):
         self._variables_names = variables_names
         self._known_estimation_methods = _known_estimation_methods
         self._nominal_folder = nominal_folder
+        self._tes_sys_processes = tes_sys_processes
 
         assert type(self._directory) is not None, "Shapes::directory not set"
         assert type(self._datasets) is not None, "Shapes::datasets not set"
@@ -216,6 +218,7 @@ class Shapes(object):
                         hostname = Shapes.getHostKey()
 
                         config = yaml.load(stream)
+
                         for user_specific_key in config['user_specific'].keys():
                             user_specific = config['user_specific'][user_specific_key]
                             config[user_specific_key] = user_specific['default']
@@ -226,7 +229,7 @@ class Shapes(object):
                         return config
 
                     except yaml.YAMLError as exc:
-                        print('Shapes::readConfig: yaml config couldn\' be loaded', exc)
+                        print('Shapes::readConfig: yaml config couldn\' be loaded:\n', config_file, '\n', exc)
             else:
                 raise ValueError('Shapes::readConfig: config path is not yaml format')
         else:
