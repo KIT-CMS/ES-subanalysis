@@ -175,17 +175,21 @@ class ETauFES(Shapes):
         categories = []
         for name, var in channel_holder._variables.iteritems():
             if name == "mt_1":
-                cuts = Cuts(Cut("njets == 0", "nojets"))
+                cuts = Cuts(
+                    Cut("njets == 0", "0jet")
+                )
             else:
-                cuts = Cuts(Cut("mt_1 < 70", "mt"),
-                    Cut("njets == 0", "nojets")
+                cuts = Cuts(
+                    Cut("mt_1 < 70", "mt"),
+                    Cut("njets == 0", "0jet")
                 )
             categories.append(
                 Category(
-                    name,
-                    channel_holder._channel_obj,
-                    cuts,
-                    variable=var))
+                    name=name + '_0jet',
+                    channel=channel_holder._channel_obj,
+                    cuts=cuts,
+                    variable=var)
+            )
             if name == "iso_1" or name == "iso_2":
                 categories[-1].cuts.remove("ele_iso")
                 categories[-1].cuts.remove("tau_iso")
@@ -212,22 +216,29 @@ class ETauFES(Shapes):
                 channel_obj=ETMSSM2017(),
                 friend_directory=self._et_friend_directory,
             )
-            print "self._logger.debug('...getProcesses')"
+
+            # Loose isolation requirement
+            channel_holder._channel_obj.cuts.remove("tau_iso")
+            channel_holder._channel_obj.cuts.add(
+                Cut("byLooseIsolationMVArun2v1DBoldDMwLT_2>0.5", "tau_2_iso_loose")
+            )
+
+            # print "self._logger.debug('...getProcesses')"
             channel_holder._processes = self.getProcesses(
                 channel_obj=channel_holder._channel_obj,
                 friend_directory=self._et_friend_directory
             )
-            print "self._logger.debug('...getVariables')"
+            # print "self._logger.debug('...getVariables')"
             channel_holder._variables = self.getVariables(
                 channel_obj=channel_holder._channel_obj,
                 variable_names=variables,
                 binning=self.binning["control"][channel_holder._channel_obj._name]
             )
-            print "self._logger.debug('...getCategorries')"
+            # print "self._logger.debug('...getCategorries')"
             channel_holder._categorries = self.getCategorries(
                 channel_holder=channel_holder
             )
-            print "self._logger.debug('...getSystematics')"
+            # print "self._logger.debug('...getSystematics')"
             channel_holder._systematics = self.getSystematics(  # NOTE: for a single channel
                 channel_holder=channel_holder
             )
