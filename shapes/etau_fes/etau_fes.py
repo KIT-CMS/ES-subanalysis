@@ -127,7 +127,7 @@ class ETauFES(Shapes):
                     if "EMB" in key:
                         bg_processes = [processes[process] for process in ["EMB", "ZLL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL", "EWKJ"]],
                     else:
-                        bg_processes = [processes[process] for process in ["ZTT", "ZLL", "ZJ", "TT", "VV", "EWK"]]  # dataDriven_QCDW_bg_processes
+                        bg_processes = [processes[process] for process in ["DYJetsToLL", "TT", "VV"]]  # former ["ZTT", "ZLL", "ZJ", "TT", "VV", "EWK"]  # dataDriven_QCDW_bg_processes
 
                     processes[key] = Process(combine_name, self._estimation_methods[estimation_method](
                         era=self.era,
