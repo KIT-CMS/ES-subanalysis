@@ -9,3 +9,7 @@
 [submodule "sm-htt-analysis"]
 	path = sm-htt-analysis
 	url = git@github.com:KIT-CMS/sm-htt-analysis.git
+[submodule "jdl_creator"]
+	path = jdl_creator
+	url = git@github.com:KIT-CMS/jdl_creator.git
+	branch = master
