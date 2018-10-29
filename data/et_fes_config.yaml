@@ -40,6 +40,9 @@ fake_factor_friend_directory: []
 
 # processed is the intersection with list from _known_estimation_methods
 tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
+fes_sys_processes: ['ZL', 'DYJetsToLL', 'EMB']
+emb_sys_processes: ['EMB']
+
 
 user_specific:
   directory:
@@ -184,6 +187,12 @@ _known_estimation_methods:
 
       # Currently the FF and Emb is not used
       etFes:  # used in 2016 processes: "W", "ZTT", "ZL", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ", "ZL"
+        etau_es_shifts: [
+            -4, -3, -2, -1.75, -1.5, -1.25, -1, -0.75, -0.5, -0.25,
+            0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5,
+            2.75, 3, 3.25, 3.5, 3.75, 4, 5, 6, 7, 8,
+            9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+        ]
         module: shape_producer.estimation_methods_Fall17
         et:
           renaming:
