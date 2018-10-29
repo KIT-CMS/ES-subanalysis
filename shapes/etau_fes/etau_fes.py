@@ -20,6 +20,8 @@ class ETauFES(Shapes):
         self._variables = []
         self._estimation_methods = {}
 
+        self._etau_es_shifts = self._known_estimation_methods[self._era_name][self._context_analysis]['etau_es_shifts']
+
     def evaluateEra(self):
         """
         "Era selection"
@@ -263,6 +265,7 @@ class ETauFES(Shapes):
             categories = channel_holder._categorries
 
             if 'nominal' in argv:
+                print '\n\nnominal...'
                 from itertools import product
                 for process, category in product(processes, categories):
                     self._systematics.add(
@@ -277,21 +280,41 @@ class ETauFES(Shapes):
                     )
 
             if 'TES' in argv:
-                print 'TES...'
-                tau_es_3prong_variations = create_systematic_variations("CMS_scale_t_3prong_13TeV", "tauEsThreeProng", DifferentPipeline)
-                tau_es_1prong_variations = create_systematic_variations("CMS_scale_t_1prong_13TeV", "tauEsOneProng", DifferentPipeline)
-                tau_es_1prong1pizero_variations = create_systematic_variations("CMS_scale_t_1prong1pizero_13TeV", "tauEsOneProngOnePiZero", DifferentPipeline)
+                print '\n\nTES...'
+                tau_es_3prong_variations = create_systematic_variations(name="CMS_scale_t_3prong_13TeV", property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
+                tau_es_1prong_variations = create_systematic_variations(name="CMS_scale_t_1prong_13TeV", property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
+                tau_es_1prong1pizero_variations = create_systematic_variations(name="CMS_scale_t_1prong1pizero_13TeV", property_name="tauEsOneProngOnePiZero", systematic_variation=DifferentPipeline)
+
                 for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
-                    print 'variation:', variation
-                    print 'proc:', list(set(["ZTT", "TTT", "TTL", "VVT", "EWKT", "EMB"]) & set(channel_holder._processes.keys()))
-                    for process_nick in list(set(["ZTT", "TTT", "TTL", "VVT", "EWKT", "EMB"]) & set(channel_holder._processes.keys())):
+                    proc_intersection = list(set(self._tes_sys_processes) & set(channel_holder._processes.keys()))
+                    print '\nvariation name:', variation.name, '\nintersection self._tes_sys_processes:', proc_intersection
+                    for process_nick in proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
+                        print "\tnew sys variation:", self._systematics._systematics[-1].name, len(self._systematics._systematics)
+
+            if 'FES_shifts' in argv:
+                print '\n\nFES_shifts...'
+                # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
+                root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
+                for es in self._etau_es_shifts:
+                    shift_str = root_str(es)
+                    for pipeline in ["eleTauEsOneProng_", "eleTauEsOneProngShift_", "eleTauEsOneProngPiZerosShift_", "eleTauEsThreeProngShift_"]:
+                        variation = DifferentPipeline(name='CMS_fes_' + pipeline + '13TeV_', pipeline=pipeline, direction=shift_str)
+                        proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
+                        print '\nvariation name:', variation.name, '\nintersection self._fes_sys_processes:', proc_intersection
+                        for process_nick in proc_intersection:
+                            self._systematics.add_systematic_variation(
+                                variation=variation,
+                                process=channel_holder._processes[process_nick],
+                                channel=channel_holder._channel_obj,
+                                era=self.era
+                            )
 
     def produce(self):
         self._systematics.produce()

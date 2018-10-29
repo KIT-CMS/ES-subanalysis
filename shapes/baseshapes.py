@@ -46,6 +46,9 @@ class Shapes(object):
                  _known_estimation_methods=None,
                  nominal_folder='nominal',
                  tes_sys_processes=None,
+                 etau_es_shifts=None,
+                 fes_sys_processes=None,
+                 emb_sys_processes=None,
                  ):
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
@@ -71,6 +74,9 @@ class Shapes(object):
         self._known_estimation_methods = _known_estimation_methods
         self._nominal_folder = nominal_folder
         self._tes_sys_processes = tes_sys_processes
+        self._etau_es_shifts = etau_es_shifts
+        self._fes_sys_processes = fes_sys_processes
+        self._emb_sys_processes = emb_sys_processes
 
         assert type(self._directory) is not None, "Shapes::directory not set"
         assert type(self._datasets) is not None, "Shapes::datasets not set"
@@ -244,11 +250,14 @@ class Shapes(object):
     def evaluateEra(self):
         pass
 
-    def getProcessesDict(self, channel_name=None):  # TODO: use a set of parameters; TODO: add a fn to re-set the QCD estimation method
+    # TODO: use a set of parameters
+    # TODO: add a fn to re-set the QCD estimation method
+    def getProcessesDict(self, channel_name=None):
         pass
 
     def produceShapes():
         pass
+
 
 if __name__ == '__main__':
     args = Shapes.parse_arguments()
