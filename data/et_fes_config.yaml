@@ -7,27 +7,28 @@ tag: ERA_CHANNEL
 skip_systematic_variations: False
 context_analysis: etFes
 variables_names: [
-  m_1, m_2,
-  mt_1, mt_2,
-  # pt_1, pt_2,
-  # eta_1, eta_2,
-  # jpt_1, jpt_2,
-  # jeta_1, jeta_2,
-  # decayMode_1, decayMode_2,
-  # iso_1, iso_2,
-  # d0_1, d0_2,
-  # dZ_1, dZ_2
+  # m_1, m_2,
+  # mt_1, mt_2,
+  # # pt_1, pt_2,
+  # # eta_1, eta_2,
+  # # jpt_1, jpt_2,
+  # # jeta_1, jeta_2,
+  # # decayMode_1, decayMode_2,
+  # # iso_1, iso_2,
+  # # d0_1, d0_2,
+  # # dZ_1, dZ_2
   m_vis,
-  mt_tot,
-  # ptvis,
-  # npv,
-  njets,
-  nbtag,
-  # met,
-  # mjj,
-  # dijetpt,
-  # pZetaMissVis,
-  # rho,
+  # njets,
+  # mt_tot,
+  # # ptvis,
+  # # npv,
+  # njets,
+  # nbtag,
+  # # met,
+  # # mjj,
+  # # dijetpt,
+  # # pZetaMissVis,
+  # # rho,
 ]
 
 gof_channel: Null
@@ -39,6 +40,12 @@ tt_friend_directory: []
 fake_factor_friend_directory: []
 
 # processed is the intersection with list from _known_estimation_methods
+shifts: [
+  nominal,
+  TES,
+  EMB,
+  FES_shifts,
+]
 tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
 fes_sys_processes: ['ZL', 'DYJetsToLL', 'EMB']
 emb_sys_processes: ['EMB']
@@ -231,15 +238,15 @@ _known_estimation_methods:
             # # EWK                     : EWKEstimation  # needed for class. QCD & W (NOT IN CASE OF EMBEDDING!); sum(EWKT, EWKJ, EWKL)
             # WMC                     : WEstimation  # needed for class. QCD & W
             # for QCD & W with embedding
-            TTL                     : TTLEstimation  # for embedding
-            VVL                     : VVLEstimation  # for embedding
+            # 31oct TTL                     : TTLEstimation  # for embedding
+            # 31octVVL                     : VVLEstimation  # for embedding
             # EWKL                    : EWKLEstimation  # for embedding [?]
             # EWKJ                    : EWKJEstimation  # for embedding [?]
             # alternative to class. QCD & W
             # WEMB                    : WEstimationWithQCD; TODO: add the missing EMB files to artus list
             # QCDEMB                  : QCDEstimationWithW; TODO: add the missing EMB files to artus list
             # # Other
-            EMB                     : ZTTEmbeddedEstimation  # alternative to ZTT; embedding swallows processes with T in the end (TTT and VVT); TODO: add the missing EMB files to artus list
+            # 31octEMB                     : ZTTEmbeddedEstimation  # alternative to ZTT; embedding swallows processes with T in the end (TTT and VVT); TODO: add the missing EMB files to artus list
             # ZLL                     : ZLEstimation  # needed for QCD & W
             # # HTT                   : HTTEstimation  # not needed for FES
             # # EWKT                  : EWKTEstimation  # not needed with EMB
