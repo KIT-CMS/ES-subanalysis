@@ -3,7 +3,7 @@ channels: [et]
 num_threads: 1
 binning: data/binning.yaml
 era: '2017'
-tag: ERA_CHANNEL
+tag: etauFES
 skip_systematic_variations: False
 context_analysis: etFes
 variables_names: [
@@ -43,7 +43,7 @@ fake_factor_friend_directory: []
 shifts: [
   nominal,
   TES,
-  EMB,
+  # EMB,
   FES_shifts,
 ]
 tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
@@ -204,50 +204,71 @@ _known_estimation_methods:
         et:
           renaming:
             data_obs                : data
+
+          test_DY:
+            data_obs                : DataEstimation
+            ZTT                     : ZTTEstimation
+            ZL                      : ZLEstimation
+            ZJ                      : ZJEstimation
+            EMB                     : ZTTEmbeddedEstimation
+            DYJetsToLL              : DYJetsToLLEstimation
+
+          test_DY_fast:
+            data_obs                : DataEstimation
+            ZTT                     : ZTTEstimation
+            EMB                     : ZTTEmbeddedEstimation
+
+          test_DY_splitting:
+            ZL                      : ZLEstimation
+            ZTT                     : ZTTEstimation
+            ZJ                      : ZJEstimation
+            DYJetsToLL              : DYJetsToLLEstimation
+
+          Artur_DY: # Artur's example for testing ; missing for FES bg: 'TTT' 'VVT' 'TTJ' 'VVJ'
+            data_obs                : DataEstimation  # combine
+            ZTT                     : ZTTEstimation
+            ZL                      : ZLEstimation
+            ZJ                      : ZJEstimation
+            TT                      : TTEstimation
+            VV                      : VVEstimation
+            WMC                     : WEstimation
+            W                       : WEstimationWithQCD # bg: ["ZTT", "ZL", "ZJ", "TT", "VV"]], needs "WMC", qcd_ss_to_os_extrapolation_factor=1.09
+            QCD                     : QCDEstimationWithW # bg: ["ZTT", "ZL", "ZJ", "TT", "VV"]], needs "WMC", qcd_ss_to_os_extrapolation_factor=1.09
+
+          Embedded_FES:
+            data_obs                : DataEstimation  # combine
+            ZL                      : ZLEstimation  # combine ; Signal
+            TTT                     : TTTEstimation  # combine
+            VVT                     : VVTEstimation  # combine
+            TTJ                     : TTJEstimation  # combine
+            VVJ                     : VVJEstimation  # combine
+            WMC                     : WEstimation
+            DYJetsToLL              : DYJetsToLLEstimation
+            ZLL                     : ZLEstimation
+            ZJ                      : ZJEstimation  # combine ; embedding
+            TTL                     : TTLEstimation  # embedding
+            VVL                     : VVLEstimation  # embedding
+            EMB                     : ZTTEmbeddedEstimation  # alternative to ZTT ; embedding swallows processes with T in the end (TTT and VVT)
+            WEMB                    : WEstimationWithQCD # bg with old splitting: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL"[?], "EWKJ"[?]]]
+            QCDEMB                  : QCDEstimationWithW # bg with old splitting: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL"[?], "EWKJ"[?]]]
+
+          # Original_FES: # with classical bg estimations
           methods:
             data_obs                : DataEstimation  # combine
             ZL                      : ZLEstimation  # combine; Signal
             # Classical: to comb: "ZTT", "W", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ",
-            ZTT                     : ZTTEstimation  # combine; needed for class. QCD & W
+            ZTT                     : ZTTEstimation  # combine; class. QCD & W
             W                       : WEstimationWithQCD  # combine
             QCD                     : QCDEstimationWithW  # combine
             TTT                     : TTTEstimation  # combine
             VVT                     : VVTEstimation  # combine
             TTJ                     : TTJEstimation  # combine
             VVJ                     : VVJEstimation  # combine
-            # for classical QCD & W :  ["DYJetsToLL", "TT", "VV", "EWKW"[?]  || old bg: "ZTT", "ZL", "ZJ", "TT", "VV", "EWK" [?]
+            # for classical QCD & W :  ["DYJetsToLL", "TT", "VV", "EWKW"[?]  || previously needed bg: "ZTT", "ZL", "ZJ", "TT", "VV", "EWK" [?]
             # where "DYJetsToLL" = {"ZTT", "ZL", "ZJ", "EWKZ"}
             DYJetsToLL              : DYJetsToLLEstimation
-            ZLL                     : ZLEstimation  # needed for QCD & W
-            ZJ                      : ZJEstimation  # combine ; needed for class. QCD & W ; for embedding wcd
-            TT                      : TTEstimation  # needed for class. QCD & W (NOT IN CASE OF EMBEDDING!); sum(TTL, TTJ, TTT)
-            VV                      : VVEstimation  # needed for class. QCD & W (NOT IN CASE OF EMBEDDING!); sum(VVT, VVL, VVJ)
-            WMC                     : WEstimation  # needed for class. QCD & W ; now contains also EWKW
-            #
-            # WITH EMBEDDING: old ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL"[?], "EWKJ"[?]]]
-            # ==============
-            # ZTT                     : ZTTEstimation  # combine; needed for class. QCD & W
-            # TTT                     : TTTEstimation  # combine
-            # VVT                     : VVTEstimation  # combine
-            # W                       : WEstimationWithQCD  # combine
-            # QCD                     : QCDEstimationWithW  # combine
-            # # for classical QCD & W
-            # DYJetsToLL              : DYJetsToLLEstimation
-            # TT                      : TTEstimation  # needed for class. QCD & W (NOT IN CASE OF EMBEDDING!); sum(TTL, TTJ, TTT)
-            # VV                      : VVEstimation  # needed for class. QCD & W (NOT IN CASE OF EMBEDDING!); sum(VVT, VVL, VVJ)
-            # # EWK                     : EWKEstimation  # needed for class. QCD & W (NOT IN CASE OF EMBEDDING!); sum(EWKT, EWKJ, EWKL)
-            # WMC                     : WEstimation  # needed for class. QCD & W
-            # for QCD & W with embedding
-            # 31oct TTL                     : TTLEstimation  # for embedding
-            # 31octVVL                     : VVLEstimation  # for embedding
-            # EWKL                    : EWKLEstimation  # for embedding [?]
-            # EWKJ                    : EWKJEstimation  # for embedding [?]
-            # alternative to class. QCD & W
-            # WEMB                    : WEstimationWithQCD; TODO: add the missing EMB files to artus list
-            # QCDEMB                  : QCDEstimationWithW; TODO: add the missing EMB files to artus list
-            # # Other
-            # 31octEMB                     : ZTTEmbeddedEstimation  # alternative to ZTT; embedding swallows processes with T in the end (TTT and VVT); TODO: add the missing EMB files to artus list
-            # ZLL                     : ZLEstimation  # needed for QCD & W
-            # # HTT                   : HTTEstimation  # not needed for FES
-            # # EWKT                  : EWKTEstimation  # not needed with EMB
-            # # FAKES                 : FF swallows the processes with "J" in the end
+            ZLL                     : ZLEstimation  # QCD & W
+            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+            TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
+            VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
+            WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
