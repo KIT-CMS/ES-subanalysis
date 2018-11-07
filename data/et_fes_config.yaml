@@ -5,6 +5,7 @@ binning: data/binning.yaml
 binning_key: control
 era: '2017'
 tag: etauFES
+output_file: ''
 skip_systematic_variations: False
 context_analysis: etFes
 variables_names: [
