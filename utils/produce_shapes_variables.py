@@ -4,6 +4,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 from shapes.etau_fes import etau_fes
 from shape_producer.systematics import Systematics
+from convert_to_synced_shapes import convertToSynced
 
 
 def prepareConfig(config_file='data/et_fes_config.yaml', debug=False):
@@ -41,14 +42,13 @@ def main():
     shapes.evaluateChannels()
 
     print '\n# 6 - add systematics'
-    shapes.evaluateSystematics(
-        'nominal',
-        'TES',
-        'FES_shifts',
-    )
+    shapes.evaluateSystematics()
 
     print '# 7 - produce shapes'
     shapes.produce()
+
+    print '# 8 - convert to synched shapes'
+    convertToSynced(input_path=shapes._output_file)
 
     print 'End'
 
