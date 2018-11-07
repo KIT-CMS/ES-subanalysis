@@ -50,6 +50,8 @@ def main():
     print '# 7 - produce shapes'
     shapes.produce()
 
+    print 'End'
+
 
 if __name__ == '__main__':
     main()
