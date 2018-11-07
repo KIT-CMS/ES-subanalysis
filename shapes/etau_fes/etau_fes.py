@@ -7,9 +7,10 @@ from shape_producer.process import Process  # move to ChannelsHolder
 from shape_producer.variable import Variable  # move to ChannelsHolder
 from shape_producer.binning import VariableBinning  # move to ChannelsHolder
 from shape_producer.categories import Category  # move to ChannelsHolder
-from shape_producer.cutstring import Cut, Cuts  # move to ChannelsHolder
+from shape_producer.cutstring import Cut, Cuts, Weight  # move to ChannelsHolder
 from shape_producer.systematics import Systematic
-from shape_producer.systematic_variations import Nominal, DifferentPipeline, create_systematic_variations
+from shape_producer.systematic_variations import Nominal, DifferentPipeline, create_systematic_variations, \
+    ReplaceWeight, SquareAndRemoveWeight
 
 
 class ETauFES(Shapes):
