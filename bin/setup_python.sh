@@ -2,9 +2,10 @@
 set +e
 
 declare -a modules=(
-    $PWD
-    $PWD/shape-producer
     $PWD/datacard-producer
+    $PWD/shape-producer
+    $PWD/shape-producer/shape_producer/
+    $PWD
 )
 
 for i in "${modules[@]}"

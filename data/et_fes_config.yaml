@@ -2,6 +2,7 @@ backend: classic
 channels: [et]
 num_threads: 1
 binning: data/binning.yaml
+binning_key: control
 era: '2017'
 tag: etauFES
 skip_systematic_variations: False
@@ -49,7 +50,13 @@ shifts: [
 tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
 fes_sys_processes: ['ZL', 'DYJetsToLL', 'EMB']
 emb_sys_processes: ['EMB']
-
+zpt_sys_processes: ['ZTT', 'ZL', 'ZJ']
+decay_mode: [
+  'alldm',
+  'dm0',
+  'dm1',
+  'dm10',
+]
 
 user_specific:
   directory:

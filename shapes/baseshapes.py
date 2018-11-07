@@ -21,12 +21,15 @@ from channelholder import ChannelHolder
 class Shapes(object):
     _complexEstimationMethods = ['WEstimationWithQCD', 'QCDEstimationWithW']
 
+    intersection = lambda x, y: list(set(x) & set(y))
+
     # @inidecorator   # TODO: TEST
     def __init__(self,
                  ofset=0,
                  directory=None,
                  datasets=None,
                  binning=None,
+                 binning_key=None,
                  backend=None,
                  channels=None,
                  debug=None,
@@ -40,21 +43,26 @@ class Shapes(object):
                  num_threads=None,
                  skip_systematic_variations=None,
                  tag=None,
+                 output_file=None,
                  tt_friend_directory=None,
                  context_analysis=None,
-                 variables_names=None,
+                 variables_names=None,  # X
                  _known_estimation_methods=None,
                  nominal_folder='nominal',
-                 tes_sys_processes=None,
                  etau_es_shifts=None,
+                 tes_sys_processes=None,
                  fes_sys_processes=None,
                  emb_sys_processes=None,
+                 zpt_sys_processes=None,
+                 shifts=None,
+                 decay_mode=None,
                  ):
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
         self._directory = directory
         self._datasets = datasets
         self._binning = binning
+        self._binning_key = binning_key
         self._backend = backend
         self._channels_key = channels
         self._debug = debug
@@ -68,6 +76,7 @@ class Shapes(object):
         self._num_threads = num_threads
         self._skip_systematic_variations = skip_systematic_variations
         self._tag = tag
+        self._output_file = output_file
         self._tt_friend_directory = tt_friend_directory
         self._context_analysis = context_analysis
         self._variables_names = variables_names
@@ -77,6 +86,9 @@ class Shapes(object):
         self._etau_es_shifts = etau_es_shifts
         self._fes_sys_processes = fes_sys_processes
         self._emb_sys_processes = emb_sys_processes
+        self._zpt_sys_processes = zpt_sys_processes
+        self._shifts = shifts
+        self._decay_mode = decay_mode
 
         assert type(self._directory) is not None, "Shapes::directory not set"
         assert type(self._datasets) is not None, "Shapes::datasets not set"
@@ -88,9 +100,16 @@ class Shapes(object):
         self._logger = logging.getLogger(__name__)
         self._channels = {}
 
+        if self._output_file == '':
+            self._output_file = "{}.root".format(self._tag)
+        elif len(self._output_file) > 5 and self._output_file[-5:] == '.root':
+            pass
+        else:
+            self._output_file = "{}.root".format(self._output_file)
+
         # Holds Systematics for all the channels. TODO: add the per-channel systematics to ChannelHolder
         self._systematics = Systematics(
-            "{}_shapes.root".format(self._tag),
+            output_file=self._output_file,
             num_threads=self._num_threads,
             skip_systematic_variations=self._skip_systematic_variations
         )
@@ -167,14 +186,29 @@ class Shapes(object):
         parser.add_argument("--num-threads", type=int, help="Number of threads to be used.")
         parser.add_argument("--backend", choices=["classic", "tdf"], type=str, help="Backend. Use classic or tdf.")
         parser.add_argument("--tag", type=str, help="Tag of output files.")
+        parser.add_argument("--output-file", type=str, help="Output file name.")
         parser.add_argument("--skip-systematic-variations", type=str, help="Do not produce the systematic variations.")
+        parser.add_argument("--tes-sys-processes", nargs='+', type=str, help="...")
+        parser.add_argument("--fes-sys-processes", nargs='+', type=str, help="...")
+        parser.add_argument("--emb-sys-processes", nargs='+', type=str, help="...")
+        parser.add_argument("--shifts", nargs='+', type=str, help="...")
+        parser.add_argument("--decay-mode", nargs='+', type=str, help="...")
+        parser.add_argument("--binning-key", choices=["gof", "control"], type=str, help="binning_key")
 
         defaultArguments['channels'] = []
         defaultArguments['num_threads'] = 32
         defaultArguments['backend'] = 'classic'
         defaultArguments['tag'] = 'ERA_CHANNEL'
+        defaultArguments['output_file'] = ''
         defaultArguments['skip_systematic_variations'] = False
         defaultArguments['context_analysis'] = 'etFes'
+        defaultArguments['tes_sys_processes'] = ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
+        defaultArguments['fes_sys_processes'] = ['ZL', 'DYJetsToLL', 'EMB']
+        defaultArguments['emb_sys_processes'] = ['EMB']
+        defaultArguments['zpt_sys_processes'] = ['ZTT', 'ZL', 'ZJ']
+        defaultArguments['shifts'] = ['nominal', 'TES', 'EMB', 'FES_shifts']
+        defaultArguments['decay_mode'] = ['all', 'dm0', 'dm1', 'dm10']
+        defaultArguments['binning_key'] = 'control'
 
         # Arguments with defaults that can not be changed in the config file
         parser.add_argument('--dry', action='store_true', default=False, help='dry run')
