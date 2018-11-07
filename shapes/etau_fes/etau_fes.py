@@ -122,30 +122,35 @@ class ETauFES(Shapes):
             if estimation_method not in self._estimation_methods.keys():
                 raise KeyError("Unknown estimation method: " + estimation_method)
 
-            if key not in processes.keys():
-                if estimation_method in ['WEstimationWithQCD', 'QCDEstimationWithW']:
-                    bg_processes = {}
-
-                    if "EMB" in key:
-                        bg_processes = [processes[process] for process in ["EMB", "ZLL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL", "EWKJ"]],
-                    else:
-                        bg_processes = [processes[process] for process in ["DYJetsToLL", "TT", "VV"]]  # former ["ZTT", "ZLL", "ZJ", "TT", "VV", "EWK"]  # dataDriven_QCDW_bg_processes
-
-                    processes[key] = Process(combine_name, self._estimation_methods[estimation_method](
-                        era=self.era,
-                        directory=self._directory,
-                        channel=channel_obj,
-                        bg_processes=bg_processes,
-                        data_process=processes["data_obs"],
-                        w_process=processes["WMC"],
-                        friend_directory=[],
-                        qcd_ss_to_os_extrapolation_factor=1.09,
-                    ))
-                else:
-                    if key == 'ZL': print '-->getProcesses::', key, type(parameters_list['channel'])
-                    processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
-            else:  # TODO: add the check of the config
+            if key in processes.keys():  # TODO: add the check of the config
                 print "Key added in list of processes twice. channel: " + channel_name + "; key:" + key
+                continue
+
+            if estimation_method in ['WEstimationWithQCD', 'QCDEstimationWithW']:
+                bg_processes = {}
+                if "EMB" in key:
+                    bg_processes = [processes[process] for process in ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]]
+                    # former with: "EWKL", "EWKJ"
+                else:
+                    bg_processes = [processes[process] for process in ["ZTT", "ZL", "ZJ", "TT", "VV"]]
+                    # alternative: ["DYJetsToLL", "TT", "VV"]]
+                    # former with "EWK"
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](
+                    era=self.era,
+                    directory=self._directory,
+                    channel=channel_obj,
+                    bg_processes=bg_processes,
+                    data_process=processes["data_obs"],
+                    w_process=processes["WMC"],
+                    friend_directory=[],
+                    qcd_ss_to_os_extrapolation_factor=1.09,
+                ))
+            elif key == 'QCDEstimation_SStoOS_MTETEM':
+                print 'QCDEstimation_SStoOS_MTETEM is not yet setup'
+                exit(1)
+            else:
+                # if key == 'ZL': print '-->getProcesses::', key, type(parameters_list['channel'])
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
 
         return processes
 
@@ -172,27 +177,43 @@ class ETauFES(Shapes):
         """
         Returns dict of Cattegories for Channel
         """
+        dm_dict = {
+            'alldm': Cut('1==1', 'alldm'),
+            'dm0': Cut('decayMode_2==0', 'dm0'),
+            'dm1': Cut('decayMode_2==1', 'dm1'),
+            'dm10': Cut('decayMode_2==10', 'dm10'),
+        }
+        for i in self._decay_mode:
+            if i not in dm_dict.keys():
+                print "no dm:", i
+                exit(1)
+
         categories = []
         for name, var in channel_holder._variables.iteritems():
-            if name == "mt_1":
-                cuts = Cuts(
-                    Cut("njets == 0", "0jet")
+            # Cuts common for all categories
+            cuts = Cuts()
+            # cuts = Cuts(Cut("njets == 0", "0jet"))
+            if name != "mt_1":
+                cuts.add(Cut("mt_1 < 70", "mt"))
+            # Cut('mt_tot<70', 'mttot_cur'), TODO: check
+
+            for dm in self._decay_mode:
+                cut = dm_dict[dm]
+                categories.append(
+                    Category(
+                        name='0jet_' + dm,
+                        channel=channel_holder._channel_obj,
+                        cuts=cuts,
+                        variable=var)
                 )
-            else:
-                cuts = Cuts(
-                    Cut("mt_1 < 70", "mt"),
-                    Cut("njets == 0", "0jet")
-                )
-            categories.append(
-                Category(
-                    name=name + '_0jet',
-                    channel=channel_holder._channel_obj,
-                    cuts=cuts,
-                    variable=var)
-            )
-            if name == "iso_1" or name == "iso_2":
-                categories[-1].cuts.remove("ele_iso")
-                categories[-1].cuts.remove("tau_iso")
+                # Remove cuts introduced in categorysation
+                categories[-1].cuts.add(cut)
+                if name == "iso_1" or name == "iso_2":
+                    categories[-1].cuts.remove("ele_iso")
+                    categories[-1].cuts.remove("tau_iso")
+
+        for category in categories:
+            print category.name, ":", category.cuts
 
         return categories
 
@@ -207,21 +228,22 @@ class ETauFES(Shapes):
         Creates and returns channel_holder for requested channel
         """
         if channel == 'et' and self._context_analysis == 'etFes' and self._era_name == '2017':
-            from shape_producer.channel import ETMSSM2017  # TODO: make this globally configurable
+            from shape_producer.channel import ETSM2017  # TODO: make this globally configurable
 
             channel_holder = ChannelHolder(
                 ofset=self._ofset + 1,
                 logger=self._logger,
                 debug=self._logger,
-                channel_obj=ETMSSM2017(),
+                channel_obj=ETSM2017(),
                 friend_directory=self._et_friend_directory,
             )
 
-            # Loose isolation requirement
-            channel_holder._channel_obj.cuts.remove("tau_iso")
-            channel_holder._channel_obj.cuts.add(
-                Cut("byLooseIsolationMVArun2v1DBoldDMwLT_2>0.5", "tau_2_iso_loose")
-            )
+            # channel_holder._channel_obj.cuts.remove("tau_iso")
+            # channel_holder._channel_obj.cuts.add(Cut('byLooseIsolationMVArun2017v2DBoldDMwLT2017_2 > 0.5', "tau_iso"))
+            # channel_holder._channel_obj.cuts.remove("dilepton_veto")
+            # cuts = Cuts(Cut("njets == 0", "0jet"))
+            channel_holder._channel_obj.cuts.remove('trg_selection')
+            channel_holder._channel_obj.cuts.add(Cut("(trg_singleelectron_27 == 1) || (trg_singleelectron_32 == 1) || (trg_singleelectron_35) || (trg_crossele_ele24tau30 == 1) || (isEmbedded && pt_1>20 && pt_1<24)", "trg_selection"))
 
             # print "self._logger.debug('...getProcesses')"
             channel_holder._processes = self.getProcesses(
@@ -232,7 +254,7 @@ class ETauFES(Shapes):
             channel_holder._variables = self.getVariables(
                 channel_obj=channel_holder._channel_obj,
                 variable_names=variables,
-                binning=self.binning["control"][channel_holder._channel_obj._name]
+                binning=self.binning[self._binning_key][channel_holder._channel_obj._name]  # gof for finer, control for old
             )
             # print "self._logger.debug('...getCategorries')"
             channel_holder._categorries = self.getCategorries(
@@ -275,7 +297,7 @@ class ETauFES(Shapes):
             processes = channel_holder._processes.values()
             categories = channel_holder._categorries
 
-            if 'nominal' in argv:
+            if 'nominal' in self._shifts:
                 print '\n\nnominal...'
                 from itertools import product
                 for process, category in product(processes, categories):
@@ -289,8 +311,9 @@ class ETauFES(Shapes):
                             mass="125",  # TODO : check if this is used anywhere
                         )
                     )
+                    print "\tnew sys:", self._systematics._systematics[-1].name, len(self._systematics._systematics)
 
-            if 'TES' in argv:
+            if 'TES' in self._shifts:
                 print '\n\nTES...'
                 tau_es_3prong_variations = create_systematic_variations(name="CMS_scale_t_3prong_13TeV", property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
                 tau_es_1prong_variations = create_systematic_variations(name="CMS_scale_t_1prong_13TeV", property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
@@ -307,15 +330,61 @@ class ETauFES(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
-                        print "\tnew sys variation:", self._systematics._systematics[-1].name, len(self._systematics._systematics)
+                        # print "\tnew sys variation:", self._systematics._systematics[-1].name, len(self._systematics._systematics)
 
-            if 'FES_shifts' in argv:
+            if 'EMB' in self._shifts:
+                print '\n\nEMB shifts...'
+                decayMode_variations = []
+                decayMode_variations.append(
+                    ReplaceWeight(
+                        "CMS_3ProngEff_13TeV", "decayMode_SF",
+                        Weight("embeddedDecayModeWeight_effUp_pi0Nom", "decayMode_SF"),
+                        "Up"))
+                decayMode_variations.append(
+                    ReplaceWeight(
+                        "CMS_3ProngEff_13TeV", "decayMode_SF",
+                        Weight("embeddedDecayModeWeight_effDown_pi0Nom", "decayMode_SF"),
+                        "Down"))
+                decayMode_variations.append(
+                    ReplaceWeight(
+                        "CMS_1ProngPi0Eff_13TeV", "decayMode_SF",
+                        Weight("embeddedDecayModeWeight_effNom_pi0Up", "decayMode_SF"),
+                        "Up"))
+                decayMode_variations.append(
+                    ReplaceWeight(
+                        "CMS_1ProngPi0Eff_13TeV", "decayMode_SF",
+                        Weight("embeddedDecayModeWeight_effNom_pi0Down", "decayMode_SF"),
+                        "Down"))
+                for variation in decayMode_variations:
+                    proc_intersection = list(set(self._emb_sys_processes) & set(channel_holder._processes.keys()))
+                    print '\nvariation name:', variation.name, '\nintersection self._emb_sys_processes:', proc_intersection
+                    for process_nick in proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            if 'Zpt' in self._shifts:
+                print '\n\nZ pt reweighting'
+                zpt_variations = create_systematic_variations(name="CMS_htt_dyShape_13TeV", property_name="zPtReweightWeight", systematic_variation=SquareAndRemoveWeight)
+                for variation in zpt_variations:
+                    for process_nick in self.intersection(self.zpt_sys_processes, channel_holder._processes.keys()):
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            if 'FES_shifts' in self._shifts:
                 print '\n\nFES_shifts...'
                 # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
                 root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
                 for es in self._etau_es_shifts:
                     shift_str = root_str(es)
-                    for pipeline in ["eleTauEsOneProng_", "eleTauEsOneProngShift_", "eleTauEsOneProngPiZerosShift_", "eleTauEsThreeProngShift_"]:
+                    for pipeline in ["eleTauEsOneProngShift_", "eleTauEsOneProngPiZerosShift_", "eleTauEsThreeProngShift_"]:  # TODO: add inclusive
                         variation = DifferentPipeline(name='CMS_fes_' + pipeline + '13TeV_', pipeline=pipeline, direction=shift_str)
                         proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
                         print '\nvariation name:', variation.name, '\nintersection self._fes_sys_processes:', proc_intersection
@@ -328,6 +397,7 @@ class ETauFES(Shapes):
                             )
 
     def produce(self):
+        print self._systematics
         self._systematics.produce()
 
 
