@@ -78,9 +78,9 @@ class ETauFES(Shapes):
         era = str(era)
         imported_module = self._known_estimation_methods[era][context_analysis]['module']
 
-        for channel in self._channels_key:
-            # print "test:", self._known_estimation_methods[era][context_analysis]#[channel]#['methods']
-            for combine_name, method in self._known_estimation_methods[era][context_analysis][channel]['methods'].iteritems():
+        for channel_name in self._channels_key:
+            # print "test:", self._known_estimation_methods[era][context_analysis]#[channel_name]#['methods']
+            for combine_name, method in self._known_estimation_methods[era][context_analysis][channel_name]['methods'].iteritems():
                 if method in self._estimation_methods:
                     print 'Warning: Estimation method', method, 'already defined - skipped redefinition'
                 # print 'module:', self._estimation_methods
@@ -107,10 +107,10 @@ class ETauFES(Shapes):
         renaming = self._known_estimation_methods[era][context][channel_name]['renaming']
 
         # TODO: move to config step
-        # print '# Move all the complex methods to the end of the processes list'
+        # Move all the complex methods to the end of the processes list
         from collections import OrderedDict
-        orderedProcesses = OrderedDict(self._known_estimation_methods[era][context][channel_name]['methods'])
-        for combine_name, estimation_method in self._known_estimation_methods[era][context][channel_name]['methods'].iteritems():
+        orderedProcesses = OrderedDict(self.getMethodsDict(self, era=era, context=context, channel_name=channel_name))
+        for combine_name, estimation_method in self.getMethodsDict(self, era=era, context=context, channel_name=channel_name).iteritems():
             if estimation_method in self._complexEstimationMethods:
                 temp = estimation_method
                 del orderedProcesses[combine_name]

@@ -64,14 +64,14 @@ user_specific:
   directory:
     default: Null
     glusheno:
-      naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/skim_october_nodiLepVeto_LooseIso_2/merged
+      naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/skim_Nov/merged
 
   datasets:
     default: Null
     glusheno:
       naf: /afs/desy.de/user/g/glusheno/RWTH/KIT/Artus/CMSSW_9_4_9/src/Kappa/Skimming/data/datasets.json
 
-
+processes: []
 _known_estimation_methods:
   '2016': Null
   '2017':

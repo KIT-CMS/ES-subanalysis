@@ -47,6 +47,7 @@ class Shapes(object):
                  tt_friend_directory=None,
                  context_analysis=None,
                  variables_names=None,  # X
+                 processes=None,
                  _known_estimation_methods=None,
                  nominal_folder='nominal',
                  etau_es_shifts=None,
@@ -80,6 +81,7 @@ class Shapes(object):
         self._tt_friend_directory = tt_friend_directory
         self._context_analysis = context_analysis
         self._variables_names = variables_names
+        self._processes = processes
         self._known_estimation_methods = _known_estimation_methods
         self._nominal_folder = nominal_folder
         self._tes_sys_processes = tes_sys_processes
@@ -183,6 +185,7 @@ class Shapes(object):
 
         # Arguments with defaults that might be changed in the config file
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
+        parser.add_argument("--processes", nargs='+', type=str, help="Processes from the standart map of processes")  # TODO: enable passing via syntax <name>:<class name>
         parser.add_argument("--num-threads", type=int, help="Number of threads to be used.")
         parser.add_argument("--backend", choices=["classic", "tdf"], type=str, help="Backend. Use classic or tdf.")
         parser.add_argument("--tag", type=str, help="Tag of output files.")
@@ -196,6 +199,7 @@ class Shapes(object):
         parser.add_argument("--binning-key", choices=["gof", "control"], type=str, help="binning_key")
 
         defaultArguments['channels'] = []
+        defaultArguments['processes'] = []
         defaultArguments['num_threads'] = 32
         defaultArguments['backend'] = 'classic'
         defaultArguments['tag'] = 'ERA_CHANNEL'
@@ -288,6 +292,25 @@ class Shapes(object):
     # TODO: add a fn to re-set the QCD estimation method
     def getProcessesDict(self, channel_name=None):
         pass
+
+    def getMethodsDict(self, channel_name, era=None, context=None):
+        # TODO: make initialisation universal
+        if era is None:
+            era = self._era_name
+        if context is None:
+            context = self._context_analysis
+
+        if len(self._processes) == 0:
+            return self._known_estimation_methods[era][context][channel_name]['methods']
+        else:
+            print 'getMethodsDict not ready'
+            exit(1)
+            '''
+            d = {}
+            for i in self._processes:
+                d[i] = self._known_processes[i]
+            return d
+            '''
 
     def produceShapes():
         pass
