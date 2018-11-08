@@ -48,6 +48,7 @@ class Shapes(object):
                  context_analysis=None,
                  variables_names=None,  # X
                  processes=None,
+                 module=None,
                  _known_estimation_methods=None,
                  nominal_folder='nominal',
                  etau_es_shifts=None,
@@ -82,6 +83,7 @@ class Shapes(object):
         self._context_analysis = context_analysis
         self._variables_names = variables_names
         self._processes = processes
+        self._module = module
         self._known_estimation_methods = _known_estimation_methods
         self._nominal_folder = nominal_folder
         self._tes_sys_processes = tes_sys_processes
@@ -98,6 +100,8 @@ class Shapes(object):
         print "self._binning:", self._binning
 
         self._binning = yaml.load(open(self._binning))
+        self._known_processes = yaml.load(open('data/known_processes.yaml'))
+        self._renaming = yaml.load(open('data/renaming.yaml'))
 
         self._logger = logging.getLogger(__name__)
         self._channels = {}
@@ -186,6 +190,7 @@ class Shapes(object):
         # Arguments with defaults that might be changed in the config file
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
         parser.add_argument("--processes", nargs='+', type=str, help="Processes from the standart map of processes")  # TODO: enable passing via syntax <name>:<class name>
+        parser.add_argument("--module", nargs=1, type=str, help="Module to import where estimation methods are defined")  # TODO: enable passing via syntax <name>:<class name>
         parser.add_argument("--num-threads", type=int, help="Number of threads to be used.")
         parser.add_argument("--backend", choices=["classic", "tdf"], type=str, help="Backend. Use classic or tdf.")
         parser.add_argument("--tag", type=str, help="Tag of output files.")
@@ -200,6 +205,7 @@ class Shapes(object):
 
         defaultArguments['channels'] = []
         defaultArguments['processes'] = []
+        defaultArguments['module'] = None
         defaultArguments['num_threads'] = 32
         defaultArguments['backend'] = 'classic'
         defaultArguments['tag'] = 'ERA_CHANNEL'
@@ -293,24 +299,37 @@ class Shapes(object):
     def getProcessesDict(self, channel_name=None):
         pass
 
+    def getModule(self, era=None, context=None):
+        if era is None:
+            era = self._era_name
+        era = str(era)
+        if context is None:
+            context = self._context_analysis
+
+        if self._module is None:
+            return self._known_estimation_methods[era][context]['module']
+        else:
+            return self._module
+
     def getMethodsDict(self, channel_name, era=None, context=None):
         # TODO: make initialisation universal
         if era is None:
             era = self._era_name
+        era = str(era)
         if context is None:
             context = self._context_analysis
+        print self._known_processes.keys()
 
         if len(self._processes) == 0:
             return self._known_estimation_methods[era][context][channel_name]['methods']
         else:
-            print 'getMethodsDict not ready'
-            exit(1)
-            '''
             d = {}
             for i in self._processes:
+                if i in d.keys():
+                    print 'repeating process:', i
+                    exit(1)
                 d[i] = self._known_processes[i]
             return d
-            '''
 
     def produceShapes():
         pass

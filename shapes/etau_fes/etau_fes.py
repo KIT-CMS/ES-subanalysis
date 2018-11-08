@@ -69,18 +69,13 @@ class ETauFES(Shapes):
         Standalone importing
         """
         # print "ETauFES::Standalone importing"
-        if era is None:
-            era = self._era_name
-        if context_analysis is None:
-            context_analysis = self._context_analysis
         if channels_key is None:
             channels_key = self._channels_key
-        era = str(era)
-        imported_module = self._known_estimation_methods[era][context_analysis]['module']
 
-        for channel_name in self._channels_key:
+        imported_module = self.getModule()
+        for channel_name in channels_key:
             # print "test:", self._known_estimation_methods[era][context_analysis]#[channel_name]#['methods']
-            for combine_name, method in self._known_estimation_methods[era][context_analysis][channel_name]['methods'].iteritems():
+            for combine_name, method in self.getMethodsDict(era=era, context=context_analysis, channel_name=channel_name).iteritems():
                 if method in self._estimation_methods:
                     print 'Warning: Estimation method', method, 'already defined - skipped redefinition'
                 # print 'module:', self._estimation_methods
@@ -104,13 +99,13 @@ class ETauFES(Shapes):
         context = self._context_analysis
         era = self._era_name
         processes = {}
-        renaming = self._known_estimation_methods[era][context][channel_name]['renaming']
+        renaming = self._renaming
 
         # TODO: move to config step
         # Move all the complex methods to the end of the processes list
         from collections import OrderedDict
-        orderedProcesses = OrderedDict(self.getMethodsDict(self, era=era, context=context, channel_name=channel_name))
-        for combine_name, estimation_method in self.getMethodsDict(self, era=era, context=context, channel_name=channel_name).iteritems():
+        orderedProcesses = OrderedDict(self.getMethodsDict(era=era, context=context, channel_name=channel_name))
+        for combine_name, estimation_method in self.getMethodsDict(era=era, context=context, channel_name=channel_name).iteritems():
             if estimation_method in self._complexEstimationMethods:
                 temp = estimation_method
                 del orderedProcesses[combine_name]
@@ -118,7 +113,7 @@ class ETauFES(Shapes):
 
         # print 'Create all Processes'
         for combine_name, estimation_method in orderedProcesses.iteritems():
-            key = combine_name if combine_name not in renaming.values() else renaming[combine_name]
+            key = combine_name if combine_name not in renaming.keys() else renaming[combine_name]
 
             if estimation_method not in self._estimation_methods.keys():
                 raise KeyError("Unknown estimation method: " + estimation_method)
