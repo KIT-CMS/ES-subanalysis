@@ -1,0 +1,8 @@
+decay_mode:
+  alldm: '1==1'
+  dm0: 'decayMode_2==0'
+  dm1: 'decayMode_2==1'
+  dm10: 'decayMode_2==10'
+jets_multiplicity:
+  njetN: '1==1'
+  njet0: 'njets==0'

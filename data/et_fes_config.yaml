@@ -2,7 +2,7 @@ backend: classic
 channels: [et]
 num_threads: 1
 binning: data/binning.yaml
-binning_key: control
+binning_key: gof
 era: '2017'
 tag: etauFES
 output_file: ''
@@ -39,7 +39,7 @@ gof_variable: Null
 et_friend_directory: []
 mt_friend_directory: []
 tt_friend_directory: []
-fake_factor_friend_directory: []
+fake_factor_friend_directory: [] #'/nfs/dust/cms/user/glusheno/FF/akhmet/SM_Htautau/ntuples/Artus17_2018-11-10/fake_factor_friends_njets_mvis'
 
 # processed is the intersection with list from _known_estimation_methods
 shifts: [
@@ -59,12 +59,17 @@ decay_mode: [
   'dm1',
   'dm10',
 ]
+jets_multiplicity: [
+  'njetN',
+  'njet0'
+]
 
 user_specific:
   directory:
     default: Null
     glusheno:
       naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/skim_Nov/merged
+      # /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/skim_october_nodiLepVeto_LooseIso_2/merged
 
   datasets:
     default: Null
@@ -72,6 +77,7 @@ user_specific:
       naf: /afs/desy.de/user/g/glusheno/RWTH/KIT/Artus/CMSSW_9_4_9/src/Kappa/Skimming/data/datasets.json
 
 processes: []
+module: Null
 _known_estimation_methods:
   '2016': Null
   '2017':
@@ -213,6 +219,7 @@ _known_estimation_methods:
         et:
           renaming:
             data_obs                : data
+            jetFakes                : FAKES
 
           test_DY:
             data_obs                : DataEstimation
@@ -261,8 +268,8 @@ _known_estimation_methods:
             WEMB                    : WEstimationWithQCD # bg with old splitting: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL"[?], "EWKJ"[?]]]
             QCDEMB                  : QCDEstimationWithW # bg with old splitting: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL"[?], "EWKJ"[?]]]
 
-          # Original_FES: # with classical bg estimations
-          methods:
+          Original_FES: # with classical bg estimations
+          # methods:
             data_obs                : DataEstimation  # combine
             ZL                      : ZLEstimation  # combine; Signal ; class. QCD & W
             # Classical: to comb: "ZTT", "W", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ",
@@ -272,6 +279,8 @@ _known_estimation_methods:
             TTT                     : TTTEstimation  # combine
             VVT                     : VVTEstimation  # combine
             TTJ                     : TTJEstimation  # combine
+            TTL                     : TTLEstimation  # new to combine
+            VVL                     : VVLEstimation  # new to combine
             VVJ                     : VVJEstimation  # combine
             # for classical QCD & W :  ["DYJetsToLL", "TT", "VV", "EWKW"[?]  || previously needed bg: "ZTT", "ZL", "ZJ", "TT", "VV", "EWK" [?]
             # where "DYJetsToLL" = {"ZTT", "ZL", "ZJ", "EWKZ"}
@@ -280,6 +289,21 @@ _known_estimation_methods:
             TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
             VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
             WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
+
+          # FF no embedding
+          methods:
+            data_obs                : DataEstimation
+            ZTT                     : ZTTEstimation
+            ZL                      : ZLEstimation
+            ZJ                      : ZJEstimation
+            TTT                     : TTTEstimation
+            TTL                     : TTLEstimation
+            TTJ                     : TTJEstimation
+            VVT                     : VVTEstimation
+            VVL                     : VVLEstimation
+            VVJ                     : VVJEstimation
+            jetFakes                : FakeEstimationLT
+            W                       : WEstimation
 
           # Original_and_Embeding
           Original_and_Embeding:

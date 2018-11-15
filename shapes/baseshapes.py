@@ -58,6 +58,8 @@ class Shapes(object):
                  zpt_sys_processes=None,
                  shifts=None,
                  decay_mode=None,
+                 jets_multiplicity=None,
+
                  ):
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
@@ -93,6 +95,7 @@ class Shapes(object):
         self._zpt_sys_processes = zpt_sys_processes
         self._shifts = shifts
         self._decay_mode = decay_mode
+        self._jets_multiplicity = jets_multiplicity
 
         assert type(self._directory) is not None, "Shapes::directory not set"
         assert type(self._datasets) is not None, "Shapes::datasets not set"
@@ -102,6 +105,16 @@ class Shapes(object):
         self._binning = yaml.load(open(self._binning))
         self._known_processes = yaml.load(open('data/known_processes.yaml'))
         self._renaming = yaml.load(open('data/renaming.yaml'))
+
+        self._known_cuts = yaml.load(open('data/known_cuts.yaml'))
+        for i in self._decay_mode:
+            if i not in self._known_cuts['decay_mode'].keys():
+                print 'no dm:', i, 'in known_cuts.yaml'
+                exit(1)
+        for i in self._jets_multiplicity:
+            if i not in self._known_cuts['jets_multiplicity'].keys():
+                print 'no jet multiplicity:', i, 'in known_cuts.yaml'
+                exit(1)
 
         self._logger = logging.getLogger(__name__)
         self._channels = {}
@@ -200,8 +213,9 @@ class Shapes(object):
         parser.add_argument("--fes-sys-processes", nargs='+', type=str, help="...")
         parser.add_argument("--emb-sys-processes", nargs='+', type=str, help="...")
         parser.add_argument("--shifts", nargs='+', type=str, help="...")
-        parser.add_argument("--decay-mode", nargs='+', type=str, help="...")
-        parser.add_argument("--binning-key", choices=["gof", "control"], type=str, help="binning_key")
+        parser.add_argument("--decay-mode", nargs='+', type=str, help="all, dm0, dm1, dm10")
+        parser.add_argument("--jets-multiplicity", nargs='+', type=str, help="njetN, njet0")
+        parser.add_argument("--binning-key", type=str, help="binning_key. example: gof, control")
 
         defaultArguments['channels'] = []
         defaultArguments['processes'] = []
@@ -218,6 +232,7 @@ class Shapes(object):
         defaultArguments['zpt_sys_processes'] = ['ZTT', 'ZL', 'ZJ']
         defaultArguments['shifts'] = ['nominal', 'TES', 'EMB', 'FES_shifts']
         defaultArguments['decay_mode'] = ['all', 'dm0', 'dm1', 'dm10']
+        defaultArguments['jets_multiplicity'] = ['njetN', 'njet0']
         defaultArguments['binning_key'] = 'control'
 
         # Arguments with defaults that can not be changed in the config file
@@ -318,7 +333,7 @@ class Shapes(object):
         era = str(era)
         if context is None:
             context = self._context_analysis
-        print self._known_processes.keys()
+        # print self._known_processes.keys()
 
         if len(self._processes) == 0:
             return self._known_estimation_methods[era][context][channel_name]['methods']

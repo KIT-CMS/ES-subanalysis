@@ -144,9 +144,15 @@ class ETauFES(Shapes):
             elif key == 'QCDEstimation_SStoOS_MTETEM':
                 print 'QCDEstimation_SStoOS_MTETEM is not yet setup'
                 exit(1)
+            elif key == 'jetFakes':
+                ff_parameters_list = parameters_list
+                ff_parameters_list['friend_directory'].append(self._fake_factor_friend_directory)
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ff_parameters_list))
             else:
                 # if key == 'ZL': print '-->getProcesses::', key, type(parameters_list['channel'])
-                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
+                processes[key] = Process(
+                    combine_name,
+                    self._estimation_methods[estimation_method](**parameters_list))
 
         return processes
 
@@ -173,40 +179,39 @@ class ETauFES(Shapes):
         """
         Returns dict of Cattegories for Channel
         """
-        dm_dict = {
-            'alldm': Cut('1==1', 'alldm'),
-            'dm0': Cut('decayMode_2==0', 'dm0'),
-            'dm1': Cut('decayMode_2==1', 'dm1'),
-            'dm10': Cut('decayMode_2==10', 'dm10'),
-        }
-        for i in self._decay_mode:
-            if i not in dm_dict.keys():
-                print "no dm:", i
-                exit(1)
-
         categories = []
         for name, var in channel_holder._variables.iteritems():
             # Cuts common for all categories
             cuts = Cuts()
-            # cuts = Cuts(Cut("njets == 0", "0jet"))
             if name != "mt_1":
                 cuts.add(Cut("mt_1 < 70", "mt"))
             # Cut('mt_tot<70', 'mttot_cur'), TODO: check
 
-            for dm in self._decay_mode:
-                cut = dm_dict[dm]
-                categories.append(
-                    Category(
-                        name='0jet_' + dm,
-                        channel=channel_holder._channel_obj,
-                        cuts=cuts,
-                        variable=var)
-                )
-                # Remove cuts introduced in categorysation
-                categories[-1].cuts.add(cut)
-                if name == "iso_1" or name == "iso_2":
-                    categories[-1].cuts.remove("ele_iso")
-                    categories[-1].cuts.remove("tau_iso")
+            for njet in self._jets_multiplicity:
+                for dm in self._decay_mode:
+                    categories.append(
+                        Category(
+                            name=njet + '_' + dm,
+                            channel=channel_holder._channel_obj,
+                            cuts=cuts,
+                            variable=var)
+                    )
+                    # Add the DM splitting
+                    print dm, self._known_cuts['decay_mode']
+                    print len(categories)
+                    print categories[-1]
+                    print Cut(self._known_cuts['decay_mode'][dm], dm)
+
+                    categories[-1].cuts.add(Cut(self._known_cuts['decay_mode'][dm], dm))
+
+                    # Add the njets splitting:
+                    print self._known_cuts['jets_multiplicity'][njet], njet
+                    categories[-1].cuts.add(Cut(str(self._known_cuts['jets_multiplicity'][njet]), str(njet)))
+
+                    # Remove cuts introduced in categorysation
+                    if name == "iso_1" or name == "iso_2":
+                        categories[-1].cuts.remove("ele_iso")
+                        categories[-1].cuts.remove("tau_iso")
 
         for category in categories:
             print category.name, ":", category.cuts
@@ -236,8 +241,8 @@ class ETauFES(Shapes):
 
             # channel_holder._channel_obj.cuts.remove("tau_iso")
             # channel_holder._channel_obj.cuts.add(Cut('byLooseIsolationMVArun2017v2DBoldDMwLT2017_2 > 0.5', "tau_iso"))
-            # channel_holder._channel_obj.cuts.remove("dilepton_veto")
-            # cuts = Cuts(Cut("njets == 0", "0jet"))
+
+            channel_holder._channel_obj.cuts.remove("dilepton_veto")
             channel_holder._channel_obj.cuts.remove('trg_selection')
             channel_holder._channel_obj.cuts.add(Cut("(trg_singleelectron_27 == 1) || (trg_singleelectron_32 == 1) || (trg_singleelectron_35) || (trg_crossele_ele24tau30 == 1) || (isEmbedded && pt_1>20 && pt_1<24)", "trg_selection"))
 
@@ -326,7 +331,6 @@ class ETauFES(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
-                        # print "\tnew sys variation:", self._systematics._systematics[-1].name, len(self._systematics._systematics)
 
             if 'EMB' in self._shifts:
                 print '\n\nEMB shifts...'
