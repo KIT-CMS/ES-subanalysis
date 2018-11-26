@@ -145,11 +145,12 @@ class ETauFES(Shapes):
                 print 'QCDEstimation_SStoOS_MTETEM is not yet setup'
                 exit(1)
             elif key == 'jetFakes':
-                ff_parameters_list = parameters_list
+                import copy
+                ff_parameters_list = copy.deepcopy(parameters_list)
                 ff_parameters_list['friend_directory'].append(self._fake_factor_friend_directory)
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ff_parameters_list))
             else:
-                # if key == 'ZL': print '-->getProcesses::', key, type(parameters_list['channel'])
+                # if key == 'ZL': print '-->getProcesses::', key, parameters_list
                 processes[key] = Process(
                     combine_name,
                     self._estimation_methods[estimation_method](**parameters_list))
@@ -255,7 +256,7 @@ class ETauFES(Shapes):
             channel_holder._variables = self.getVariables(
                 channel_obj=channel_holder._channel_obj,
                 variable_names=variables,
-                binning=self.binning[self._binning_key][channel_holder._channel_obj._name]  # gof for finer, control for old
+                binning=self.binning[self._binning_key][channel_holder._channel_obj._name]
             )
             # print "self._logger.debug('...getCategorries')"
             channel_holder._categorries = self.getCategorries(
@@ -395,6 +396,43 @@ class ETauFES(Shapes):
                                 channel=channel_holder._channel_obj,
                                 era=self.era
                             )
+            if 'FF' in self._shifts:
+                print '\n\n FF related uncertainties ...'
+                fake_factor_variations_et = []
+
+                for systematic_shift in [
+                        "ff_qcd{ch}_syst_13TeV{shift}",
+                        "ff_qcd_dm0_njet0{ch}_stat_13TeV{shift}",
+                        "ff_qcd_dm0_njet1{ch}_stat_13TeV{shift}",
+                        "ff_w_syst_13TeV{shift}",
+                        "ff_w_dm0_njet0{ch}_stat_13TeV{shift}",
+                        "ff_w_dm0_njet1{ch}_stat_13TeV{shift}",
+                        "ff_tt_syst_13TeV{shift}",
+                        "ff_tt_dm0_njet0_stat_13TeV{shift}",
+                        "ff_tt_dm0_njet1_stat_13TeV{shift}",
+                ]:
+                    for shift_direction in ["Up", "Down"]:
+                        fake_factor_variations_et.append(
+                            ReplaceWeight(
+                                "CMS_%s" % (systematic_shift.format(ch='_et', shift="")),
+                                "fake_factor",
+                                Weight(
+                                    "ff2_{syst}".format(
+                                        syst=systematic_shift.format(
+                                            ch="", shift="_%s" % shift_direction.lower()
+                                        ).replace("_13TeV", "")),
+                                    "fake_factor"
+                                ),
+                                shift_direction
+                            )
+                        )
+
+                for variation in fake_factor_variations_et:
+                    self._systematics.add_systematic_variation(
+                        variation=variation,
+                        process=channel_holder._processes["jetFakes"],
+                        channel=channel_holder._channel_obj,
+                        era=self.era)
 
     def produce(self):
         print self._systematics

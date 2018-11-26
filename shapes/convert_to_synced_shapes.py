@@ -22,6 +22,16 @@ map_pipes = {
     '0jet_dm0': 'CMS_fes_eleTauEsOneProngShift_13TeV_',
     '0jet_dm1': 'CMS_fes_eleTauEsOneProngPiZerosShift_13TeV_',
     '0jet_dm10': 'CMS_fes_eleTauEsThreeProngShift_13TeV_',
+
+    'njet0_alldm': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
+    'njet0_dm0': 'CMS_fes_eleTauEsOneProngShift_13TeV_',
+    'njet0_dm1': 'CMS_fes_eleTauEsOneProngPiZerosShift_13TeV_',
+    'njet0_dm10': 'CMS_fes_eleTauEsThreeProngShift_13TeV_',
+
+    'njetN_alldm': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
+    'njetN_dm0': 'CMS_fes_eleTauEsOneProngShift_13TeV_',
+    'njetN_dm1': 'CMS_fes_eleTauEsOneProngPiZerosShift_13TeV_',
+    'njetN_dm10': 'CMS_fes_eleTauEsThreeProngShift_13TeV_',
 }
 
 
@@ -47,6 +57,8 @@ def parse_arguments():
                         help='Output directory')
     parser.add_argument('--input', '-i', type=str, nargs=1,
                         help='Path to single input ROOT file.')
+    parser.add_argument('--debug', default=False, action="store_true",
+                        help="Debug option [Default: %(default)s]")
 
     return parser.parse_args()
 
@@ -124,17 +136,16 @@ def constructMap(hist_map, input_file, debug=0):
     print 'categories in the root file: ',
     pp.pprint(hist_map['et'].keys())
 
-    if debug:
-        print '0jet_dm0_for_wjets_mc'
-        pp.pprint(hist_map['et']['0jet_dm0_for_wjets_mc'])
-        print '0jet_dm0_ss_for_qcd'
-        pp.pprint(hist_map['et']['0jet_dm0_ss_for_qcd'])
-        print '0jet_dm0'
-        pp.pprint(hist_map['et']['0jet_dm0'])
+    # if debug:
+    #     print '0jet_dm0_for_wjets_mc'
+    #     pp.pprint(hist_map['et']['0jet_dm0_for_wjets_mc'])
+    #     print '0jet_dm0_ss_for_qcd'
+    #     pp.pprint(hist_map['et']['0jet_dm0_ss_for_qcd'])
+    #     print '0jet_dm0'
+    #     pp.pprint(hist_map['et']['0jet_dm0'])
 
 
-def convertToSynced(input_path='', output_dir=''):
-    print type(args)
+def convertToSynced(input_path='', output_dir='', debug=False):
     # Open input ROOT file and output ROOT file
     if len(input_path) > 5 and input_path[-5:] == '.root':
             pass
@@ -146,15 +157,17 @@ def convertToSynced(input_path='', output_dir=''):
 
     # Loop over shapes of input ROOT file and create map of input/output names
     hist_map = {}
-    constructMap(hist_map=hist_map, input_file=input_file)
+    constructMap(hist_map=hist_map, input_file=input_file, debug=debug)
 
-    # checkDM(hist_map)
-    # exit(1)
+    # if debug:
+    #     checkDM(hist_map)
+
     check = ["W", "QCD", "ZJ", "TTT", "TTJ", "VVT", "VVJ", "ZTT"]
+    known_categories = map_pipes.keys()
     for channel in hist_map:
-        output_dir = output_dir
+        print 'channel:', channel
         if output_dir == "":
-            output_dir = os.getcwd() + "/converted_shapes/" + input_path.split('/')[-1].split('.root')[0]
+            output_dir = os.path.join(os.getcwd(), "converted_shapes", input_path.split('/')[-1].split('.root')[0])
         output_file_name = os.path.join(output_dir, "htt_{CHANNEL}.inputs-etFes.root").format(CHANNEL=channel)
         print 'output:', output_file_name
 
@@ -162,7 +175,15 @@ def convertToSynced(input_path='', output_dir=''):
             os.mkdir(output_dir)
         output_file = ROOT.TFile(output_file_name, "RECREATE")
 
-        for category in intersection(['0jet_alldm', '0jet_dm0', '0jet_dm1', '0jet_dm10'], hist_map[channel]):
+        if len(intersection(known_categories, hist_map[channel].keys())) == 0:
+            print 'No registered as known categories are found. Known:'
+            pp.pprint(known_categories)
+            print "found:"
+            pp.pprint(hist_map[channel])
+        else:
+            print "Intersection:", intersection(known_categories, hist_map[channel].keys())
+
+        for category in intersection(known_categories, hist_map[channel].keys()):
             print 'category:', category, '...'
             # if category == '0jet_alldm':
             #         print 'add after next skimm'
@@ -178,6 +199,7 @@ def convertToSynced(input_path='', output_dir=''):
             output_file.cd(dir_name)
 
             for name in hist_map[channel][category]:
+                print 'name:', name, '...',
                 name_output = hist_map[channel][category][name]
 
                 if category in map_pipes.keys():
@@ -189,8 +211,10 @@ def convertToSynced(input_path='', output_dir=''):
                 else:
                     print 'unknown category to drop unnessesary pipelines:', category
                     exit(1)
+
                 if name_output in check:
                     check.remove(name_output)
+
                 if 'ZL' == name_output:
                     name_output += '_0'
 
@@ -203,11 +227,12 @@ def convertToSynced(input_path='', output_dir=''):
 
                 if category == '0jet_dm0' and 'ZL' in name_output:
                     print '\t ', name_output
-
+                print name_output
                 hist = input_file.Get(name)
                 hist.SetTitle(name_output)
                 hist.SetName(name_output)
                 hist.Write()
+
             print "check:", check
 
         output_file.Close()
@@ -220,4 +245,4 @@ def convertToSynced(input_path='', output_dir=''):
 if __name__ == "__main__":
     args = parse_arguments()
     setup_logging("convert_synced_shapes.log", logging.DEBUG)
-    convertToSynced(input_path=args.input[0], output_dir=args.output)
+    convertToSynced(input_path=args.input[0], output_dir=args.output, debug=args.debug)
