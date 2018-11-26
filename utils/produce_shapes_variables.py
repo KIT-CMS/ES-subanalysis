@@ -4,7 +4,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 from shapes.etau_fes import etau_fes
 from shape_producer.systematics import Systematics
-from convert_to_synced_shapes import convertToSynced
+from shapes.convert_to_synced_shapes import convertToSynced
 
 
 def prepareConfig(config_file='data/et_fes_config.yaml', debug=False):
@@ -25,30 +25,34 @@ def prepareConfig(config_file='data/et_fes_config.yaml', debug=False):
 def main():
     print 'Start'
 
-    print '\n# 1 - prepareConfig'
+    print '\n # 1 - prepareConfig'
     config = prepareConfig(debug=False)
 
-    print '\n# 2 - setup_logging'
+    print '\n # 2 - setup_logging'
     shapes = etau_fes.ETauFES(**config)
     shapes.setup_logging(output_file="{}_etau_fes.log".format(shapes._tag), level=logging.INFO, logger=shapes._logger)
 
-    print '\n# 3 - Era evaluation'
+    print '\n # 3 - Era evaluation'
     shapes.evaluateEra()
     # shapes._nominal_folder = 'eleTauEsOneProngPiZerosShift_0'
-    print '\n# 4 - import necessary estimation methods'
+    print '\n # 4 - import necessary estimation methods'
     shapes.importEstimationMethods()
 
-    print '\n# 5 - evaluating channels (processes, variables,cattegories)'
+    print '\n # 5 - evaluating channels (processes, variables,cattegories)'
     shapes.evaluateChannels()
 
-    print '\n# 6 - add systematics'
+    print '\n # 6 - add systematics'
     shapes.evaluateSystematics()
 
-    print '# 7 - produce shapes'
+    print '\n # 7 - produce shapes'
     shapes.produce()
 
-    print '# 8 - convert to synched shapes'
-    convertToSynced(input_path=shapes._output_file)
+    print '\n # 8 - convert to synched shapes'
+
+    convertToSynced(
+        input_path=shapes._output_file,
+        output_dir='/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/Shapes/ES-subanalysis' + "/converted_shapes/" + shapes._output_file[:-5],
+    )
 
     print 'End'
 
