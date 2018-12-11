@@ -22,7 +22,7 @@ def prepareConfig(config_file='data/et_fes_config.yaml', debug=False):
     return config
 
 
-def main():
+def produce_shapes_variables():
     print 'Start'
 
     print '\n # 1 - prepareConfig'
@@ -58,4 +58,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    produce_shapes_variables()
