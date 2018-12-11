@@ -22,11 +22,7 @@ def prepareConfig(config_file='data/et_fes_config.yaml', debug=False):
     return config
 
 
-def produce_shapes_variables():
-    print 'Start'
-
-    print '\n # 1 - prepareConfig'
-    config = prepareConfig(debug=False)
+def produce_shapes_variables(config):
 
     print '\n # 2 - setup_logging'
     shapes = etau_fes.ETauFES(**config)
@@ -58,4 +54,8 @@ def produce_shapes_variables():
 
 
 if __name__ == '__main__':
-    produce_shapes_variables()
+    print 'Start'
+
+    print '\n # 1 - prepareConfig'
+    config = prepareConfig(debug=False)
+    produce_shapes_variables(config=config)
