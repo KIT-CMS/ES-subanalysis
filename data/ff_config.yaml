@@ -45,3 +45,8 @@ etau_fes:
         et:
             expression: "(300*min(njets, 2)+min(290, m_vis))"
             binning: [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160]
+    dm_mvis:
+        outputdir: "/nfs/dust/cms/user/glusheno/FF/glusheno/fake_factor_friends/fake_factor_friends_dm_mvis"
+        et:
+            expression: "(300*min(decayMode_2, 3)+min(290, m_vis))"
+            binning: [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160]
