@@ -300,9 +300,10 @@ class ETauFES(Shapes):
             categories = channel_holder._categorries
 
             if 'nominal' in self._shifts:
-                print '\n\nnominal...'
+                print '\n nominal...'
                 from itertools import product
                 for process, category in product(processes, categories):
+                    # print process._estimation_method._friend_directories
                     self._systematics.add(
                         Systematic(
                             category=category,
@@ -313,7 +314,7 @@ class ETauFES(Shapes):
                             mass="125",  # TODO : check if this is used anywhere
                         )
                     )
-                    print "\tnew sys:", self._systematics._systematics[-1].name, len(self._systematics._systematics)
+                    # print "\tnew sys:", self._systematics._systematics[-1].name, len(self._systematics._systematics), self._systematics._systematics[-1]._process.estimation_method._friend_directories
 
             if 'TES' in self._shifts:
                 print '\n\nTES...'
