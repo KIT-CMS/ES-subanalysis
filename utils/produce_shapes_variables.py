@@ -50,12 +50,17 @@ def produce_shapes_variables(config):
         output_dir='/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/Shapes/ES-subanalysis' + "/converted_shapes/" + shapes._output_file[:-5],
     )
 
-    print 'End'
 
-
-if __name__ == '__main__':
+def main():
     print 'Start'
 
     print '\n # 1 - prepareConfig'
     config = prepareConfig(debug=False)
+
     produce_shapes_variables(config=config)
+
+    print 'End'
+
+
+if __name__ == '__main__':
+    main()
