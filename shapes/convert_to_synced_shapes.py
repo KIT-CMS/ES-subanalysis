@@ -32,6 +32,8 @@ map_pipes = {
     'njetN_dm0': 'CMS_fes_eleTauEsOneProngShift_13TeV_',
     'njetN_dm1': 'CMS_fes_eleTauEsOneProngPiZerosShift_13TeV_',
     'njetN_dm10': 'CMS_fes_eleTauEsThreeProngShift_13TeV_',
+
+    'inclusive': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
 }
 
 
@@ -57,6 +59,8 @@ def parse_arguments():
                         help='Output directory')
     parser.add_argument('--input', '-i', type=str, nargs=1,
                         help='Path to single input ROOT file.')
+    parser.add_argument('--variables', type=str, nargs='*', default=None,
+                        help='variables.')
     parser.add_argument('--debug', default=False, action="store_true",
                         help="Debug option [Default: %(default)s]")
 
@@ -82,14 +86,15 @@ def checkDM(hist_map):
             print 'nominal:', k
 
 
-def constructMap(hist_map, input_file, debug=0):
+def constructMap(hist_map, input_file, debug=0, variables=['m_vis', 'njets_mvis', 'dm_mvis']):
     # pp.pprint(sorted(input_file.GetListOfKeys())); exit(1)
     for key in input_file.GetListOfKeys():
         # Read name and extract shape properties
         name = key.GetName()
         properties = [x for x in name.split("#") if not x == ""]
 
-        if properties[5] != 'm_vis':
+        if properties[5] not in variables:
+            print 'skip variable:', properties[5]
             continue
 
         # Get category name (and remove CHANNEL_ from category name)
@@ -133,7 +138,7 @@ def constructMap(hist_map, input_file, debug=0):
             print '\thist_map[et]:', hist_map['et']
             exit(1)
 
-    print 'categories in the root file: ',
+    print 'categories in the root file: ', hist_map,
     pp.pprint(hist_map['et'].keys())
 
     # if debug:
@@ -240,9 +245,10 @@ def convertToSynced(input_path='', output_dir='', debug=False):
     # Clean-up
     input_file.Close()
     print 'done'
+    return output_file_name
 
 
 if __name__ == "__main__":
     args = parse_arguments()
     setup_logging("convert_synced_shapes.log", logging.DEBUG)
-    convertToSynced(input_path=args.input[0], output_dir=args.output, debug=args.debug)
+    convertToSynced(input_path=args.input[0], output_dir=args.output, debug=args.debug, variables=args.variables)
