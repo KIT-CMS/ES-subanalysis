@@ -73,6 +73,12 @@ def parse_arguments():
         help="Category mode. If 'inclusive' fake factors are calculated inclusively, otherwise depending on NN categories"
     )
     parser.add_argument(
+        "--categories",
+        nargs='*', type=str,
+        help="Category mode. If 'inclusive' fake factors are calculated inclusively, otherwise depending on NN categories"
+    )
+
+    parser.add_argument(
         "--ff-yields",
         type=str,
         default="2017_ff_yields.root",
@@ -84,10 +90,12 @@ def parse_arguments():
         help='changes the output path')
     parser.add_argument('--dm-splitting', action='store_true', default=False,
         help='if the dm is done for ff')
+    parser.add_argument('--no-syst-shifts', action='store_true', default=False,
+        help='disable syst shifts')
     return parser.parse_args()
 
 
-def determine_fractions(args, categories):
+def determine_fractions(args, categories, debug=False):
     # Input shapes
     hist_file = ROOT.TFile(args.ff_yields)
 
@@ -107,94 +115,134 @@ def determine_fractions(args, categories):
     }
 
     fractions = {}
+    fractions_float = {}
     for channel in categories.keys():
+        if debug:
+            print "\t channel:", channel
         subdict = {}
+        subdict_float = {}
 
         for category in categories[channel]:
+            if debug:
+                print "\t\t category:", category
             subsubdict = {}
+            subsubdict_float = {}
 
             # Preper empty histogram for each data/mc compatible with data
-            for fraction in composition[channel].keys():
-                if args.num_threads == 1:
-                    print "#{ch}#{ch}_{cat}#data_obs#smhtt#{era}#{expr}#125#".format(
-                        ch=channel,
-                        cat=category,
-                        era=era_labels[args.era],
-                        expr=args.config,
-                    )
-
-                subsubdict[fraction] = copy.deepcopy(
-                    hist_file.Get(
-                        "#{ch}#{ch}_{cat}#data_obs#smhtt#{era}#{expr}#125#".format(
-                            ch=channel,
-                            cat=category,
-                            era=era_labels[args.era],
-                            expr=args.config
-                        )
-                    )
+            for process_group in composition[channel].keys():
+                hist_name = "#{ch}#{ch}_{cat}#data_obs#smhtt#{era}#{expr}#125#".format(
+                    ch=channel,
+                    cat=category,
+                    era=era_labels[args.era],
+                    expr=args.config,
                 )
-                subsubdict[fraction].Reset()
+                # if debug:
+                #     print '\t'*3, 'hist_name:', hist_name
+
+                subsubdict[process_group] = copy.deepcopy(hist_file.Get(hist_name))
+                subsubdict[process_group].Reset()
+                subsubdict_float[process_group] = [0.0] * (hist_file.Get(hist_name).GetNbinsX() + 2)
 
             # For all but QCD read their shapes
             # For QCD assighn a shape that is = data_obs - other_proc
-            for fraction in composition[channel].keys():
-                if fraction == "QCD":
+            if debug:
+                print "\n\t\t For all but QCD read their shapes:"
+            for process_group in composition[channel].keys():
+                if process_group == "QCD":
                     continue
 
-                for process in composition[channel][fraction]:
-                    if args.num_threads == 1:
-                        print "#{ch}#{ch}_{cat}#{proc}#smhtt#{era}#{expr}#125#".format(
-                            ch=channel,
-                            cat=category,
-                            proc=process,
-                            era=era_labels[args.era],
-                            expr=args.config
-                        )
+                if debug:
+                    print "\n\t\t\t process_group:", process_group
 
-                    subsubdict[fraction].Add(
-                        hist_file.Get(
-                            "#{ch}#{ch}_{cat}#{proc}#smhtt#{era}#{expr}#125#".format(
-                                ch=channel,
-                                cat=category,
-                                proc=process,
-                                era=era_labels[args.era],
-                                expr=args.config
-                            )
-                        )
+                for process in composition[channel][process_group]:
+                    hist_name = "#{ch}#{ch}_{cat}#{proc}#smhtt#{era}#{expr}#125#".format(
+                        ch=channel,
+                        cat=category,
+                        proc=process,
+                        era=era_labels[args.era],
+                        expr=args.config
                     )
+                    if debug:
+                        print "\t" * 4, "hist_name:", hist_name
 
-                if fraction == "data":
-                    subsubdict["QCD"].Add(subsubdict[fraction], 1.0)
+                    subsubdict[process_group].Add(hist_file.Get(hist_name))
+                    for i in range(hist_file.Get(hist_name).GetNbinsX() + 2):
+                        if debug: print "\t" * 5, i, '/', hist_file.Get(hist_name).GetNbinsX() + 2, ')', subsubdict_float[process_group][i], '+', hist_file.Get(hist_name).GetBinContent(i), '=',
+                        subsubdict_float[process_group][i] += hist_file.Get(hist_name).GetBinContent(i)
+                        if debug: print subsubdict_float[process_group][i], '?=', subsubdict[process_group].GetBinContent(i)
+
+                if process_group == "data":
+                    if debug:
+                        print "\t\t\t QCD += datd "
+                    subsubdict["QCD"].Add(subsubdict[process_group], 1.0)
+                    for i in range(len(subsubdict_float[process_group])):
+                        if debug:
+                            print "\t" * 4, i, '/', len(subsubdict_float[process_group]), ')', subsubdict_float["QCD"][i], '+', subsubdict_float[process_group][i], '=',
+
+                        subsubdict_float["QCD"][i] += subsubdict_float[process_group][i]
+
+                        if debug:
+                            print subsubdict_float["QCD"][i], '?=', subsubdict["QCD"].GetBinContent(i)
                 else:
-                    subsubdict["QCD"].Add(subsubdict[fraction], -1.0)
+                    if debug:
+                        print "\t\t\t QCD -= ", process_group
+                    subsubdict["QCD"].Add(subsubdict[process_group], -1.0)
+                    # print 'range:', len(subsubdict_float[process_group])
+                    for i in range(len(subsubdict_float[process_group])):
+                        if debug:
+                            print "\t" * 4, i, '/', len(subsubdict_float[process_group]), ')', subsubdict_float["QCD"][i], '-', subsubdict_float[process_group][i], '=',
+                        subsubdict_float["QCD"][i] -= subsubdict_float[process_group][i]
+                        if debug:
+                            print subsubdict_float["QCD"][i], '?=', subsubdict["QCD"].GetBinContent(i)
 
             # Normalize all shapes to data eg get fractions of proc wrt data
+            if debug:
+                print "\n\t\t Normalizing shapes on data"
             denominator_hist = copy.deepcopy(subsubdict["data"])
-            for fraction in composition[channel].keys():
-                subsubdict[fraction].Divide(denominator_hist)
+            data_copy = copy.deepcopy(subsubdict_float['data'])
+            for process_group in composition[channel].keys():
+                subsubdict[process_group].Divide(denominator_hist)
+                if debug:
+                    print "\t" * 3, process_group,'...'
+
+                for i in range(len(subsubdict_float[process_group])):
+                    if debug: print "\t" * 4, i, '/', len(subsubdict_float[process_group]), ')', subsubdict_float[process_group][i], '/', data_copy[i], '=',
+                    if data_copy[i] != 0:
+                        subsubdict_float[process_group][i] = subsubdict_float[process_group][i] / data_copy[i]
+                    else:
+                        subsubdict_float[process_group][i] = 0.0
+                    if debug: print subsubdict_float[process_group][i], '?=', subsubdict[process_group].GetBinContent(i)
 
             # Where QCD bins are negative (i.e. data < MC), scale up other processes
+            if debug:
+                print "\n\t\t Where QCD bins are negative (i.e. data < MC), scale up other processes"
             for i in range(subsubdict["QCD"].GetNbinsX() + 2):
                 qcd_fraction = subsubdict["QCD"].GetBinContent(i)
+                qcd_fraction_float = subsubdict_float['QCD'][i]
+                print 'Check:', qcd_fraction, '?=', qcd_fraction_float
+
                 if qcd_fraction < 0.0:
                     logger.info(
-                        "Found bin with negative QCD fraction (%s, %s, index %i). "
-                        "Set QCD fraction to zero and rescale other MC's fractions up "
+                        "Found bin with negative QCD process_group (%s, %s, index %i). "
+                        "Set QCD process_group to zero and rescale other MC's process_groups up "
                         "so their sum would match data in that bin." % (channel, category, i)
                     )
 
                     subsubdict["QCD"].SetBinContent(i, 0)
-                    for fraction in composition[channel].keys():
-                        if not fraction == "data":
-                            subsubdict[fraction].SetBinContent(
+                    subsubdict_float['QCD'][i] = 0
+                    for process_group in composition[channel].keys():
+                        if not process_group == "data":
+                            subsubdict[process_group].SetBinContent(
                                 i,
-                                subsubdict[fraction].GetBinContent(i) / (1.0 - qcd_fraction)
+                                subsubdict[process_group].GetBinContent(i) / (1.0 - qcd_fraction)
                             )
-                            logger.debug(
-                                "Rescaled %s fraction to %f" % (fraction, subsubdict[fraction].GetBinContent(i))
-                            )
+                            subsubdict_float[process_group][i] = subsubdict_float[process_group][i] / (1.0 - qcd_fraction_float)
+                            logger.debug("Rescaled %s process_group to %f" % (process_group, subsubdict[process_group].GetBinContent(i)))
             subdict[category] = subsubdict
+            subdict_float[category] = subsubdict_float
+
         fractions[channel] = subdict
+        fractions_float[channel] = subdict_float
 
     hist_file.Close()
     return fractions
@@ -378,6 +426,8 @@ def apply_fake_factors_per_category(config):
                 "ff_tt_dm0_njet0_stat", "ff_tt_dm0_njet1_stat",
             ]
         }
+    if args.no_syst_shifts:
+        unc_shifts = {"et":[]}
 
     # Prepare Data inputs
     print "Prepare Data inputs:", os.path.join(args.directory, datafile)
@@ -434,6 +484,8 @@ def apply_fake_factors_per_category(config):
             varvalue = 0.0
             if args.config == "njets_mvis":
                 varvalue = 300.0 * min(event.njets, 2.0) + min(290.0, event.m_vis)
+            elif args.config == "dm_mvis":
+                varvalue = 300.0 * min(event.decayMode_2, 3.0) + min(290.0, event.m_vis)
             else:
                 varvalue = getattr(event, args.configdict[channel]["expression"])
 
@@ -500,23 +552,28 @@ def calculate_fake_factors(args):
     categories = {
         "et": [
             'njet0_alldm',
-            'njet0_dm10',
-            'njet0_dm1',
-            'njet0_dm0',
+            # 'njet0_dm10',
+            # 'njet0_dm1',
+            # 'njet0_dm0',
 
             'njetN_alldm',
-            'njetN_dm10',
-            'njetN_dm1',
-            'njetN_dm0',
-            'inclusive',
+            # 'njetN_dm10',
+            # 'njetN_dm1',
+            # 'njetN_dm0',
+
+            # 'inclusive',
 
             # 'njet0',
             # "inclusive"  # always in the end of the list
         ]
     }
+    # categories = {"et": ['njet0_dm1']}  # TEST
+    if args.categories:
+        categories['et'] = [].extend(args.categories)
 
-    fractions = determine_fractions(args, categories)
+    fractions = determine_fractions(args, categories, debug=True)
     pp.pprint(fractions)
+    # exit(1)
 
     # Get paths to Data files the fake factors are appended to
     datafiles = []
