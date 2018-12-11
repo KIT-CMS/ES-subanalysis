@@ -38,8 +38,7 @@ def setup_logging(output_file, level=logging.DEBUG):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description=
-        "Produce single bin histograms to determine fake factor fractions")
+        description="Produce single bin histograms to determine fake factor fractions")
 
     parser.add_argument(
         "--directory",
@@ -50,17 +49,15 @@ def parse_arguments():
         "--et-friend-directory",
         default=[],
         type=str,
-        help=
-        "Directory arranged as Artus output and containing a friend tree for et."
+        help="Directory arranged as Artus output and containing a friend tree for et."
     )
     parser.add_argument(
         "--output-dir",
-        default='fake-factors',
         type=str,
+        default=None,
         help="Directory to store output shapes root-files.")
 
     parser.add_argument(
-        "-c",
         "--config",
         required=True,
         type=str,
@@ -81,6 +78,9 @@ def parse_arguments():
         help="Backend. Use classic or tdf.")
     parser.add_argument(
         "--tag", default="ERA_CHANNEL", type=str, help="Tag of output files.")
+    parser.add_argument(
+        "--decay-mode", default=None, type=str, nargs='*', help="dm for categorisation")
+
     return parser.parse_args()
 
 
@@ -88,15 +88,32 @@ def produce_shapes_2017_etFES(args):
     # Container for all distributions to be drawn
     logger.info("Set up shape variations.")
 
-    if not os.path.exists(args.output_dir):
-        print "Creating output directory.."
-        os.makedirs(args.output_dir)
-    print "Output file path:", str(os.path.join(args.output_dir, "{}_ff_yields.root".format(args.tag)))
+    # Read configs from yaml
+    config = yaml.load(open("data/ff_config.yaml"))
+    if args.config not in config['etau_fes'].keys():
+        logger.critical("Requested config key %s not available in data/ff_config.yaml!" % args.config)
+        raise Exception
+    config = config['etau_fes'][args.config]
 
-    systematics = Systematics(
-        str(os.path.join(args.output_dir, "{}_ff_yields.root".format(args.tag))),
-        # "fake-factors/, {}_ff_yields.root".format(args.tag)
-        num_threads=args.num_threads)
+    # Read known cuts
+    _known_cuts = yaml.load(open('data/known_cuts.yaml'))
+
+    if args.decay_mode is None:
+        dm_splitting = _known_cuts['decay_mode'].keys()
+    else:
+        dm_splitting = args.decay_mode
+
+    # Prepare output dir
+    output_dir = config['outputdir']
+    if args.output_dir is not None:
+        output_dir = args.output_dir
+    if not os.path.exists(output_dir):
+        print "Creating output directory.."
+        os.makedirs(output_dir)
+    output_file_path = str(os.path.join(output_dir, "{}_ff_yields.root".format(args.tag)))
+    print "Output file path:", output_file_path
+
+    systematics = Systematics(output_file_path, num_threads=args.num_threads)
 
     # Era selection
     if "2017" in args.era:
@@ -118,15 +135,6 @@ def produce_shapes_2017_etFES(args):
     # yapf: disable
     directory = args.directory
     et_friend_directory = args.et_friend_directory
-    # Cut("flagMETFilter == 1", "METFilter"),
-    #         Cut("extraelec_veto<0.5", "extraelec_veto"),
-    #         Cut("extramuon_veto<0.5", "extramuon_veto"),
-    #         Cut("dilepton_veto<0.5", "dilepton_veto"),
-    #         Cut("againstMuonLoose3_2>0.5", "againstMuonDiscriminator"),
-    #         Cut("againstElectronTightMVA6_2>0.5",
-    #             "againstElectronDiscriminator"),
-    #         Cut("byTightIsolationMVArun2017v2DBoldDMwLT2017_2>0.5", "tau_iso"),
-    #         Cut("iso_1<0.15", "ele_iso"), Cut("q_1*q_2<0", "os"),
 
     et = ETSM2017()
     et.cuts.remove("tau_iso")
@@ -152,13 +160,6 @@ def produce_shapes_2017_etFES(args):
         "W"     : Process("W",        WEstimation         (era, directory, et, friend_directory=et_friend_directory))
     }
 
-    # Variables and categories
-    config = yaml.load(open("data/ff_config.yaml"))
-    if args.config not in config['etau_fes'].keys():
-        logger.critical("Requested config key %s not available in data/ff_config.yaml!" % args.config)
-        raise Exception
-    config = config[args.config]
-
     et_categories = [
         Category(
             "inclusive",
@@ -166,17 +167,10 @@ def produce_shapes_2017_etFES(args):
             Cuts(),
             variable=Variable(args.config, VariableBinning(config["et"]["binning"]), config["et"]["expression"])
         ),
-        # Category(
-        #     "njet0",
-        #     et,
-        #     Cuts(Cut('njets==0', 'njet0')),
-        #     variable=Variable(args.config, VariableBinning(config["et"]["binning"]), config["et"]["expression"])
-        # ),
     ]
 
-    _known_cuts = yaml.load(open('data/known_cuts.yaml'))
     for njet in _known_cuts['jets_multiplicity'].keys():
-        for dm in _known_cuts['decay_mode'].keys():
+        for dm in dm_splitting:
             et_categories.append(
                 Category(
                     name=njet + '_' + dm,
@@ -189,6 +183,14 @@ def produce_shapes_2017_etFES(args):
                 )
             )
 
+    # et_categories = [
+    #     Category(
+    #         "njet0_dm1",
+    #         et,
+    #         Cuts(Cut('decayMode_2==1', 'dm1'), Cut('njets==0', 'njet0')),
+    #         variable=Variable(args.config, VariableBinning(config["et"]["binning"]), config["et"]["expression"])
+    #     ),
+    # ]
     # Nominal histograms
     # yapf: enable
     for process, category in product(et_processes.values(), et_categories):
