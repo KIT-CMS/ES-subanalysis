@@ -1,23 +1,17 @@
 # -*- coding: utf-8 -*-
-
+import sys
 import logging
-"""
-"""
 import yaml
 
-"""Script to copy files after the skim from * to nfs."""
-# import os
-# import subprocess
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
-# import tempfile
-# import hashlib
 
 from shape_producer.systematics import Systematics
 from channelholder import ChannelHolder
 # from inidecorator import inidecorator
 
-
+# TODO: wrapper for introduction of methods
+# TODO: inharit from my base subprocesses class
 class Shapes(object):
     _complexEstimationMethods = ['WEstimationWithQCD', 'QCDEstimationWithW']
 
@@ -73,15 +67,15 @@ class Shapes(object):
         self._dry = dry
         self._era_name = era
         self._et_friend_directory = et_friend_directory
+        self._mt_friend_directory = mt_friend_directory
+        self._tt_friend_directory = tt_friend_directory
         self._fake_factor_friend_directory = fake_factor_friend_directory
         self._gof_channel = gof_channel
         self._gof_variable = gof_variable
-        self._mt_friend_directory = mt_friend_directory
         self._num_threads = num_threads
         self._skip_systematic_variations = skip_systematic_variations
         self._tag = tag
         self._output_file = output_file
-        self._tt_friend_directory = tt_friend_directory
         self._context_analysis = context_analysis
         self._variables_names = variables_names
         self._processes = processes
@@ -120,7 +114,7 @@ class Shapes(object):
         self._channels = {}
 
         if self._output_file == '':
-            self._output_file = "{}.root".format(self._tag)
+            self._output_file = "{}.root".format(self._context_analysis)
         elif len(self._output_file) > 5 and self._output_file[-5:] == '.root':
             pass
         else:
@@ -178,6 +172,7 @@ class Shapes(object):
         )
         return output
 
+    # TODO: cleanup
     @staticmethod
     def parse_arguments(include_defaults=True):
         import argparse
@@ -249,8 +244,9 @@ class Shapes(object):
 
         return configuration
 
+    # TODO: separate from class, call in scope of each module
     @staticmethod
-    def setup_logging(output_file=None, level=logging.DEBUG, logger=None):
+    def setup_logging(output_file, logger, level=logging.DEBUG):
         logger.setLevel(level)
         formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
 
@@ -272,33 +268,31 @@ class Shapes(object):
                 return host
         return 'unknown_host'
 
-    @staticmethod
-    def readConfig(config_file=None):
-        if isinstance(config_file, basestring):
-            if config_file[-5:] == '.yaml' or config_file[-4:] == '.yml':
-                with open(config_file, 'r') as stream:
-                    try:
-                        import getpass
-                        username = getpass.getuser()
-                        hostname = Shapes.getHostKey()
+    @classmethod
+    def readConfig(cls, config_file=None):
+        self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name + ': '
+        assert isinstance(config_file, basestring), self_name + 'config obj of unset type'
+        assert config_file.endswith('.yaml') or config_file.endswith('.yml'), self_name + 'config path is not yaml format'
+        with open(config_file, 'r') as stream:
+            try:
+                import getpass
+                username = getpass.getuser()
+                hostname = Shapes.getHostKey()
 
-                        config = yaml.load(stream)
+                config = yaml.load(stream)
 
-                        for user_specific_key in config['user_specific'].keys():
-                            user_specific = config['user_specific'][user_specific_key]
-                            config[user_specific_key] = user_specific['default']
-                            if username in user_specific and hostname in user_specific[username]:
-                                config[user_specific_key] = user_specific[username][hostname]
-                        del config['user_specific']
+                for user_specific_key in config['user_specific'].keys():
+                    user_specific = config['user_specific'][user_specific_key]
+                    config[user_specific_key] = user_specific['default']
+                    if username in user_specific and hostname in user_specific[username]:
+                        config[user_specific_key] = user_specific[username][hostname]
+                del config['user_specific']
 
-                        return config
+                return config
 
-                    except yaml.YAMLError as exc:
-                        print('Shapes::readConfig: yaml config couldn\' be loaded:\n', config_file, '\n', exc)
-            else:
-                raise ValueError('Shapes::readConfig: config path is not yaml format')
-        else:
-            raise ValueError('Shapes::readConfig: config obj of unset type')
+            except yaml.YAMLError as exc:
+                print self_name + 'yaml config couldn\' be loaded:\n', config_file, '\n', exc
+                raise
 
     def evaluateChannel(self, channel):
         pass  # self._channels.add()
@@ -336,13 +330,17 @@ class Shapes(object):
         # print self._known_processes.keys()
 
         if len(self._processes) == 0:
-            return self._known_estimation_methods[era][context][channel_name]['methods']
+            try:
+                return self._known_estimation_methods[era][context][channel_name]['methods']
+            except:
+                self._log.error(' '.join("Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name))
+                self._log.error('Possible _known_estimation_methods:')
+                pp.pprint(self._known_estimation_methods[era][context][channel_name])
         else:
             d = {}
             for i in self._processes:
                 if i in d.keys():
-                    print 'repeating process:', i
-                    exit(1)
+                    raise ValueError(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name + ': repeating process: ' + i)
                 d[i] = self._known_processes[i]
             return d
 
