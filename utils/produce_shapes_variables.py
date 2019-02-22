@@ -1,6 +1,12 @@
-import logging
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
+
+
+import logging
+from rootpy import log
+log.setLevel(log.INFO)
+from rootpy.logger.magic import DANGER
+DANGER.enabled = False
 
 from shapes.etau_fes import etau_fes
 from shape_producer.systematics import Systematics
@@ -26,7 +32,7 @@ def produce_shapes_variables(config):
 
     print '\n # 2 - setup_logging'
     shapes = etau_fes.ETauFES(**config)
-    shapes.setup_logging(output_file="{}_etau_fes.log".format(shapes._tag), level=logging.INFO, logger=shapes._logger)
+    shapes.setup_logging(output_file="{}_etau_fes.log".format(shapes._tag), level=log.INFO, logger=shapes._logger)
 
     print '\n # 3 - Era evaluation'
     shapes.evaluateEra()
