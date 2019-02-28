@@ -59,7 +59,7 @@ class Shapes(object):
                  shifts=None,
                  decay_mode=None,
                  jets_multiplicity=None,
-
+                 indent=0,
                  ):
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
@@ -68,6 +68,7 @@ class Shapes(object):
         self._binning = binning
         self._binning_key = binning_key
         self._log_level = log_level
+        self._indent = indent
         self._methods_collection_key = methods_collection_key
 
         self._backend = backend
@@ -182,8 +183,12 @@ class Shapes(object):
         return output
 
     # TODO: cleanup
-    @staticmethod
-    def parse_arguments(include_defaults=True):
+    @classmethod
+    def parse_arguments(cls, include_defaults=True, debug=False):
+        self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name + ': '
+        if debug:
+            print '\n', self_name
+
         import argparse
         defaultArguments = {}
         parser = argparse.ArgumentParser(description='shapes.py parser')
