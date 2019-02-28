@@ -16,6 +16,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 from shape_producer.channel import Channel
 from shape_producer.process import Process
+from shape_producer.cutstring import Cut
 
 # class ChannelsDict(object):
 #     """ChannelsDict"""
@@ -31,6 +32,15 @@ from shape_producer.process import Process
 
 
 class ChannelHolder(object):
+
+    printable_attributes = [
+        '_channel_obj', '_name', '_cuts', '_processes',
+        '_variables', '_categorries', '_systematics',
+        '_friend_directory',
+    ]
+
+    printable_cattegory_attributes = ['_channel', '_cuts', '_name', '_variable']
+
     def __init__(self,
                  ofset=0,
                  logger=None,
@@ -48,12 +58,12 @@ class ChannelHolder(object):
         self._logger = logger
         self._debug = debug
 
-        self._channel_obj = channel_obj
+        self._channel_obj = channel_obj  # channel instance from shape-producer
         self._name = name
-        self._cuts = cuts  # Channel()._cuts
-        self._processes = processes
+        self._cuts = cuts  # only channel-defining cuts, not the categories
+        self._processes = processes  # dict of process instances from shape-producer
         self._variables = variables
-        self._categorries = categorries
+        self._categorries = categorries  # linked to all needed for channel-category cuts
         self._systematics = systematics
         self._friend_directory = friend_directory
 
@@ -76,16 +86,105 @@ class ChannelHolder(object):
         else:
             raise ValueError('Shapes::era: tried to set era not to type Era')
 
-    def __str__(self):
-        self._logger.debug("ChannelHolder ofset:", self._ofset)
-        print "ofset", self._ofset
-        output = (
-            self._ofset * "\t" + " ChannelHolder(" + "\n" +
-            self._ofset * "\t" + "    name = " + str(self._name) + "\n" +
-            self._ofset * "\t" + "    debug = " + str(self._debug) + "\n" +
-            self._ofset * "\t" + " )"
-        )
-        return output
+    @classmethod
+    def pop_cut(cls, cuts, cut_name):
+        try:
+            cut = cuts.get(cut_name)
+        except:
+            print 'Couldn\'t extract cut:', cut_name
+            print 'from list of cuts:', cuts
+            raise
+
+        cuts.remove(cut_name)
+
+        return cut
+
+    @classmethod
+    def remove_cut(cls, cuts, cut_name):
+        try:
+            cuts.remove(cut_name)
+        except:
+            print 'Couldn\'t remove cut:', cut_name
+            print 'from list of cuts:', cuts
+            raise
+
+        return 0
+
+    def remove_category_cuts(self, cut_name):
+        for category in self._categorries:
+            if cut_name in category.cuts.names:
+                self.remove_cut(category.cuts, cut_name)
+                self._logger.debug("From category " + category.name + ' removed ' + cut_name)
+
+    def remove_all_cuts(self, cut_name):
+        if self._cuts is not None:
+            self.remove_cut(self._cuts, cut_name)
+        self.remove_category_cuts(cut_name)
+
+    @classmethod
+    def replace_cut(cls, cuts, cut_name, cut_value):
+        if cut_name not in cuts.names:
+            print 'Couldn\'t replace cut', cut_name, 'that is not in the list of cuts:', cuts
+            return 1
+
+        cls.remove_cut(cuts, cut_name)
+
+        try:
+            cuts.add(Cut(cut_value, cut_name))
+        except:
+            print 'Couldn\'t add the updated cut', cut_name, ' : ', cut_value, 'to the cuts of category'
+            raise
+
+        return 0
+
+    def replace_category_cuts(self, cut_name, cut_value):
+        for category in self._categorries:
+            if cut_name in category.cuts.names:
+                self.replace_cut(category.cuts, cut_name, cut_value)
+                self._logger.debug(' '.join(["In category", category.name, 'set', cut_name, 'to', cut_value]))
+
+    def replace_all_cuts(self, name, value):
+        if self._cuts is not None:
+            self.replace_cut(self._cuts, name, value)
+        self.replace_category_cuts(name, value)
+
+    def invert_cut(self):
+        print 'Cut inversion is not implemented'
+        return 1
+
+    def __str__(self, sort_categories_cuts=False):
+        self._logger.debug("ChannelHolder ofset:" + str(self._ofset))
+        ind = self._ofset * '\t'
+        print_str = ind + ' ChannelHolder(' + '\n'
+
+        for attribute_name in self.printable_attributes:
+            a = getattr(self, attribute_name)
+            print_str += ind + '   ' + attribute_name + ' : ' + str(a) + '\n'
+
+            if attribute_name == '_categorries':
+                count = 0
+
+                for category in a:
+                    print_str += '\n' + ind + "   cat:" + str(count) + ':\n'
+
+                    for category_attribute_name in self.printable_cattegory_attributes:
+                        category_attribute = getattr(category, category_attribute_name)
+
+                        cat_str = ''
+                        if category_attribute_name == '_cuts':
+                            cat_str = category_attribute.__str__(indent=self._ofset + 2).split('\n')
+                            if sort_categories_cuts: cat_str.sort()
+                            cat_str = '\n'.join(cat_str) + '\n'
+                        elif category_attribute_name == '_variable':
+                            cat_str = ' { name : ' + category_attribute.name + '; expression : ' + category_attribute.expression + '}\n'
+                        else:
+                            cat_str = str(category_attribute) + '\n'
+
+                        print_str += ind + '     ' + category_attribute_name + ': ' + cat_str
+
+                    count += 1
+
+        return print_str
 
 
 if __name__ == '__main__':
