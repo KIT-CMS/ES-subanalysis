@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
+
 import logging
+from rootpy import log
+from rootpy.logger.magic import DANGER
+
 import yaml
 
 import pprint
@@ -24,6 +28,7 @@ class Shapes(object):
                  datasets=None,
                  binning=None,
                  binning_key=None,
+                 log_level=None,
                  backend=None,
                  channels=None,
                  debug=None,
@@ -61,6 +66,8 @@ class Shapes(object):
         self._datasets = datasets
         self._binning = binning
         self._binning_key = binning_key
+        self._log_level = log_level
+
         self._backend = backend
         self._channels_key = channels
         self._debug = debug
@@ -202,15 +209,16 @@ class Shapes(object):
         parser.add_argument("--num-threads", type=int, help="Number of threads to be used.")
         parser.add_argument("--backend", choices=["classic", "tdf"], type=str, help="Backend. Use classic or tdf.")
         parser.add_argument("--tag", type=str, help="Tag of output files.")
-        parser.add_argument("--output-file", type=str, help="Output file name.")
+        parser.add_argument("--output-file", type=str, help="Output file name for file with final shapes that enter datacards. If none is given context_analysis is used as a root for this name")
         parser.add_argument("--skip-systematic-variations", type=str, help="Do not produce the systematic variations.")
-        parser.add_argument("--tes-sys-processes", nargs='+', type=str, help="...")
-        parser.add_argument("--fes-sys-processes", nargs='+', type=str, help="...")
-        parser.add_argument("--emb-sys-processes", nargs='+', type=str, help="...")
-        parser.add_argument("--shifts", nargs='+', type=str, help="...")
-        parser.add_argument("--decay-mode", nargs='+', type=str, help="all, dm0, dm1, dm10")
-        parser.add_argument("--jets-multiplicity", nargs='+', type=str, help="njetN, njet0")
-        parser.add_argument("--binning-key", type=str, help="binning_key. example: gof, control")
+        parser.add_argument("--tes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
+        parser.add_argument("--fes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
+        parser.add_argument("--emb-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
+        parser.add_argument("--shifts", nargs='+', type=str, help="Pipelines, uncertainties variations, shifts : processed is the intersection of this list with list from _known_estimation_methods")
+        parser.add_argument("--decay-mode", nargs='+', type=str, help="Needed for categorisation. Choices: all, dm0, dm1, dm10")
+        parser.add_argument("--jets-multiplicity", nargs='+', type=str, help="Needed for categorisation. Choices: njetN, njet0")
+        parser.add_argument("--binning-key", type=str, help="Used only to pick the binning! example: gof, control")
+        parser.add_argument("--log-level", type=str, help="Log level")
 
         defaultArguments['channels'] = []
         defaultArguments['processes'] = []
@@ -229,12 +237,14 @@ class Shapes(object):
         defaultArguments['decay_mode'] = ['all', 'dm0', 'dm1', 'dm10']
         defaultArguments['jets_multiplicity'] = ['njetN', 'njet0']
         defaultArguments['binning_key'] = 'control'
+        defaultArguments['log_level'] = 'info'
 
         # Arguments with defaults that can not be changed in the config file
         parser.add_argument('--dry', action='store_true', default=False, help='dry run')
         parser.add_argument('--debug', action='store_true', default=False, help='cherry-debug')
 
         args = parser.parse_args()
+
         configuration = dict((k, v) for k, v in vars(args).iteritems() if v is not None)
 
         if include_defaults:
@@ -245,8 +255,30 @@ class Shapes(object):
         return configuration
 
     # TODO: separate from class, call in scope of each module
-    @staticmethod
-    def setup_logging(output_file, logger, level=logging.DEBUG):
+    @classmethod
+    def setup_logging(cls, output_file, logger, level='DEBUG', danger=False, debug=False):
+        self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name + ': '
+        if debug:
+            print '\n', self_name
+
+        if level.lower() == 'debug':
+            print self_name, 'DEBUG'
+            # log.setLevel(log.DEBUG)
+            level = log.DEBUG
+        elif level.lower() == 'info':
+            print self_name, 'INFO'
+            # log.setLevel(log.INFO)
+            level = log.INFO
+        elif level.lower() == 'warning':
+            print self_name, 'WARNING'
+            # log.setLevel(log.INFO)
+            level = log.WARNING
+        else:
+            print cls.__name__ + '::' + sys._getframe().f_code.co_name + ' : unknown leve'
+            raise
+
+        DANGER.enabled = danger
+
         logger.setLevel(level)
         formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
 
@@ -269,8 +301,11 @@ class Shapes(object):
         return 'unknown_host'
 
     @classmethod
-    def readConfig(cls, config_file=None):
+    def readConfig(cls, config_file=None, debug=False):
         self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name + ': '
+        if debug:
+            print '\n', self_name
+
         assert isinstance(config_file, basestring), self_name + 'config obj of unset type'
         assert config_file.endswith('.yaml') or config_file.endswith('.yml'), self_name + 'config path is not yaml format'
         with open(config_file, 'r') as stream:
