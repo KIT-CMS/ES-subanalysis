@@ -1,6 +1,7 @@
+import os
+
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
-
 
 import logging
 from rootpy import log
@@ -51,10 +52,15 @@ def produce_shapes_variables(config):
 
     print '\n # 8 - convert to synched shapes'
 
+    shapes_dir = os.path.join('/'.join(os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]), 'converted_shapes')
     convertToSynced(
         input_path=shapes._output_file,
-        output_dir='/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/Shapes/ES-subanalysis' + "/converted_shapes/" + shapes._output_file[:-5],
+        output_dir=os.path.join(shapes_dir, shapes._output_file[:-5]),
     )
+
+    # print '\n # 9 - implement the nominal ploting if you want'
+
+    print 'done'
 
 
 def main():
