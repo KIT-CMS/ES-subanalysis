@@ -1,13 +1,63 @@
+# Overwriting defaults
 backend: classic
 channels: [mt]
+processes: []
+module: Null
 num_threads: 1
-binning: data/binning.yaml
 binning_key: gof
 era: '2017'
 tag: mtTES
-output_file: ''  # shapes that enter datacards. If none context_analysis is used
+output_file: ''
 skip_systematic_variations: True  # TEMP!
 context_analysis: mtTES
+log_level: info
+## Typical processes affected by systematic variation
+tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
+fes_sys_processes: ['ZL', 'DYJetsToLL', 'EMB']
+emb_sys_processes: ['EMB']
+zpt_sys_processes: ['ZTT', 'ZL', 'ZJ']
+## Pipelines, uncertainties variations, shifts
+shifts: [
+  nominal,
+  # TES_shifts,
+  # EMB,
+  # FES_shifts,
+  # Zpt,
+]
+## Needed for categorisation
+decay_mode: [
+  # 'alldm',  # inclusive
+  # 'dm0',
+  'dm1',
+  # 'dm10',
+]
+jets_multiplicity: [
+  'njetN',  # inclusive
+  # 'njet0'
+]
+
+# Input files
+## binning
+binning: data/binning.yaml
+## FF friends
+et_friend_directory: []
+mt_friend_directory: []
+tt_friend_directory: []
+fake_factor_friend_directory: [] #'/nfs/dust/cms/user/glusheno/FF/akhmet/SM_Htautau/ntuples/Artus17_2018-11-10/fake_factor_friends_njets_mvis'
+## root-files
+user_specific:
+  directory:
+    default: Null
+    glusheno:
+      naf: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal_dm2/nominal_2019-02-20_14-47/merged/
+      # /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal/nominal_2019-02-14_01-30/merged
+
+  datasets:
+    default: Null
+    glusheno:
+      naf: /afs/desy.de/user/g/glusheno/RWTH/KIT/Artus/CMSSW_9_4_9/src/Kappa/Skimming/data/datasets.json
+
+# Shapes variables
 variables_names: [
   m_vis,
   # leadingTauEnergyAssymetry,
@@ -34,52 +84,7 @@ variables_names: [
   # # rho,
 ]
 
-# FF friends
-et_friend_directory: []
-mt_friend_directory: []
-tt_friend_directory: []
-fake_factor_friend_directory: [] #'/nfs/dust/cms/user/glusheno/FF/akhmet/SM_Htautau/ntuples/Artus17_2018-11-10/fake_factor_friends_njets_mvis'
-
-# processed is the intersection with list from _known_estimation_methods
-shifts: [
-  nominal,
-  # TES_shifts,
-  # EMB,
-  # FES_shifts,
-  # Zpt,
-]
-
-# Typical processes affected by systematic variation
-tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
-fes_sys_processes: ['ZL', 'DYJetsToLL', 'EMB']
-emb_sys_processes: ['EMB']
-zpt_sys_processes: ['ZTT', 'ZL', 'ZJ']
-
-# Needed for categorisation
-decay_mode: [
-  # 'alldm',  # inclusive
-  # 'dm0',
-  'dm1',
-  # 'dm10',
-]
-jets_multiplicity: [
-  'njetN',  # inclusive
-  # 'njet0'
-]
-
-user_specific:
-  directory:
-    default: Null
-    glusheno:
-      naf: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal/nominal_2019-02-14_01-30/merged
-
-  datasets:
-    default: Null
-    glusheno:
-      naf: /afs/desy.de/user/g/glusheno/RWTH/KIT/Artus/CMSSW_9_4_9/src/Kappa/Skimming/data/datasets.json
-
-processes: []
-module: Null
+# Processes and their estimations
 _known_estimation_methods:
   '2016': Null
   '2017':
@@ -93,9 +98,6 @@ _known_estimation_methods:
             data_obs                : data
             jetFakes                : FAKES
 
-          methods:
-            # data_obs                : DataEstimation  # combine
-            ZTT                     : ZTTEstimation
           # tests
           # Artur_DY: # Artur's example for testing ; missing for FES bg: 'TTT' 'VVT' 'TTJ' 'VVJ'
           methods2:
@@ -133,7 +135,7 @@ _known_estimation_methods:
             jetFakes                : FakeEstimationLT
             # EMB                     : ZTTEmbeddedEstimation  # NEED A NEW ARTUS RUN
 
-          Original_FES: # with classical bg estimations
+          methods: # with classical bg estimations
           # methods:
             data_obs                : DataEstimation  # combine
             ZL                      : ZLEstimation  # combine; Signal ; class. QCD & W
