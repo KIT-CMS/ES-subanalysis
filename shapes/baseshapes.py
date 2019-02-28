@@ -242,7 +242,7 @@ class Shapes(object):
         defaultArguments['fes_sys_processes'] = ['ZL', 'DYJetsToLL', 'EMB']
         defaultArguments['emb_sys_processes'] = ['EMB']
         defaultArguments['zpt_sys_processes'] = ['ZTT', 'ZL', 'ZJ']
-        defaultArguments['shifts'] = ['nominal', 'TES', 'EMB', 'FES_shifts']
+        defaultArguments['shifts'] = ['nominal', 'TES', 'EMB', 'FES_shifts', 'TES_shifts']
         defaultArguments['decay_mode'] = ['all', 'dm0', 'dm1', 'dm10']
         defaultArguments['jets_multiplicity'] = ['njetN', 'njet0']
         defaultArguments['binning_key'] = 'control'
