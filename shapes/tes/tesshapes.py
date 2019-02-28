@@ -56,7 +56,8 @@ class TESShapes(Shapes):
         Syntactic sugar to return a getEstimationMethod object defined by *key* in case no other attribute
         was resolved.
         """
-        print "__getattr__::key", key
+        # print "__getattr__::key", key
+        print self.__class__.__name__ + '::' + sys._getframe().f_code.co_name + ' : ' + key
         return self.getEstimationMethod(key)
 
     def importEstimationMethods(self, module, *methods):  # TODO: add arguments validity
@@ -188,6 +189,7 @@ class TESShapes(Shapes):
         Returns dict of Cattegories for Channel
         """
         print '  ' + self.__class__.__name__ + "::getCategorries"
+
         categories = []
         for name, var in channel_holder._variables.iteritems():
             # Cuts common for all categories
@@ -218,7 +220,7 @@ class TESShapes(Shapes):
 
         print '\t', 'Cattegories:'
         for category in categories:
-            print '\t' * 2, category.name, "_:", category.cuts.__str__(indent=3)
+            print '\t' * 2, category.name, "_:", category.cuts.__str__(indent=3 + self._indent)
 
         return categories
 
@@ -227,8 +229,9 @@ class TESShapes(Shapes):
         """
         Creates and returns channel_holder for requested channel
         """
-        print '  ' + self.__class__.__name__ + "::getEvaluatedChannel"
-        if self._context_analysis == 'mtTES' and self._era_name == '2017':
+        print '  ' + self.__class__.__name__ + '::' + sys._getframe().f_code.co_name
+
+        if 'mtTES' in self._context_analysis and '2017' in self._era_name:
             if channel == 'mt':
                 from shape_producer.channel import MTSM2017 as CHANNEL  # TODO: make this globally configurable
             elif channel == 'et':
@@ -238,10 +241,12 @@ class TESShapes(Shapes):
             else:
                 raise KeyError("getEvaluatedChannel: channel not setup. channel:" + channel)
 
+            # name=self._context_analysis + channel,
+            # cuts=CHANNEL._cuts,
             channel_holder = ChannelHolder(
                 ofset=self._ofset + 1,
                 logger=self._logger,
-                debug=self._logger,
+                debug=self._debug,
                 channel_obj=CHANNEL(),
                 friend_directory=self._et_friend_directory,
             )
@@ -268,31 +273,37 @@ class TESShapes(Shapes):
 
             return channel_holder
         else:
-            raise KeyError("getEvaluatedChannel: context/era not setup:" + self._context_analysis + '; era: ' + self._era_name)
+            raise KeyError("getEvaluatedChannel: context/era not setup: " + self._context_analysis + '; era: ' + self._era_name)
+
+        return 0
 
     # @self.introducing
     def evaluateChannels(self):
         """
         Evaluates all requested channels
         """
-        # print "TESShapes::evaluateChannels"
-        print '  ' + self.__class__.__name__ + "::evaluateChannels"
+        print '  ' + self.__class__.__name__ + "::" + sys._getframe().f_code.co_name
+
         for channel in self._channels_key:
             self.addChannel(
                 name=channel,
                 channel_holder=self.getEvaluatedChannel(channel=channel, variables=self._variables_names),
             )
 
+        return 0
+
     def addChannel(self, name, channel_holder):
         """
         Appends to the _channels dict only the ChannelHolder items
         """
-        # print "TESShapes::addChannel:", name, type(channel_holder)
-        print '  ' + self.__class__.__name__ + "::addChannel"
+        print '  ' + self.__class__.__name__ + "::" + sys._getframe().f_code.co_name
+
         if isinstance(channel_holder, ChannelHolder):
             self._channels[name] = channel_holder
         else:
             raise 'addChannel can\'t add non-ChannelHolder objects'
+
+        return 0
 
     # TODO: split to call corresponding functions instead of passing list of strings
     # TODO: put to a different class and inherit from it.
