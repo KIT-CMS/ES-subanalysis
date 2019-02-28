@@ -15,7 +15,7 @@ from shape_producer.systematic_variations import Nominal, DifferentPipeline, cre
 
 class ETauFES(Shapes):
     def __init__(self, **kvargs):
-        print "init ETauFES"
+        print "init", self.__class__.__name__
         super(ETauFES, self).__init__(**kvargs)
 
         self._variables = []
@@ -235,7 +235,7 @@ class ETauFES(Shapes):
             channel_holder = ChannelHolder(
                 ofset=self._ofset + 1,
                 logger=self._logger,
-                debug=self._logger,
+                debug=self._debug,
                 channel_obj=ETSM2017(),
                 friend_directory=self._et_friend_directory,
             )
