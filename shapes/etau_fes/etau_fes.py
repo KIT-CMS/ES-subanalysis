@@ -1,3 +1,4 @@
+import sys
 import importlib
 from shapes import Shapes
 
@@ -289,6 +290,7 @@ class ETauFES(Shapes):
 
     # TODO: split to call corresponding functions instead of passing list of strings
     def evaluateSystematics(self, *argv):
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
         for channel_name, channel_holder in self._channels.iteritems():
             processes = channel_holder._processes.values()
             categories = channel_holder._categorries
