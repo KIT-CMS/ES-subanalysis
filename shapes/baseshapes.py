@@ -182,6 +182,25 @@ class Shapes(object):
         )
         return output
 
+    @classmethod
+    def prepareConfig(cls, analysis_shapes, config_file, debug=False):
+        '''Read config and update to prompt'''
+        self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name + ': '
+        if debug:
+            print '\n', self_name
+
+        config = analysis_shapes.readConfig(config_file)
+
+        prompt_args = analysis_shapes.parse_arguments(include_defaults=False)
+
+        config.update(prompt_args)
+
+        if debug:
+            print 'config:'
+            pp.pprint(config)
+
+        return config
+
     # TODO: cleanup
     @classmethod
     def parse_arguments(cls, include_defaults=True, debug=False):
@@ -377,8 +396,8 @@ class Shapes(object):
             try:
                 return self._known_estimation_methods[era][context][channel_name][self._methods_collection_key]
             except:
-                self._log.error(' '.join("Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name))
-                self._log.error('Possible _known_estimation_methods:')
+                self._logger.error(' '.join("Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name))
+                self._logger.error('Possible _known_estimation_methods:')
                 pp.pprint(self._known_estimation_methods[era][context][channel_name])
         else:
             d = {}
@@ -392,8 +411,8 @@ class Shapes(object):
         """
         Setting systematics to associated INDIVIDUAL channel
         """
-        self._log.info('  ' + self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
-        self._log.error('Not implemented!')
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+        self._logger.warning('Not implemented!')
         pass
 
     def produceShapes():
