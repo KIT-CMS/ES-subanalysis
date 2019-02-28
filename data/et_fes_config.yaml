@@ -290,7 +290,7 @@ _known_estimation_methods:
             VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
             WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
 
-          # Original_FES_with_FF: # with classical bg estimations
+          # Original_FES_with_FF: # with classical bg estimations and EMB
           methods:
             data_obs                : DataEstimation  # combine
             ZL                      : ZLEstimation  # combine; Signal ; class. QCD & W
@@ -312,6 +312,7 @@ _known_estimation_methods:
             VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
             WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
             jetFakes                : FakeEstimationLT
+            # EMB                     : ZTTEmbeddedEstimation  # NEED A NEW ARTUS RUN
 
           # FF no embedding
           # methods:
