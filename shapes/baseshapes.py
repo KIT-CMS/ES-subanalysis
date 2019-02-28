@@ -388,6 +388,14 @@ class Shapes(object):
                 d[i] = self._known_processes[i]
             return d
 
+    def getChannelSystematics(self, channel_holder):
+        """
+        Setting systematics to associated INDIVIDUAL channel
+        """
+        self._log.info('  ' + self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+        self._log.error('Not implemented!')
+        pass
+
     def produceShapes():
         pass
 

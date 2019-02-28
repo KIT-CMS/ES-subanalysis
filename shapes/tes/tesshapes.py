@@ -222,13 +222,6 @@ class TESShapes(Shapes):
 
         return categories
 
-    def getSystematics(self, channel_holder):  # NOTE: for a single channel
-        """
-        Setting systematics ro associated channel
-        """
-        print '  ' + self.__class__.__name__ + "::getSystematics: PASS"
-        pass
-
     @introduce_function
     def getEvaluatedChannel(self, channel, variables):
         """
@@ -268,8 +261,8 @@ class TESShapes(Shapes):
             channel_holder._categorries = self.getCategorries(
                 channel_holder=channel_holder
             )
-            # print "self._logger.debug('...getSystematics')"
-            channel_holder._systematics = self.getSystematics(  # NOTE: for a single channel
+            # print "self._logger.debug('...getChannelSystematics')"
+            channel_holder._systematics = self.getChannelSystematics(  # NOTE: for a single channel
                 channel_holder=channel_holder
             )
 

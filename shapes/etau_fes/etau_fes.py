@@ -219,12 +219,6 @@ class ETauFES(Shapes):
 
         return categories
 
-    def getSystematics(self, channel_holder):  # NOTE: for a single channel
-        """
-        Setting systematics ro associated channel
-        """
-        pass
-
     def getEvaluatedChannel(self, channel, variables):
         """
         Creates and returns channel_holder for requested channel
@@ -262,8 +256,8 @@ class ETauFES(Shapes):
             channel_holder._categorries = self.getCategorries(
                 channel_holder=channel_holder
             )
-            # print "self._logger.debug('...getSystematics')"
-            channel_holder._systematics = self.getSystematics(  # NOTE: for a single channel
+            # print "self._logger.debug('...getChannelSystematics')"
+            channel_holder._systematics = self.getChannelSystematics(  # NOTE: for a single channel
                 channel_holder=channel_holder
             )
 
