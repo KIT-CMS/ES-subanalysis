@@ -5,13 +5,24 @@ pp = pprint.PrettyPrinter(indent=4)
 
 import logging
 from rootpy import log
-log.setLevel(log.INFO)
-from rootpy.logger.magic import DANGER
-DANGER.enabled = False
+# log.setLevel(log.INFO)
+# from rootpy.logger.magic import DANGER
+# DANGER.enabled = False
 
 from shapes.tes import tesshapes
 from shape_producer.systematics import Systematics
 from shapes.convert_to_shapes import convertToShapes
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 
 def prepareConfig(config_file='data/tes_config.yaml', debug=False):
@@ -25,32 +36,35 @@ def prepareConfig(config_file='data/tes_config.yaml', debug=False):
     if debug:
         print 'config:'
         pp.pprint(config)
-
+    pp.pprint(config)
+    exit(1)
     return config
 
 
 def produce_shapes_variables(config):
 
-    print '\n # 2 - setup_logging'
+    print bcolors.HEADER, '\n # 1 - init TESShapes', bcolors.ENDC
     shapes = tesshapes.TESShapes(**config)
-    shapes.setup_logging(output_file="{}_tesshapes.log".format(shapes._tag), level=log.INFO, logger=shapes._logger)
 
-    print '\n # 3 - Era evaluation'
+    print bcolors.HEADER, '\n # 2 - setup_logging', bcolors.ENDC
+    shapes.setup_logging(output_file="{}_tesshapes.log".format(shapes._tag), level=config['log_level'], logger=shapes._logger)
+
+    print bcolors.HEADER, '\n # 3 - era evaluation', bcolors.ENDC
     shapes.evaluateEra()
     # shapes._nominal_folder = 'eleTauEsOneProngPiZerosShift_0'
-    print '\n # 4 - import necessary estimation methods'
+    print bcolors.HEADER, '\n # 4 - import necessary estimation methods', bcolors.ENDC
     shapes.importEstimationMethods()
 
-    print '\n # 5 - evaluating channels (processes, variables,cattegories)'
+    print bcolors.HEADER, '\n # 5 - evaluating channels (processes, variables,cattegories)', bcolors.ENDC
     shapes.evaluateChannels()
 
-    print '\n # 6 - add systematics'
+    print bcolors.HEADER, '\n # 6 - add systematics', bcolors.ENDC
     shapes.evaluateSystematics()
     # return 0
-    print '\n # 7 - produce shapes'
+    print bcolors.HEADER, '\n # 7 - produce shapes', bcolors.ENDC
     shapes.produce()
 
-    print '\n # 8 - convert to synched shapes'
+    print bcolors.HEADER, '\n # 8 - convert to synched shapes', bcolors.ENDC
 
     shapes_dir = os.path.join('/'.join(os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]), 'converted_shapes')
     output_file_name = convertToShapes(
@@ -60,18 +74,20 @@ def produce_shapes_variables(config):
         context='_tes',
     )
 
-    print '\n # 9 - implement the nominal ploting if you want'
+    # prinbcolors.HEADER, t '\n # 9 - implement the nominal ploting if you want', bcolors.ENDC
+
+    print bcolors.HEADER, 'Output shapes:', output_file_name
 
 
 def main():
-    print 'Start'
+    print bcolors.HEADER, 'Start', bcolors.ENDC
 
-    print '\n # 1 - prepareConfig'
+    print bcolors.HEADER, '\n # 0 - prepareConfig', bcolors.ENDC
     config = prepareConfig(debug=False)
 
     produce_shapes_variables(config=config)
 
-    print 'End'
+    print bcolors.HEADER, 'End', bcolors.ENDC
 
 
 if __name__ == '__main__':
