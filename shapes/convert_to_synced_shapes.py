@@ -34,6 +34,10 @@ map_pipes = {
     'njetN_dm10': 'CMS_fes_eleTauEsThreeProngShift_13TeV_',
 
     'inclusive': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
+
+    'jeta_1': 'jeta_1',
+    'jeta_2': 'jeta_2',
+    'm_vis': 'm_vis',
 }
 
 
@@ -86,8 +90,12 @@ def checkDM(hist_map):
             print 'nominal:', k
 
 
-def constructMap(hist_map, input_file, debug=0, variables=['m_vis', 'njets_mvis', 'dm_mvis']):
+def constructMap(hist_map, input_file, debug=0, variables=None):
     # pp.pprint(sorted(input_file.GetListOfKeys())); exit(1)
+    if variables is None:
+        print "convertToSynced::constructMap : no desired variables were asked to be updated."
+        return
+
     for key in input_file.GetListOfKeys():
         # Read name and extract shape properties
         name = key.GetName()
@@ -149,8 +157,8 @@ def constructMap(hist_map, input_file, debug=0, variables=['m_vis', 'njets_mvis'
     #     print '0jet_dm0'
     #     pp.pprint(hist_map['et']['0jet_dm0'])
 
-
-def convertToSynced(input_path='', output_dir='', debug=False):
+# input_path=args.input[0], output_dir=args.output, debug=args.debug, variables=args.variables)
+def convertToSynced(input_path='', output_dir='', debug=False, variables=['m_vis', 'njets_mvis', 'dm_mvis']):
     # Open input ROOT file and output ROOT file
     if len(input_path) > 5 and input_path[-5:] == '.root':
             pass
@@ -162,7 +170,7 @@ def convertToSynced(input_path='', output_dir='', debug=False):
 
     # Loop over shapes of input ROOT file and create map of input/output names
     hist_map = {}
-    constructMap(hist_map=hist_map, input_file=input_file, debug=debug)
+    constructMap(hist_map=hist_map, input_file=input_file, debug=debug, variables=variables)
 
     # if debug:
     #     checkDM(hist_map)
@@ -184,7 +192,7 @@ def convertToSynced(input_path='', output_dir='', debug=False):
             print 'No registered as known categories are found. Known:'
             pp.pprint(known_categories)
             print "found:"
-            pp.pprint(hist_map[channel])
+            pp.pprint(hist_map[channel].keys())
         else:
             print "Intersection:", intersection(known_categories, hist_map[channel].keys())
 
@@ -251,4 +259,5 @@ def convertToSynced(input_path='', output_dir='', debug=False):
 if __name__ == "__main__":
     args = parse_arguments()
     setup_logging("convert_synced_shapes.log", logging.DEBUG)
+    print args.variables
     convertToSynced(input_path=args.input[0], output_dir=args.output, debug=args.debug, variables=args.variables)
