@@ -47,6 +47,7 @@ class Shapes(object):
                  context_analysis=None,
                  variables_names=None,  # X
                  processes=None,
+                 methods_collection_key='methods',
                  module=None,
                  _known_estimation_methods=None,
                  nominal_folder='nominal',
@@ -67,6 +68,7 @@ class Shapes(object):
         self._binning = binning
         self._binning_key = binning_key
         self._log_level = log_level
+        self._methods_collection_key = methods_collection_key
 
         self._backend = backend
         self._channels_key = channels
@@ -205,6 +207,7 @@ class Shapes(object):
         # Arguments with defaults that might be changed in the config file
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
         parser.add_argument("--processes", nargs='+', type=str, help="Processes from the standart map of processes")  # TODO: enable passing via syntax <name>:<class name>
+        parser.add_argument("--methods-collection-key", nargs=1, type=str, help="Methods collection key")
         parser.add_argument("--module", nargs=1, type=str, help="Module to import where estimation methods are defined")  # TODO: enable passing via syntax <name>:<class name>
         parser.add_argument("--num-threads", type=int, help="Number of threads to be used.")
         parser.add_argument("--backend", choices=["classic", "tdf"], type=str, help="Backend. Use classic or tdf.")
@@ -222,6 +225,7 @@ class Shapes(object):
 
         defaultArguments['channels'] = []
         defaultArguments['processes'] = []
+        defaultArguments['methods_collection_key'] = 'methods'
         defaultArguments['module'] = None
         defaultArguments['num_threads'] = 32
         defaultArguments['backend'] = 'classic'
@@ -366,7 +370,7 @@ class Shapes(object):
 
         if len(self._processes) == 0:
             try:
-                return self._known_estimation_methods[era][context][channel_name]['methods']
+                return self._known_estimation_methods[era][context][channel_name][self._methods_collection_key]
             except:
                 self._log.error(' '.join("Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name))
                 self._log.error('Possible _known_estimation_methods:')
