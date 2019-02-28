@@ -10,6 +10,7 @@ tag: mtTES
 output_file: ''
 skip_systematic_variations: True  # TEMP!
 context_analysis: mtTES
+methods_collection_key: classical_bg_est
 log_level: info
 ## Typical processes affected by systematic variation
 tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
@@ -50,7 +51,8 @@ user_specific:
     default: Null
     glusheno:
       naf: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal_dm2/nominal_2019-02-20_14-47/merged/
-      # /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal/nominal_2019-02-14_01-30/merged
+      # only dm2: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal_dm2/nominal_2019-02-20_14-47/merged/
+      # all dm: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal/nominal_2019-02-14_01-30/merged
 
   datasets:
     default: Null
@@ -135,7 +137,7 @@ _known_estimation_methods:
             jetFakes                : FakeEstimationLT
             # EMB                     : ZTTEmbeddedEstimation  # NEED A NEW ARTUS RUN
 
-          methods: # with classical bg estimations
+          classical_bg_est: # with classical bg estimations
           # methods:
             data_obs                : DataEstimation  # combine
             ZL                      : ZLEstimation  # combine; Signal ; class. QCD & W
