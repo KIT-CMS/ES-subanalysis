@@ -10,77 +10,44 @@ from rootpy import log
 # DANGER.enabled = False
 
 # TODO: configurable
+from shapes import styled
 from shapes.tes.tesshapes import TESShapes as analysis_shapes
 from shape_producer.systematics import Systematics
 from shapes.convert_to_shapes import convertToShapes
 
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-
-def prepareConfig(config_file='data/tes_config.yaml', debug=False):
-    '''Read config and update to prompt'''
-    config = analysis_shapes.readConfig(config_file)
-
-    prompt_args = analysis_shapes.parse_arguments(include_defaults=False)
-
-    config.update(prompt_args)
-
-    if debug:
-        print 'config:'
-        pp.pprint(config)
-
-    return config
-
-
-def str_header(*argv):
-    text = bcolors.HEADER
-    for txt in argv:
-        text += txt
-    text += bcolors.ENDC
-    return text
-
-
 def produce_shapes_variables(config):
 
-    print str_header('\n # 1 - init FF shapes production')
+    styled.HEADER('\n # 1 - init FF shapes production')
     shapes = analysis_shapes(**config)
 
-    print str_header('\n # 2 - setup_logging')
+    styled.HEADER('\n # 2 - setup_logging')
     shapes.setup_logging(
         output_file="{}_ff_shapes.log".format(shapes._tag),
         level=config['log_level'],
         logger=shapes._logger,
     )
 
-    print str_header('\n # 3 - era evaluation')
+    styled.HEADER('\n # 3 - era evaluation')
     shapes.evaluateEra()
 
-    print str_header('\n # 4 - import necessary estimation methods')
+    styled.HEADER('\n # 4 - import necessary estimation methods')
     shapes.importEstimationMethods()
 
-    print str_header('\n # 5 - evaluating channels (processes, variables,cattegories)')
+    styled.HEADER('\n # 5 - evaluating channels (processes, variables,cattegories)')
     shapes.evaluateChannels()
 
-    print str_header('\n # 5.5 - invert isolation cuts')
+    styled.HEADER('\n # 5.5 - invert isolation cuts')
     for key in shapes.channels.keys():
         shapes.channels[key].replace_all_cuts(name='tau_iso', value='byTightIsolationMVArun2017v2DBoldDMwLT2017_2<0.5')
 
-    print str_header('\n # 6 - add systematics')
+    styled.HEADER('\n # 6 - add systematics')
     shapes.evaluateSystematics()
     # return 0
-    print str_header('\n # 7 - produce shapes')
+    styled.HEADER('\n # 7 - produce shapes')
     shapes.produce()
 
-    print str_header('\n # 8 - convert to synched shapes')
+    styled.HEADER('\n # 8 - convert to synched shapes')
 
     shapes_dir = os.path.join('/'.join(os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]), 'converted_shapes')
     output_file_name = convertToShapes(
@@ -90,9 +57,9 @@ def produce_shapes_variables(config):
         context='_tes',
     )
 
-    # prinbcolors.HEADER, t '\n # 9 - implement the nominal ploting if you want', bcolors.ENDC
+    # styled.HEADER(, t '\n # 9 - implement the nominal ploting if you want', bcolors.ENDC
 
-    print str_header('Output shapes:\n', output_file_name)
+    styled.HEADER('Output shapes:\n', output_file_name)
 
 
 def dict_replace(old, new, d):
@@ -113,11 +80,15 @@ def dict_replace(old, new, d):
 
 
 def main():
-    debug = False
-    print str_header('Start shapes for FF productions')
+    debug = True
+    styled.HEADER('Start shapes for FF productions')
 
-    print str_header('\n # 0 - prepareConfig')
-    config = prepareConfig(debug=debug)
+    styled.HEADER('\n # 0 - prepareConfig')
+    config = analysis_shapes.prepareConfig(
+        analysis_shapes=analysis_shapes,
+        config_file='data/tes_config.yaml',
+        debug=debug
+    )
 
     if debug:
         import copy
@@ -141,7 +112,7 @@ def main():
     # Targeted analysis class should be passed
     produce_shapes_variables(config=config)
 
-    print str_header('End')
+    styled.HEADER('End')
 
 
 if __name__ == '__main__':
