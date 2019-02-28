@@ -1,3 +1,4 @@
+*.patch
 # Harryplotter folder
 plots/
 tests/
