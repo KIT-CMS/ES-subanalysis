@@ -68,7 +68,8 @@ user_specific:
   directory:
     default: Null
     glusheno:
-      naf: /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/skim_Nov/merged
+      naf: /pnfs/desy.de/cms/tier2/store/user/ohlushch/naf/nfs/htautau/artus/ETauFakeES/skim_Nov/merged/
+      # /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/skim_Nov/merged
       # /nfs/dust/cms/user/glusheno/htautau/artus/ETauFakeES/skim_october_nodiLepVeto_LooseIso_2/merged
 
   datasets:

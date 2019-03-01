@@ -50,9 +50,12 @@ user_specific:
   directory:
     default: Null
     glusheno:
-      naf: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal_dm2/nominal_2019-02-20_14-47/merged/
-      # only dm2: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal_dm2/nominal_2019-02-20_14-47/merged/
-      # all dm: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal/nominal_2019-02-14_01-30/merged
+      # merged nominals, dm = 1:
+      naf: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal_dm2/merged_nom_jec/merged
+      # only dm = 1:
+      # naf: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal_dm2/delme/nominal_2019-02-20_14-47/merged/
+      # all dm:
+      # naf: /nfs/dust/cms/user/glusheno/htautau/artus/TES/analysis/nominal/nominal_2019-02-14_01-30/merged
 
   datasets:
     default: Null
@@ -92,6 +95,7 @@ _known_estimation_methods:
   '2017':
       mtTES:
         tau_es_point : Null
+          # [1, 2]
         tau_es_charged : []
         tau_es_neutral : []
         module: shape_producer.estimation_methods_Fall17
