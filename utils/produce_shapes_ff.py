@@ -9,7 +9,6 @@ from rootpy import log
 # from rootpy.logger.magic import DANGER
 # DANGER.enabled = False
 
-# TODO: configurable
 from shapes import styled
 from shapes.tes.tesshapes import TESShapes as analysis_shapes
 from shape_producer.systematics import Systematics

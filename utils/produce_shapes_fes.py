@@ -5,35 +5,26 @@ pp = pprint.PrettyPrinter(indent=4)
 
 import logging
 from rootpy import log
-log.setLevel(log.INFO)
-from rootpy.logger.magic import DANGER
-DANGER.enabled = False
+# log.setLevel(log.INFO)
+# from rootpy.logger.magic import DANGER
+# DANGER.enabled = False
 
-from shapes.etau_fes import etau_fes
+from shapes import styled
+from shapes.etau_fes import ETauFES as analysis_shapes
 from shape_producer.systematics import Systematics
 from shapes.convert_to_synced_shapes import convertToSynced
-
-
-def prepareConfig(config_file='data/et_fes_config.yaml', debug=False):
-    '''Read config and update to prompt'''
-    config = etau_fes.ETauFES.readConfig(config_file)
-
-    prompt_args = etau_fes.ETauFES.parse_arguments(include_defaults=False)
-
-    config.update(prompt_args)
-
-    if debug:
-        print 'config:'
-        pp.pprint(config)
-
-    return config
 
 
 def produce_shapes_variables(config):
 
     print '\n # 2 - setup_logging'
-    shapes = etau_fes.ETauFES(**config)
-    shapes.setup_logging(output_file="{}_etau_fes.log".format(shapes._tag), level=log.INFO, logger=shapes._logger)
+    shapes = analysis_shapes(**config)
+
+    shapes.setup_logging(
+        output_file="{}_etau_fes.log".format(shapes._tag),
+        level='debug',  # config['log_level']
+        logger=shapes._logger
+    )
 
     print '\n # 3 - Era evaluation'
     shapes.evaluateEra()
@@ -64,14 +55,19 @@ def produce_shapes_variables(config):
 
 
 def main():
-    print 'Start'
+    styled.HEADER('Start FES shapes production')
+    debug = True
 
-    print '\n # 1 - prepareConfig'
-    config = prepareConfig(debug=False)
+    styled.HEADER('\n # 1 - prepareConfig')
+    config = analysis_shapes.prepareConfig(
+        analysis_shapes=analysis_shapes,
+        config_file='data/et_fes_config.yaml',
+        debug=debug
+    )
 
     produce_shapes_variables(config=config)
 
-    print 'End'
+    styled.HEADER('End')
 
 
 if __name__ == '__main__':

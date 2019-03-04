@@ -17,7 +17,8 @@ class bcolors:
             for i in args:
                 text += str(i)
             text += self.styles.ENDC
-            print text
-            return style
+            if 'print' in kwargs.keys():
+                print text
+            return text
 
         return callable

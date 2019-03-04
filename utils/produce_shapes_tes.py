@@ -4,7 +4,10 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 import logging
+
 from rootpy import log
+
+# logging.basicConfig(level=log.INFO)
 # log.setLevel(log.INFO)
 # from rootpy.logger.magic import DANGER
 # DANGER.enabled = False
@@ -17,28 +20,37 @@ from shapes.convert_to_shapes import convertToShapes
 
 def produce_shapes_variables(config):
 
-    styled.HEADER('\n # 1 - init TESShapes')
+    logging.info(styled.HEADER('# 1 - init TESShapes'))
     shapes = analysis_shapes(**config)
 
-    styled.HEADER('\n # 2 - setup_logging')
-    shapes.setup_logging(output_file="{}_tesshapes.log".format(shapes._tag), level=config['log_level'], logger=shapes._logger)
+    logging.info(styled.HEADER('# 2 - setup_logging'))
+    shapes.setup_logging(
+        output_file="{}_tesshapes.log".format(shapes._tag),
+        level=config['log_level'],
+        logger=shapes._logger,
+        danger=False,
+    )
 
-    styled.HEADER('\n # 3 - era evaluation')
+    # Disabling some printouts
+    logging.getLogger('shape_producer').setLevel(log.INFO)
+    # print 'loggerDict:'; pp.pprint(logging.Logger.manager.loggerDict) ; exit(1)
+
+    logging.info(styled.HEADER('# 3 - era evaluation'))
     shapes.evaluateEra()
     # shapes._nominal_folder = 'eleTauEsOneProngPiZerosShift_0'
-    styled.HEADER('\n # 4 - import necessary estimation methods')
+    logging.info(styled.HEADER('# 4 - import necessary estimation methods'))
     shapes.importEstimationMethods()
 
-    styled.HEADER('\n # 5 - evaluating channels (processes, variables,cattegories)')
+    logging.info(styled.HEADER('# 5 - evaluating channels (processes, variables,cattegories)'))
     shapes.evaluateChannels()
 
-    styled.HEADER('\n # 6 - add systematics')
+    logging.info(styled.HEADER('# 6 - add systematics'))
     shapes.evaluateSystematics()
-    # return 0
-    styled.HEADER('\n # 7 - produce shapes')
+
+    logging.info(styled.HEADER('# 7 - produce shapes'))
     shapes.produce()
 
-    styled.HEADER('\n # 8 - convert to synched shapes')
+    logging.info(styled.HEADER('# 8 - convert to synched shapes'))
 
     shapes_dir = os.path.join('/'.join(os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]), 'converted_shapes')
     output_file_name = convertToShapes(
@@ -48,17 +60,18 @@ def produce_shapes_variables(config):
         context='_tes',
     )
 
-    # styled.HEADER( t '\n # 9 - implement the nominal ploting if you want')
+    # logging.info(styled.HEADER( t '\n # 9 - implement the nominal ploting if you want'))
 
-    styled.UNDERLINE(styled.HEADER('Output shapes:', noprint=True))
-    styled.BOLD(styled.HEADER(output_file_name, noprint=True))
+    logging.info(styled.UNDERLINE(styled.HEADER('Output shapes:')))
+    logging.info(styled.BOLD(styled.HEADER(output_file_name)))
 
 
 def main():
     debug = False
-    styled.HEADER('Start')
+    logging.info(styled.HEADER('Start'))
+    # styled.HEADER('Start')
 
-    styled.HEADER('\n # 0 - prepareConfig')
+    logging.info(styled.HEADER('# 0 - prepareConfig'))
     config = analysis_shapes.prepareConfig(
         analysis_shapes=analysis_shapes,
         config_file='data/tes_config.yaml',
@@ -67,7 +80,7 @@ def main():
 
     produce_shapes_variables(config=config)
 
-    styled.HEADER('End')
+    logging.info(styled.HEADER('End'))
 
 
 if __name__ == '__main__':
