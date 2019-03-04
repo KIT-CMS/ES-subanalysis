@@ -1,4 +1,6 @@
 import importlib
+import logging
+
 from shapes import Shapes
 
 from shapes.channelholder import ChannelHolder
@@ -20,8 +22,10 @@ sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_
 class TESShapes(Shapes):
 
     def __init__(self, **kvargs):
-        print "init", self.__class__.__name__
+        logging.getLogger(__name__).info("Init " + self.__class__.__name__)
         super(TESShapes, self).__init__(**kvargs)
+
+        self._logger = logging.getLogger(__name__)
 
         self._variables = []
         self._estimation_methods = {}
@@ -34,6 +38,7 @@ class TESShapes(Shapes):
         """
         "Era selection"
         """
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
         if "2017" in self._era_name:
             from shape_producer.era import Run2017ReReco31Mar as Run2017
             self.era = Run2017(self._datasets)
@@ -45,7 +50,7 @@ class TESShapes(Shapes):
         """
         Returns class that corresponds to the requested estimation method
         """
-        print "getEstimationMethod::key", key
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name + ' key : ' + key)
         if key in self._estimation_methods:
             return self._estimation_methods[key]
         else:
@@ -56,8 +61,7 @@ class TESShapes(Shapes):
         Syntactic sugar to return a getEstimationMethod object defined by *key* in case no other attribute
         was resolved.
         """
-        # print "__getattr__::key", key
-        print self.__class__.__name__ + '::' + sys._getframe().f_code.co_name + ' : ' + key
+        self._logger.debug(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name + ' : key : ' + key)
         return self.getEstimationMethod(key)
 
     def importEstimationMethods(self, module, *methods):  # TODO: add arguments validity
@@ -66,7 +70,7 @@ class TESShapes(Shapes):
         """
         for method in methods:
                 if method in self._estimation_methods:
-                    print 'Warning: Estimation method', method, 'already defined - skipped redefinition'
+                    self._logger.warning(' '.join(['Warning: Estimation method', method, 'already defined - skipped redefinition']))
                     continue
                 self._estimation_methods[method] = getattr(importlib.import_module(module), method)
 
@@ -76,17 +80,17 @@ class TESShapes(Shapes):
         """
         Standalone importing
         """
-        # print "TESShapes::Standalone importing"
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+
         if channels_key is None:
             channels_key = self._channels_key
 
         imported_module = self.getModule()
         for channel_name in channels_key:
-            # print "test:", self._known_estimation_methods[era][context_analysis]#[channel_name]#['methods']
             for combine_name, method in self.getMethodsDict(era=era, context=context_analysis, channel_name=channel_name).iteritems():
                 if method in self._estimation_methods:
-                    print 'Warning: Estimation method', method, 'already defined - skipped redefinition'
-                # print 'module:', self._estimation_methods
+                    self._logger.warning(' '.join(['Warning: Estimation method', method, 'already defined - skipped redefinition']))
+                # 'module:', self._estimation_methods
                 self._estimation_methods[method] = getattr(importlib.import_module(imported_module), method)
 
     # TODO: needs to belong to ChannelHolder
@@ -95,7 +99,8 @@ class TESShapes(Shapes):
         """
         Returns dict of Processes for Channel
         """
-        print '  ' + self.__class__.__name__ + "::getProcesses"
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+
         parameters_list = {
             'era': self.era,
             'directory': self._directory,
@@ -119,7 +124,6 @@ class TESShapes(Shapes):
                 del orderedProcesses[combine_name]
                 orderedProcesses[combine_name] = temp
 
-        # print 'Create all Processes'
         for combine_name, estimation_method in orderedProcesses.iteritems():
             key = combine_name if combine_name not in renaming.keys() else renaming[combine_name]
 
@@ -127,7 +131,7 @@ class TESShapes(Shapes):
                 raise KeyError("Unknown estimation method: " + estimation_method)
 
             if key in processes.keys():  # TODO: add the check of the config
-                print "Key added in list of processes twice. channel: " + channel_name + "; key:" + key
+                self._logger.warning("Key added in list of processes twice. channel: " + channel_name + "; key:" + key)
                 continue
 
             if estimation_method in ['WEstimationWithQCD', 'QCDEstimationWithW']:
@@ -150,15 +154,15 @@ class TESShapes(Shapes):
                     qcd_ss_to_os_extrapolation_factor=1.09,
                 ))
             elif key == 'QCDEstimation_SStoOS_MTETEM':
-                print 'QCDEstimation_SStoOS_MTETEM is not yet setup'
-                exit(1)
+                self._logger.fatal('QCDEstimation_SStoOS_MTETEM is not yet setup')
+                raise
             elif key == 'jetFakes':
                 import copy
                 ff_parameters_list = copy.deepcopy(parameters_list)
                 ff_parameters_list['friend_directory'].append(self._fake_factor_friend_directory)
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ff_parameters_list))
             else:
-                # if key == 'ZL': print '-->getProcesses::', key, parameters_list
+                # if key == 'ZL':  '-->getProcesses::', key, parameters_list
                 processes[key] = Process(
                     combine_name,
                     self._estimation_methods[estimation_method](**parameters_list))
@@ -170,7 +174,8 @@ class TESShapes(Shapes):
         """
         Returns dict of Variables for Channel
         """
-        print '  ' + self.__class__.__name__ + "::getVariables"
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+
         variables = {}
 
         for key in variable_names:
@@ -188,7 +193,7 @@ class TESShapes(Shapes):
         """
         Returns dict of Cattegories for Channel
         """
-        print '  ' + self.__class__.__name__ + "::getCategorries"
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
 
         categories = []
         for name, var in channel_holder._variables.iteritems():
@@ -218,9 +223,10 @@ class TESShapes(Shapes):
                         categories[-1].cuts.remove("ele_iso")
                         categories[-1].cuts.remove("tau_iso")
 
-        print '\t', 'Cattegories:'
+        log_categories = '\t', 'Cattegories:\n'
         for category in categories:
-            print '\t' * 2, category.name, "_:", category.cuts.__str__(indent=3 + self._indent)
+            log_categories += '\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'
+        self._logger.info(log_categories)
 
         return categories
 
@@ -229,7 +235,7 @@ class TESShapes(Shapes):
         """
         Creates and returns channel_holder for requested channel
         """
-        print '  ' + self.__class__.__name__ + '::' + sys._getframe().f_code.co_name
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
 
         if 'mtTES' in self._context_analysis and '2017' in self._era_name:
             if channel == 'mt':
@@ -241,6 +247,7 @@ class TESShapes(Shapes):
             else:
                 raise KeyError("getEvaluatedChannel: channel not setup. channel:" + channel)
 
+            # TODO:
             # name=self._context_analysis + channel,
             # cuts=CHANNEL._cuts,
             channel_holder = ChannelHolder(
@@ -250,23 +257,19 @@ class TESShapes(Shapes):
                 channel_obj=CHANNEL(),
                 friend_directory=self._et_friend_directory,
             )
-
-            # print "self._logger.debug('...getProcesses')"
             channel_holder._processes = self.getProcesses(
                 channel_obj=channel_holder._channel_obj,
                 friend_directory=self._et_friend_directory
             )
-            # print "self._logger.debug('...getVariables')"
             channel_holder._variables = self.getVariables(
                 channel_obj=channel_holder._channel_obj,
                 variable_names=variables,
                 binning=self.binning[self._binning_key][channel_holder._channel_obj._name]
             )
-            # print "self._logger.debug('...getCategorries')"
+
             channel_holder._categorries = self.getCategorries(
                 channel_holder=channel_holder
             )
-            # print "self._logger.debug('...getChannelSystematics')"
             channel_holder._systematics = self.getChannelSystematics(  # NOTE: for a single channel
                 channel_holder=channel_holder
             )
@@ -282,7 +285,7 @@ class TESShapes(Shapes):
         """
         Evaluates all requested channels
         """
-        print '  ' + self.__class__.__name__ + "::" + sys._getframe().f_code.co_name
+        self._logger.info('  ' + self.__class__.__name__ + "::" + sys._getframe().f_code.co_name)
 
         for channel in self._channels_key:
             self.addChannel(
@@ -296,7 +299,7 @@ class TESShapes(Shapes):
         """
         Appends to the _channels dict only the ChannelHolder items
         """
-        print '  ' + self.__class__.__name__ + "::" + sys._getframe().f_code.co_name
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
 
         if isinstance(channel_holder, ChannelHolder):
             self._channels[name] = channel_holder
@@ -308,16 +311,17 @@ class TESShapes(Shapes):
     # TODO: split to call corresponding functions instead of passing list of strings
     # TODO: put to a different class and inherit from it.
     def evaluateSystematics(self, *argv):
-        print "evaluateSystematics"
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+
         for channel_name, channel_holder in self._channels.iteritems():
             processes = channel_holder._processes.values()
             categories = channel_holder._categorries
 
             if 'nominal' in self._shifts:
-                print '\n nominal...'
+                self._logger.info('\t.. nominal')
                 from itertools import product
                 for process, category in product(processes, categories):
-                    # print process._estimation_method._friend_directories
+                    # self._logger.debug(process._estimation_method._friend_directories)
                     self._systematics.add(
                         Systematic(
                             category=category,
@@ -328,14 +332,18 @@ class TESShapes(Shapes):
                             mass="125",  # TODO : check if this is used anywhere
                         )
                     )
-                    # print "\tnew sys:", self._systematics._systematics[-1].name, len(self._systematics._systematics), self._systematics._systematics[-1]._process.estimation_method._friend_directories
+                    # self._logger.debug("\tnew sys:", self._systematics._systematics[-1].name, len(self._systematics._systematics), self._systematics._systematics[-1]._process.estimation_method._friend_directories)
 
             if 'TES_shifts' in self._shifts:
-                print '\n\n TES_shifts...'
+                self._logger.info('\t.. TES_shifts')
                 root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
                 shifts = []
+
+                # Single point inclusion
                 if self._tau_es_point is not None:
                     shifts = ['ch' + root_str(self._tau_es_point[0]) + '_nt' + root_str(self._tau_es_point[1])]
+
+                # Produce a grid
                 for c in self._tau_es_charged:
                     for n in self._tau_es_neutral:
                         shift_str = 'ch' + root_str(c) + '_nt' + root_str(n)
@@ -345,20 +353,21 @@ class TESShapes(Shapes):
                     for pipeline in ["tauTauEsOneProngPiZerosShift_"]:
                         variation = DifferentPipeline(name='CMS_tes_' + pipeline + '13TeV_', pipeline=pipeline, direction=shift_str)
                         proc_intersection = list(set(self._tes_sys_processes) & set(channel_holder._processes.keys()))
-                        print '\n variation name:', variation.name, '\nintersection self._fes_sys_processes:', proc_intersection
+                        self._logger.debug(' '.join(['\n variation name:', variation.name, '\nintersection self._fes_sys_processes:'] + proc_intersection))
                         for process_nick in proc_intersection:
                             self._systematics.add_systematic_variation(
                                 variation=variation,
                                 process=channel_holder._processes[process_nick],
                                 channel=channel_holder._channel_obj,
-                                era=self.era)
+                                era=self.era
+                            )
 
     def produce(self):
-        print self._systematics
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
         self._systematics.produce()
 
 
 if __name__ == '__main__':
     args = TESShapes.parse_arguments()
-    etau_fes = TESShapes(**args)
-    print etau_fes
+    shapes = TESShapes(**args)
+    print shapes

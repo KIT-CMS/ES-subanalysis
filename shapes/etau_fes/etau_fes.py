@@ -1,5 +1,7 @@
 import sys
 import importlib
+import logging
+
 from shapes import Shapes
 
 from shapes.channelholder import ChannelHolder
@@ -16,8 +18,10 @@ from shape_producer.systematic_variations import Nominal, DifferentPipeline, cre
 
 class ETauFES(Shapes):
     def __init__(self, **kvargs):
-        print "init", self.__class__.__name__
+        logging.getLogger(__name__).info("Init " + self.__class__.__name__)
         super(ETauFES, self).__init__(**kvargs)
+
+        self._logger = logging.getLogger(__name__)
 
         self._variables = []
         self._estimation_methods = {}
@@ -180,7 +184,10 @@ class ETauFES(Shapes):
     def getCategorries(self, channel_holder, cuts=None):
         """
         Returns dict of Cattegories for Channel
+
+
         """
+        # self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
         categories = []
         for name, var in channel_holder._variables.iteritems():
             # Cuts common for all categories
@@ -191,6 +198,7 @@ class ETauFES(Shapes):
 
             for njet in self._jets_multiplicity:
                 for dm in self._decay_mode:
+                    self._logger.info('%s : ..adding category {%s && %s}', sys._getframe().f_code.co_name, njet, dm)
                     categories.append(
                         Category(
                             name=njet + '_' + dm,
@@ -215,8 +223,10 @@ class ETauFES(Shapes):
                         categories[-1].cuts.remove("ele_iso")
                         categories[-1].cuts.remove("tau_iso")
 
+        log_categories = '\t', 'Cattegories:\n'
         for category in categories:
-            print category.name, ":", category.cuts
+            log_categories += '\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'
+        self._logger.info(log_categories)
 
         return categories
 
@@ -242,22 +252,22 @@ class ETauFES(Shapes):
             channel_holder._channel_obj.cuts.remove('trg_selection')
             channel_holder._channel_obj.cuts.add(Cut("(trg_singleelectron_27 == 1) || (trg_singleelectron_32 == 1) || (trg_singleelectron_35) || (trg_crossele_ele24tau30 == 1) || (isEmbedded && pt_1>20 && pt_1<24)", "trg_selection"))
 
-            # print "self._logger.debug('...getProcesses')"
+            self._logger.info('...getProcesses')
             channel_holder._processes = self.getProcesses(
                 channel_obj=channel_holder._channel_obj,
                 friend_directory=self._et_friend_directory
             )
-            # print "self._logger.debug('...getVariables')"
+            self._logger.info('...getVariables')
             channel_holder._variables = self.getVariables(
                 channel_obj=channel_holder._channel_obj,
                 variable_names=variables,
                 binning=self.binning[self._binning_key][channel_holder._channel_obj._name]
             )
-            # print "self._logger.debug('...getCategorries')"
+            self._logger.info('...getCategorries')
             channel_holder._categorries = self.getCategorries(
                 channel_holder=channel_holder
             )
-            # print "self._logger.debug('...getChannelSystematics')"
+            self._logger.info('...getChannelSystematics')
             channel_holder._systematics = self.getChannelSystematics(  # NOTE: for a single channel
                 channel_holder=channel_holder
             )
