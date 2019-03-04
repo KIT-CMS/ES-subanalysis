@@ -199,9 +199,6 @@ class TESShapes(Shapes):
         for name, var in channel_holder._variables.iteritems():
             # Cuts common for all categories
             cuts = Cuts()
-            if name != "mt_1":
-                cuts.add(Cut("mt_1 < 70", "mt"))
-            # Cut('mt_tot<70', 'mttot_cur'), TODO: check
 
             for njet in self._jets_multiplicity:
                 for dm in self._decay_mode:

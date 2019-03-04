@@ -192,9 +192,13 @@ class ETauFES(Shapes):
         for name, var in channel_holder._variables.iteritems():
             # Cuts common for all categories
             cuts = Cuts()
-            if name != "mt_1":
-                cuts.add(Cut("mt_1 < 70", "mt"))
-            # Cut('mt_tot<70', 'mttot_cur'), TODO: check
+            # if name != "mt_1":
+            #     if 'm_t' in channel_holder._channel_obj.cuts.names:
+            #         self._logger.warning('Removing the existing cut m_t in category: ' +
+            #             channel_holder._channel_obj.cuts.get('m_t')._weightstring +
+            #             ' --> mt_1 < 70'
+            #         )
+            #         channel_holder._channel_obj.cuts.remove("m_t")
 
             for njet in self._jets_multiplicity:
                 for dm in self._decay_mode:
