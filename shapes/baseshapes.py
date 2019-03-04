@@ -104,7 +104,6 @@ class Shapes(object):
         assert type(self._directory) is not None, "Shapes::directory not set"
         assert type(self._datasets) is not None, "Shapes::datasets not set"
         assert type(self._binning) is not None, "Shapes::binning not set"
-        print "self._binning:", self._binning
 
         self._binning = yaml.load(open(self._binning))
         self._known_processes = yaml.load(open('data/known_processes.yaml'))
@@ -233,7 +232,7 @@ class Shapes(object):
         parser.add_argument("--processes", nargs='+', type=str, help="Processes from the standart map of processes")  # TODO: enable passing via syntax <name>:<class name>
         parser.add_argument("--methods-collection-key", nargs=1, type=str, help="Methods collection key")
         parser.add_argument("--module", nargs=1, type=str, help="Module to import where estimation methods are defined")  # TODO: enable passing via syntax <name>:<class name>
-        parser.add_argument("--num-threads", type=int, help="Number of threads to be used.")
+        parser.add_argument('-n', "--num-threads", type=int, help="Number of threads to be used.")
         parser.add_argument("--backend", choices=["classic", "tdf"], type=str, help="Backend. Use classic or tdf.")
         parser.add_argument("--tag", type=str, help="Tag of output files.")
         parser.add_argument("--output-file", type=str, help="Output file name for file with final shapes that enter datacards. If none is given context_analysis is used as a root for this name")
@@ -282,41 +281,52 @@ class Shapes(object):
 
         return configuration
 
-    # TODO: separate from class, call in scope of each module
     @classmethod
-    def setup_logging(cls, output_file, logger, level='DEBUG', danger=False, debug=False):
+    def get_rootpy_log(cls, level, logger=logging.getLogger(__name__), debug=False):
         self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name + ': '
-        if debug:
-            print '\n', self_name
 
-        if level.lower() == 'debug':
-            print self_name, 'DEBUG'
-            # log.setLevel(log.DEBUG)
-            level = log.DEBUG
-        elif level.lower() == 'info':
-            print self_name, 'INFO'
-            # log.setLevel(log.INFO)
-            level = log.INFO
-        elif level.lower() == 'warning':
-            print self_name, 'WARNING'
-            # log.setLevel(log.INFO)
-            level = log.WARNING
-        else:
-            print cls.__name__ + '::' + sys._getframe().f_code.co_name + ' : unknown leve'
+        logger.info(self_name + level.upper())
+
+        try:
+            return getattr(log, level.upper())
+        except:
+            logger.fatal(self_name + ' unknown level ' + level)
             raise
 
+    # TODO: separate from class? have a standalone class and inherit from it?
+    @classmethod
+    def setup_logging(
+        cls,
+        output_file,
+        logger,
+        level='DEBUG',
+        danger=False,
+        debug=False,
+        add_stream_handler=False,
+        add_file_handler=False,
+        str_formatter=logging.BASIC_FORMAT,  # "%(name)s - %(levelname)s - %(message)s",
+    ):
+        self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name
+        logger.info(self_name)
+
+        level = cls.get_rootpy_log(level=level, logger=logger, debug=debug)
         DANGER.enabled = danger
 
         logger.setLevel(level)
-        formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
 
-        handler = logging.StreamHandler()
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+        formatter = logging.Formatter(str_formatter)
 
-        file_handler = logging.FileHandler(output_file, "w")
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        if add_stream_handler and not any(map(lambda x: isinstance(handler, logging.StreamHandler), logger.handlers)):
+            handler = logging.StreamHandler()
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+
+        # TODO: solve duplicated output
+        if add_file_handler and not any(map(lambda x: isinstance(handler, logging.StreamHandler), logger.handlers)):
+            file_handler = logging.FileHandler(output_file, "w")
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+
 
     @staticmethod
     def getHostKey():
