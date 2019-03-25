@@ -341,6 +341,24 @@ class TESShapes(Shapes):
                     )
                     # self._logger.debug("\tnew sys:", self._systematics._systematics[-1].name, len(self._systematics._systematics), self._systematics._systematics[-1]._process.estimation_method._friend_directories)
 
+            if 'Zpt' in self._shifts:
+                self._logger.info('\t.. Z pt reweighting')
+
+                zpt_variations = create_systematic_variations(
+                    name="CMS_htt_dyShape_13TeV",
+                    property_name="zPtReweightWeight",
+                    systematic_variation=SquareAndRemoveWeight,
+                )
+
+                for variation in zpt_variations:
+                    for process_nick in self.intersection(self.zpt_sys_processes, channel_holder._processes.keys()):
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
             if 'TES_shifts' in self._shifts:
                 self._logger.info('\t.. TES_shifts')
                 root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
