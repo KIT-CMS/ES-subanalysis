@@ -36,6 +36,7 @@ class Shapes(object):
                  era=None,
                  et_friend_directory=None,
                  fake_factor_friend_directory=None,
+                 extra_chain=None,
                  gof_channel=None,
                  gof_variable=None,
                  mt_friend_directory=None,
@@ -53,6 +54,7 @@ class Shapes(object):
                  nominal_folder='nominal',
                  etau_es_shifts=None,
                  tes_sys_processes=None,
+                 tes_shifts_sys_processes=None,
                  fes_sys_processes=None,
                  emb_sys_processes=None,
                  zpt_sys_processes=None,
@@ -80,6 +82,7 @@ class Shapes(object):
         self._mt_friend_directory = mt_friend_directory
         self._tt_friend_directory = tt_friend_directory
         self._fake_factor_friend_directory = fake_factor_friend_directory
+        self._extra_chain = extra_chain
         self._gof_channel = gof_channel
         self._gof_variable = gof_variable
         self._num_threads = num_threads
@@ -92,7 +95,6 @@ class Shapes(object):
         self._module = module
         self._known_estimation_methods = _known_estimation_methods
         self._nominal_folder = nominal_folder
-        self._tes_sys_processes = tes_sys_processes
         self._etau_es_shifts = etau_es_shifts
         self._fes_sys_processes = fes_sys_processes
         self._emb_sys_processes = emb_sys_processes
@@ -135,6 +137,26 @@ class Shapes(object):
             num_threads=self._num_threads,
             skip_systematic_variations=self._skip_systematic_variations
         )
+
+    @property
+    def variables_names(self):
+        if not isinstance(self._variables_names, list):
+            self._variables_names = [self._variables_names]
+        return self._variables_names
+
+    @variables_names.setter
+    def variables_names(self, value):
+        if not isinstance(value, list):
+            if isinstance(value, basestring):
+                self._variables_names = [value]
+            else:
+                log.fatal('variables_names should be a list of string or string')
+                raise
+        elif all(isinstance(item, basestring) for item in value):
+                self._variables_names = value
+        else:
+            log.fatal('variables_names list contains a non-string: [' + ', '.join(self._variables_names) + ']')
+            raise
 
     @property
     def binning(self):
@@ -224,6 +246,7 @@ class Shapes(object):
         parser.add_argument("--mt-friend-directory", type=str, help="Directory containing a friend tree for mt.")
         parser.add_argument("--tt-friend-directory", type=str, help="Directory containing a friend tree for tt.")
         parser.add_argument("--fake-factor-friend-directory", type=str, help="Directory containing friend trees to data files with FF.")
+        parser.add_argument("--extra-chain", type=str, help="Extra pipelines")
         parser.add_argument("--context-analysis", type=str, help="Context analysis.")
         parser.add_argument("--variables-names", nargs='*', type=str, help="Variable names.")
 
