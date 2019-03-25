@@ -339,17 +339,19 @@ class Shapes(object):
 
         formatter = logging.Formatter(str_formatter)
 
-        if add_stream_handler and not any(map(lambda x: isinstance(handler, logging.StreamHandler), logger.handlers)):
+        handler, file_handler = None, None
+        if add_stream_handler and not any(isinstance(h, logging.StreamHandler) for h in logger.handlers):
             handler = logging.StreamHandler()
             handler.setFormatter(formatter)
             logger.addHandler(handler)
 
-        # TODO: solve duplicated output
-        if add_file_handler and not any(map(lambda x: isinstance(handler, logging.StreamHandler), logger.handlers)):
+        # TODO: solve duplicated output / empty file
+        if add_file_handler and not any(isinstance(h, logging.FileHandler) for h in logger.handlers):
             file_handler = logging.FileHandler(output_file, "w")
             file_handler.setFormatter(formatter)
             logger.addHandler(file_handler)
 
+        return handler, file_handler
 
     @staticmethod
     def getHostKey():
