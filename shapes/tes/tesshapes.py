@@ -30,9 +30,12 @@ class TESShapes(Shapes):
         self._variables = []
         self._estimation_methods = {}
 
-        self._tau_es_point   = self._known_estimation_methods[self._era_name][self._context_analysis]['tau_es_point']
-        self._tau_es_charged = self._known_estimation_methods[self._era_name][self._context_analysis]['tau_es_charged']
-        self._tau_es_neutral = self._known_estimation_methods[self._era_name][self._context_analysis]['tau_es_neutral']
+        self._tes_sys_processes = kvargs['tes_sys_processes'] if 'tes_sys_processes' in kvargs.keys() else None
+        self._tes_shifts_sys_processes = kvargs['tes_shifts_sys_processes'] if 'tes_shifts_sys_processes' in kvargs.keys() else None
+        sub_settings = self._known_estimation_methods[self._era_name][self._context_analysis]
+        self._tau_es_point   = sub_settings['tau_es_point']
+        self._tau_es_charged = sub_settings['tau_es_charged'] if sub_settings['tau_es_charged'] is not None else []
+        self._tau_es_neutral = sub_settings['tau_es_neutral'] if sub_settings['tau_es_neutral'] is not None else []
 
     def evaluateEra(self):
         """
@@ -107,6 +110,7 @@ class TESShapes(Shapes):
             'channel': channel_obj,
             'friend_directory': friend_directory,
             'folder': self._nominal_folder,
+            'extra_chain': self._extra_chain,
         }
         channel_name = channel_obj._name
         context = self._context_analysis
@@ -150,7 +154,7 @@ class TESShapes(Shapes):
                     bg_processes=bg_processes,
                     data_process=processes["data_obs"],
                     w_process=processes["WMC"],
-                    friend_directory=[],
+                    friend_directory=friend_directory,
                     qcd_ss_to_os_extrapolation_factor=1.09,
                 ))
             elif key == 'QCDEstimation_SStoOS_MTETEM':
@@ -237,10 +241,13 @@ class TESShapes(Shapes):
         if 'mtTES' in self._context_analysis and '2017' in self._era_name:
             if channel == 'mt':
                 from shape_producer.channel import MTSM2017 as CHANNEL  # TODO: make this globally configurable
+                friend_directories = self._mt_friend_directory
             elif channel == 'et':
                 from shape_producer.channel import ETSM2017 as CHANNEL  # TODO: make this globally configurable
+                friend_directories = self._et_friend_directory
             elif channel == 'tt':
                 from shape_producer.channel import TTSM2017 as CHANNEL  # TODO: make this globally configurable
+                friend_directories = self._tt_friend_directory
             else:
                 raise KeyError("getEvaluatedChannel: channel not setup. channel:" + channel)
 
@@ -252,11 +259,11 @@ class TESShapes(Shapes):
                 logger=self._logger,
                 debug=self._debug,
                 channel_obj=CHANNEL(),
-                friend_directory=self._et_friend_directory,
+                friend_directory=friend_directories,
             )
             channel_holder._processes = self.getProcesses(
                 channel_obj=channel_holder._channel_obj,
-                friend_directory=self._et_friend_directory
+                friend_directory=friend_directories,
             )
             channel_holder._variables = self.getVariables(
                 channel_obj=channel_holder._channel_obj,
