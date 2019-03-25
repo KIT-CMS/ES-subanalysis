@@ -1,4 +1,5 @@
 import os
+from six import string_types
 
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
@@ -24,20 +25,31 @@ def produce_shapes_variables(config):
     shapes = analysis_shapes(**config)
 
     logging.info(styled.HEADER('# 2 - setup_logging'))
-    shapes.setup_logging(
+
+    handler, file_handler = shapes.setup_logging(
         output_file="{}_tesshapes.log".format(shapes._tag),
         level=config['log_level'],
-        logger=shapes._logger,
+        logger=logging.getLogger(),  # shapes._logger,
         danger=False,
+        add_file_handler=False,
+        add_stream_handler=False,
     )
 
     # Disabling some printouts
-    logging.getLogger('shape_producer').setLevel(log.INFO)
-    # print 'loggerDict:'; pp.pprint(logging.Logger.manager.loggerDict) ; exit(1)
+    # logging.getLogger('shape_producer').setLevel(log.INFO)
+    # logging.getLogger('shape_producer.systematics').setLevel(log.INFO)
+    logging.getLogger('shape_producer.histogram').setLevel(log.INFO)
+
+    if handler is not None:
+        handler.setLevel(log.INFO)
+        # logging.getLogger('shape_producer.histogram').addHandler(handler)
+
+    if file_handler is not None:
+        file_handler.setLevel(log.DEBUG)
 
     logging.info(styled.HEADER('# 3 - era evaluation'))
     shapes.evaluateEra()
-    # shapes._nominal_folder = 'eleTauEsOneProngPiZerosShift_0'
+
     logging.info(styled.HEADER('# 4 - import necessary estimation methods'))
     shapes.importEstimationMethods()
 
@@ -49,6 +61,7 @@ def produce_shapes_variables(config):
 
     logging.info(styled.HEADER('# 7 - produce shapes'))
     shapes.produce()
+    # TODO: close the output file properly
 
     logging.info(styled.HEADER('# 8 - convert to synched shapes'))
 
@@ -57,13 +70,18 @@ def produce_shapes_variables(config):
         input_path=shapes._output_file,
         output_dir=os.path.join(shapes_dir, shapes._output_file[:-5]),
         channels=['mt'],
+        variables=shapes.variables_names,
         context='_tes',
     )
 
     # logging.info(styled.HEADER( t '\n # 9 - implement the nominal ploting if you want'))
 
     logging.info(styled.UNDERLINE(styled.HEADER('Output shapes:')))
-    logging.info(styled.BOLD(styled.HEADER(output_file_name)))
+
+    if isinstance(output_file_name, string_types):
+        output_file_name = [output_file_name]
+    for o in output_file_name:
+        logging.info(styled.BOLD(styled.HEADER(o)))
 
 
 def main():
