@@ -1,5 +1,6 @@
 import importlib
 import logging
+from collections import OrderedDict
 
 from shapes import Shapes
 
@@ -12,7 +13,7 @@ from shape_producer.categories import Category  # move to ChannelsHolder
 from shape_producer.cutstring import Cut, Cuts, Weight  # move to ChannelsHolder
 from shape_producer.systematics import Systematic
 from shape_producer.systematic_variations import Nominal, DifferentPipeline, create_systematic_variations, \
-    ReplaceWeight, SquareAndRemoveWeight
+    ReplaceWeight, SquareAndRemoveWeight, ReplaceExpressions
 from shapes.introduce import introduce_function
 import sys
 from IPython.core import ultratb
@@ -202,7 +203,9 @@ class TESShapes(Shapes):
         categories = []
         for name, var in channel_holder._variables.iteritems():
             # Cuts common for all categories
-            cuts = Cuts()
+            cuts = Cuts(
+                Cut('pt_2>23', "pt_2_threshold"),
+            )
 
             for njet in self._jets_multiplicity:
                 for dm in self._decay_mode:
@@ -345,7 +348,7 @@ class TESShapes(Shapes):
 
                 # Single point inclusion
                 if self._tau_es_point is not None:
-                    shifts = ['ch' + root_str(self._tau_es_point[0]) + '_nt' + root_str(self._tau_es_point[1])]
+                    shifts = ['ch' + root_str(format(self._tau_es_point[0], '3.1f')) + '_nt' + root_str(format(self._tau_es_point[1], '3.1f'))]
 
                 # Produce a grid
                 for c in self._tau_es_charged:
@@ -355,9 +358,22 @@ class TESShapes(Shapes):
 
                 for shift_str in shifts:
                     for pipeline in ["tauTauEsOneProngPiZerosShift_"]:
-                        variation = DifferentPipeline(name='CMS_tes_' + pipeline + '13TeV_', pipeline=pipeline, direction=shift_str)
-                        proc_intersection = list(set(self._tes_sys_processes) & set(channel_holder._processes.keys()))
-                        self._logger.debug(' '.join(['\n variation name:', variation.name, '\nintersection self._fes_sys_processes:'] + proc_intersection))
+
+                        variation = DifferentPipeline(
+                            name='CMS_tes_' + pipeline + '13TeV_',
+                            pipeline=pipeline,
+                            direction=shift_str
+                        )
+
+                        proc_intersection = list(set(self._tes_shifts_sys_processes) & set(channel_holder._processes.keys()))
+
+                        self._logger.debug(
+                            ' '.join(
+                                ['\n variation name:', variation.name, '\n intersection self._tes_shifts_sys_processes:'] +
+                                proc_intersection
+                            )
+                        )
+
                         for process_nick in proc_intersection:
                             self._systematics.add_systematic_variation(
                                 variation=variation,
@@ -365,6 +381,59 @@ class TESShapes(Shapes):
                                 channel=channel_holder._channel_obj,
                                 era=self.era
                             )
+            if 'TES_gamma_shifts' in self._shifts:
+                self._logger.info('\t.. TES_gamma_shifts')
+                root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
+                mult_factor = lambda x: float((100. + x) / 100.)
+                shifts = []
+
+                # Single point inclusion
+                if self._tau_es_point is not None:
+                    shifts = [['ch' + root_str(self._tau_es_point[0]) + '_nt' + root_str(self._tau_es_point[1]),
+                        mult_factor(self._tau_es_point[0]), mult_factor(self._tau_es_point[1])]]
+
+                # Produce a grid
+                for c in self._tau_es_charged:
+                    for n in self._tau_es_neutral:
+                        shift_str = 'ch' + root_str(c) + '_nt' + root_str(n)
+                        shifts.append([shift_str, mult_factor(c), mult_factor(n)])
+
+                for shift_str, ch, nt in shifts:
+                    variation = ReplaceExpressions(
+                        name='CMS_tes_gamma_' + 'nominal_' + '13TeV_' + shift_str,
+                        direction='',
+                        replace_dict=OrderedDict([
+                            ('pt_2', 'sqrt({px_2} + {py_2})'.format(
+                                px_2='({px_ch} + {px_nt})*({px_ch} + {px_nt})'.format(
+                                    px_ch='leadingTauSumChargedHadronsLV.Px()*' + format(ch, '3.5f'),
+                                    px_nt='leadingTauSumNeutralHadronsLV.Px()*' + format(nt, '3.5f')),
+                                py_2='({py_ch} + {py_nt})*({py_ch} + {py_nt})'.format(
+                                    py_ch='leadingTauSumChargedHadronsLV.Py()*' + format(ch, '3.5f'),
+                                    py_nt='leadingTauSumNeutralHadronsLV.Py()*' + format(nt, '3.5f')),
+                            )),
+                            ('leadingTauSumChargedHadronsPt', 'leadingTauSumChargedHadronsPt*' + format(ch, '3.5f')),
+                            ('leadingTauSumNeutralHadronsPt', 'leadingTauSumNeutralHadronsPt*' + format(nt, '3.5f')),
+                        ])
+                    )
+                    # logging.warning("~~~~~~~~~~~~~~~~~~~~~~~~~~~variation:")
+                    # print variation.shifted_root_objects
+
+                    proc_intersection = list(set(self._tes_shifts_sys_processes) & set(channel_holder._processes.keys()))
+
+                    self._logger.debug(
+                        ' '.join(
+                            ['\n variation name:', variation.name, '\n intersection self._tes_shifts_sys_processes:'] +
+                            proc_intersection
+                        )
+                    )
+
+                    for process_nick in proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
 
     def produce(self):
         self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
