@@ -11,7 +11,7 @@ output_file: 'mtTES_Y.root'
 skip_systematic_variations: False
 context_analysis: mtTES
 methods_collection_key: classical_bg_est
-log_level: info
+log_level: debug
 ## Typical processes affected by systematic variation
 tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
 tes_shifts_sys_processes: ["ZTT", "EWKZ", "DYJetsToLL", "EMB"]
@@ -47,7 +47,7 @@ et_friend_directory: []
 mt_friend_directory: []
 tt_friend_directory: []
 fake_factor_friend_directory: [] #'/nfs/dust/cms/user/glusheno/FF/akhmet/SM_Htautau/ntuples/Artus17_2018-11-10/fake_factor_friends_njets_mvis'
-extra_chain: []
+extra_chain: []  # path to friends trees that should include extra pipeline to chain
 
 ## root-files
 user_specific:
@@ -101,10 +101,10 @@ _known_estimation_methods:
   '2016': Null
   '2017':
       mtTES:
-        tau_es_point : [2.11, 0.0] # Null # [0.0, 0.0]  # shapes should be the same as nominal
+        tau_es_point : [0.0, 0.0] # Null # [0.0, 0.0]  # shapes should be the same as nominal
         # [-2.0, -1.0, 0.0, 1.0, 2.0]
-        tau_es_charged : Null # [-4.0, -3.8, -3.6, -3.4, -3.2, -3.0, -2.8, -2.6, -2.4, -2.2, -2.0, -1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0]
-        tau_es_neutral : Null # [-2.0, -1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+        tau_es_charged : Null #[-4.0, -3.8, -3.6, -3.4, -3.2, -3.0, -2.8, -2.6, -2.4, -2.2, -2.0, -1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0]
+        tau_es_neutral : Null #[-2.0, -1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
         module: shape_producer.estimation_methods_Fall17
         mt:
           renaming:      # user_ame : combine_name

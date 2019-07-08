@@ -18,6 +18,9 @@ from shapes.tes.tesshapes import TESShapes as analysis_shapes
 from shape_producer.systematics import Systematics
 from shapes.convert_to_shapes import convertToShapes
 
+# import shape_producer.systematics
+# shape_producer.systematics.logger = log
+
 
 def produce_shapes_variables(config):
 
@@ -38,7 +41,8 @@ def produce_shapes_variables(config):
     # Disabling some printouts
     # logging.getLogger('shape_producer').setLevel(log.INFO)
     # logging.getLogger('shape_producer.systematics').setLevel(log.INFO)
-    logging.getLogger('shape_producer.histogram').setLevel(log.INFO)
+    # logging.getLogger('shape_producer.histogram').setLevel(log.INFO)
+    logging.getLogger('shape_producer.histogram').setLevel(log.DEBUG)
 
     if handler is not None:
         handler.setLevel(log.INFO)
@@ -72,6 +76,7 @@ def produce_shapes_variables(config):
         channels=['mt'],
         variables=shapes.variables_names,
         context='_tes',
+        use_number_coding=False,
     )
 
     # logging.info(styled.HEADER( t '\n # 9 - implement the nominal ploting if you want'))

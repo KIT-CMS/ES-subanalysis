@@ -230,7 +230,7 @@ class TESShapes(Shapes):
         log_categories = '\t', 'Cattegories:\n'
         for category in categories:
             log_categories += '\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'
-        self._logger.info(log_categories)
+        self._logger.info(''.join(log_categories))
 
         return categories
 
@@ -326,6 +326,7 @@ class TESShapes(Shapes):
 
             if 'nominal' in self._shifts:
                 self._logger.info('\t.. nominal')
+
                 from itertools import product
                 for process, category in product(processes, categories):
                     # self._logger.debug(process._estimation_method._friend_directories)

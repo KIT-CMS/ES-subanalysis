@@ -1,3 +1,6 @@
+"""
+Creates plots for comparison of individual shapes in the isolated versus anti-isolated regions
+"""
 import os
 import copy
 import ROOT
@@ -181,11 +184,11 @@ class CompareShapes(MyBase):
         self.subparser.add_argument(
             "--a-shapes-conv",
             type=str, default='/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/Shapes/ES-subanalysis/converted_shapes/test_A5_ZL_njets0_dm1_withFF/htt_et.inputs-etFes.root',
-            help="a_shapes_conv")
+            help="a_shapes_conv: the shapes are taken for the isolated region")
         self.subparser.add_argument(
             "--ff-shapes-conv",
             type=str, default=None,
-            help="ff_shapes_conv")
+            help="ff_shapes_conv: the shapes are taken for the anti-isolated region")
         self.subparser.add_argument(
             "--ff-shapes",
             type=str, default=None,

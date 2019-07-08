@@ -74,7 +74,7 @@ def parse_arguments():
     )
     parser.add_argument(
         "--categories",
-        nargs='*', type=str,
+        nargs='*', type=str, default=None,
         help="Category mode. If 'inclusive' fake factors are calculated inclusively, otherwise depending on NN categories"
     )
 
@@ -375,8 +375,7 @@ def apply_fake_factors(config):
 
     # save
     output_tree.Write()
-    logger.debug("Successfully finished %s" % os.path.join(
-        args.output_directory, datafile))
+    logger.debug("Successfully finished %s" % os.path.join(args.output_directory, datafile))
 
     # clean up
     ff.Delete()
@@ -427,7 +426,7 @@ def apply_fake_factors_per_category(config):
             ]
         }
     if args.no_syst_shifts:
-        unc_shifts = {"et":[]}
+        unc_shifts = {"et": []}
 
     # Prepare Data inputs
     print "Prepare Data inputs:", os.path.join(args.directory, datafile)
@@ -552,14 +551,14 @@ def calculate_fake_factors(args):
     categories = {
         "et": [
             'njet0_alldm',
-            # 'njet0_dm10',
-            # 'njet0_dm1',
-            # 'njet0_dm0',
+            'njet0_dm10',
+            'njet0_dm1',
+            'njet0_dm0',
 
             'njetN_alldm',
-            # 'njetN_dm10',
-            # 'njetN_dm1',
-            # 'njetN_dm0',
+            'njetN_dm10',
+            'njetN_dm1',
+            'njetN_dm0',
 
             # 'inclusive',
 
@@ -568,9 +567,11 @@ def calculate_fake_factors(args):
         ]
     }
     # categories = {"et": ['njet0_dm1']}  # TEST
-    if args.categories:
-        categories['et'] = [].extend(args.categories)
 
+    if args.categories is not None:
+        categories['et'] = args.categories if isinstance(args.categories, list) else list(args.categories)
+
+    print 'categ:', categories
     fractions = determine_fractions(args, categories, debug=True)
     pp.pprint(fractions)
     # exit(1)
@@ -601,7 +602,7 @@ def calculate_fake_factors(args):
     else:
         print 'Output dir should be created..'
     print "Create output directory:", args.output_directory
-    os.mkdir(args.output_directory)
+    os.makedirs(args.output_directory)
 
     logger.info("Create friend trees...")
     if args.apply_ff_per_category:
