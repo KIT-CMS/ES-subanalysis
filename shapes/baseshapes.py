@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import sys
 
 import logging
@@ -36,6 +37,7 @@ class Shapes(object):
                  era=None,
                  et_friend_directory=None,
                  fake_factor_friend_directory=None,
+                 fes_friend_directory=None,
                  extra_chain=None,
                  gof_channel=None,
                  gof_variable=None,
@@ -65,7 +67,7 @@ class Shapes(object):
                  ):
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
-        self._directory = directory
+        self._directory = os.path.expandvars(directory)
         self._datasets = datasets
         self._binning = binning
         self._binning_key = binning_key
@@ -78,10 +80,11 @@ class Shapes(object):
         self._debug = debug
         self._dry = dry
         self._era_name = era
-        self._et_friend_directory = et_friend_directory
-        self._mt_friend_directory = mt_friend_directory
-        self._tt_friend_directory = tt_friend_directory
-        self._fake_factor_friend_directory = fake_factor_friend_directory
+        self._et_friend_directory = [os.path.expandvars(i) for i in et_friend_directory]
+        self._mt_friend_directory = [os.path.expandvars(i) for i in mt_friend_directory]
+        self._tt_friend_directory = [os.path.expandvars(i) for i in tt_friend_directory]
+        self._fake_factor_friend_directory = [os.path.expandvars(i) for i in fake_factor_friend_directory]
+        self._fes_friend_directory = [os.path.expandvars(i) for i in fes_friend_directory]
         self._extra_chain = extra_chain
         self._gof_channel = gof_channel
         self._gof_variable = gof_variable
@@ -246,6 +249,7 @@ class Shapes(object):
         parser.add_argument("--mt-friend-directory", type=str, help="Directory containing a friend tree for mt.")
         parser.add_argument("--tt-friend-directory", type=str, help="Directory containing a friend tree for tt.")
         parser.add_argument("--fake-factor-friend-directory", type=str, help="Directory containing friend trees to data files with FF.")
+        parser.add_argument("--fes-friend-directory", type=str, help="Fes shifts.")
         parser.add_argument("--extra-chain", type=str, help="Extra pipelines")
         parser.add_argument("--context-analysis", type=str, help="Context analysis.")
         parser.add_argument("--variables-names", nargs='*', type=str, help="Variable names.")
@@ -357,7 +361,7 @@ class Shapes(object):
     def getHostKey():
         import socket
         hostname = socket.gethostname()
-        known_hosts = ['naf', 'cern', 'ekp', 'rwth']
+        known_hosts = ['naf', 'cern', 'ekp', 'rwth', 'bms1']
         for host in known_hosts:
             if host in hostname:
                 return host

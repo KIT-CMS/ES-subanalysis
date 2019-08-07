@@ -32,10 +32,17 @@ class ETauFES(Shapes):
         """
         "Era selection"
         """
+        from shape_producer.era import Run2016 as Run2016
+        from shape_producer.era import Run2018 as Run2018
+        from shape_producer.era import Run2017 as Run2017
+
         if "2017" in self._era_name:
             # self.importEstimationMethods(era=self._era_name, context_analysis=self._context_analysis)
-            from shape_producer.era import Run2017ReReco31Mar as Run2017
             self.era = Run2017(self._datasets)  # self.lazy("Run2017")() #
+        elif "2018" in self._era_name:
+            self.era = Run2018(self._datasets)
+        elif "2016" in self._era_name:
+            self.era = Run2016(self._datasets)
         else:
             self.logger.critical("Era {} is not implemented.".format(self.era))
             raise Exception
@@ -185,7 +192,10 @@ class ETauFES(Shapes):
         """
         Returns dict of Cattegories for Channel
 
-
+        usually these cuts would be dropped in e->tau analysis
+        '*(nDiElectronVetoPairsOS < 0.5)'
+        '*(extraelec_veto < 0.5)'
+        '*(extramuon_veto < 0.5)'
         """
         # self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
         categories = []
@@ -407,6 +417,7 @@ class ETauFES(Shapes):
                                 channel=channel_holder._channel_obj,
                                 era=self.era
                             )
+                            self._systematics._systematics[-1]._process._estimation_method._directory=self._fes_friend_directory[0]
             if 'FF' in self._shifts:
                 print '\n\n FF related uncertainties ...'
                 fake_factor_variations_et = []
