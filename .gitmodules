@@ -10,3 +10,7 @@
 	path = jdl_creator
 	url = git@github.com:KIT-CMS/jdl_creator.git
 	branch = master
+[submodule "datasets"]
+	path = datasets
+	url = git@github.com:KIT-CMS/datasets.git
+	branch = master
