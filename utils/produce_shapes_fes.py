@@ -6,8 +6,8 @@ pp = pprint.PrettyPrinter(indent=4)
 import logging
 from rootpy import log
 # log.setLevel(log.INFO)
-# from rootpy.logger.magic import DANGER
-# DANGER.enabled = False
+from rootpy.logger.magic import DANGER
+DANGER.enabled = False
 
 from shapes import styled
 from shapes.etau_fes import ETauFES as analysis_shapes
@@ -61,7 +61,7 @@ def main():
     styled.HEADER('\n # 1 - prepareConfig')
     config = analysis_shapes.prepareConfig(
         analysis_shapes=analysis_shapes,
-        config_file='data/et_fes_config.yaml',
+        config_file='data/et_fes_legacy2017_config.yaml',
         debug=debug
     )
 

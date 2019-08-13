@@ -159,7 +159,7 @@ class ETauFES(Shapes):
             elif key == 'jetFakes':
                 import copy
                 ff_parameters_list = copy.deepcopy(parameters_list)
-                ff_parameters_list['friend_directory'].append(self._fake_factor_friend_directory)
+                ff_parameters_list['friend_directory'].extend(self._fake_factor_friend_directory)
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ff_parameters_list))
             else:
                 # if key == 'ZL': print '-->getProcesses::', key, parameters_list
@@ -191,11 +191,6 @@ class ETauFES(Shapes):
     def getCategorries(self, channel_holder, cuts=None):
         """
         Returns dict of Cattegories for Channel
-
-        usually these cuts would be dropped in e->tau analysis
-        '*(nDiElectronVetoPairsOS < 0.5)'
-        '*(extraelec_veto < 0.5)'
-        '*(extramuon_veto < 0.5)'
         """
         # self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
         categories = []
@@ -220,19 +215,16 @@ class ETauFES(Shapes):
                             cuts=cuts,
                             variable=var)
                     )
-                    # Add the DM splitting
-                    print dm, self._known_cuts['decay_mode']
-                    print len(categories)
-                    print categories[-1]
-                    print Cut(self._known_cuts['decay_mode'][dm], dm)
 
+                    # Add the DM splitting
+                    self._logger.debug("Add the dm splitting: %s, %s" % (self._known_cuts['decay_mode'][dm], dm))
                     categories[-1].cuts.add(Cut(self._known_cuts['decay_mode'][dm], dm))
 
                     # Add the njets splitting:
-                    print self._known_cuts['jets_multiplicity'][njet], njet
+                    self._logger.debug("Add the njets splitting: %s, %s" % (str(self._known_cuts['jets_multiplicity'][njet]), str(njet)))
                     categories[-1].cuts.add(Cut(str(self._known_cuts['jets_multiplicity'][njet]), str(njet)))
 
-                    # Remove cuts introduced in categorysation
+                    # Remove cuts introduced in categorysation for the plots of isolation
                     if name == "iso_1" or name == "iso_2":
                         categories[-1].cuts.remove("ele_iso")
                         categories[-1].cuts.remove("tau_iso")
@@ -262,9 +254,11 @@ class ETauFES(Shapes):
             # channel_holder._channel_obj.cuts.remove("tau_iso")
             # channel_holder._channel_obj.cuts.add(Cut('byLooseIsolationMVArun2017v2DBoldDMwLT2017_2 > 0.5', "tau_iso"))
 
-            channel_holder._channel_obj.cuts.remove("dilepton_veto")
-            channel_holder._channel_obj.cuts.remove('trg_selection')
-            channel_holder._channel_obj.cuts.add(Cut("(trg_singleelectron_27 == 1) || (trg_singleelectron_32 == 1) || (trg_singleelectron_35) || (trg_crossele_ele24tau30 == 1) || (isEmbedded && pt_1>20 && pt_1<24)", "trg_selection"))
+            for k, v in self._force_cuts.iteritems():
+                channel_holder._channel_obj.cuts.remove(k)
+                if v is not None:
+                    channel_holder._channel_obj.cuts.add(Cut(v, k))
+                self._logger.warning('global cut value forced: {"%s": "%s"}' % (k, v))
 
             self._logger.info('...getProcesses')
             channel_holder._processes = self.getProcesses(
@@ -417,6 +411,8 @@ class ETauFES(Shapes):
                                 channel=channel_holder._channel_obj,
                                 era=self.era
                             )
+                            for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
+                                self._systematics._systematics[-1].category.cuts.add(Cut(cut_expression, cut_key))
                             self._systematics._systematics[-1]._process._estimation_method._directory=self._fes_friend_directory[0]
             if 'FF' in self._shifts:
                 print '\n\n FF related uncertainties ...'

@@ -38,6 +38,9 @@ class Shapes(object):
                  et_friend_directory=None,
                  fake_factor_friend_directory=None,
                  fes_friend_directory=None,
+                 fes_extra_cuts={},
+                 force_cuts={},
+                 no_force_cuts=False,
                  extra_chain=None,
                  gof_channel=None,
                  gof_variable=None,
@@ -65,6 +68,8 @@ class Shapes(object):
                  jets_multiplicity=None,
                  indent=0,
                  ):
+        self._logger = logging.getLogger(__name__)
+
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
         self._directory = os.path.expandvars(directory)
@@ -85,6 +90,11 @@ class Shapes(object):
         self._tt_friend_directory = [os.path.expandvars(i) for i in tt_friend_directory]
         self._fake_factor_friend_directory = [os.path.expandvars(i) for i in fake_factor_friend_directory]
         self._fes_friend_directory = [os.path.expandvars(i) for i in fes_friend_directory]
+        self._fes_extra_cuts = fes_extra_cuts
+        self._no_force_cuts = no_force_cuts
+        if self._no_force_cuts:
+            self._logger.warning("All forced cuts are dropped:" + str(self._fes_extra_cuts))
+            self._force_cuts = {}
         self._extra_chain = extra_chain
         self._gof_channel = gof_channel
         self._gof_variable = gof_variable
@@ -99,6 +109,7 @@ class Shapes(object):
         self._known_estimation_methods = _known_estimation_methods
         self._nominal_folder = nominal_folder
         self._etau_es_shifts = etau_es_shifts
+        self._tes_sys_processes = tes_sys_processes
         self._fes_sys_processes = fes_sys_processes
         self._emb_sys_processes = emb_sys_processes
         self._zpt_sys_processes = zpt_sys_processes
@@ -124,7 +135,7 @@ class Shapes(object):
                 print 'no jet multiplicity:', i, 'in known_cuts.yaml'
                 exit(1)
 
-        self._logger = logging.getLogger(__name__)
+
         self._channels = {}
 
         if self._output_file == '':
@@ -296,6 +307,7 @@ class Shapes(object):
         # Arguments with defaults that can not be changed in the config file
         parser.add_argument('--dry', action='store_true', default=False, help='dry run')
         parser.add_argument('--debug', action='store_true', default=False, help='cherry-debug')
+        parser.add_argument('--no-force-cuts', action='store_true', default=False, help='drop force cuts')
 
         args = parser.parse_args()
 
