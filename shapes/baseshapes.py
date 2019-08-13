@@ -18,7 +18,7 @@ from channelholder import ChannelHolder
 # TODO: wrapper for introduction of methods
 # TODO: inharit from my base subprocesses class
 class Shapes(object):
-    _complexEstimationMethods = ['WEstimationWithQCD', 'QCDEstimationWithW']
+    # _complexEstimationMethods = ['WEstimationWithQCD', 'QCDEstimationWithW', 'NewFakeEstimationLT', 'NewFakeEstimationTT']
 
     intersection = lambda x, y: list(set(x) & set(y))
 
@@ -116,13 +116,18 @@ class Shapes(object):
         self._shifts = shifts
         self._decay_mode = decay_mode
         self._jets_multiplicity = jets_multiplicity
-
+        # print self._fes_extra_cuts; exit(1)
         assert type(self._directory) is not None, "Shapes::directory not set"
         assert type(self._datasets) is not None, "Shapes::datasets not set"
         assert type(self._binning) is not None, "Shapes::binning not set"
 
         self._binning = yaml.load(open(self._binning))
-        self._known_processes = yaml.load(open('data/known_processes.yaml'))
+
+        with open('data/known_processes.yaml', 'r') as f:
+            file_known_processes = yaml.load(f)
+            self._known_processes = file_known_processes['_known_processes']
+            self._complexEstimationMethods = file_known_processes['_complexEstimationMethods']
+            self._complexEstimationMethodsRequirements = file_known_processes['_complexEstimationMethodsRequirements']
         self._renaming = yaml.load(open('data/renaming.yaml'))
 
         self._known_cuts = yaml.load(open('data/known_cuts.yaml'))

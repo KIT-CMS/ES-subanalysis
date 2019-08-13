@@ -1,6 +1,7 @@
 import sys
 import importlib
 import logging
+import copy
 
 from shapes import Shapes
 
@@ -136,13 +137,7 @@ class ETauFES(Shapes):
 
             if estimation_method in ['WEstimationWithQCD', 'QCDEstimationWithW']:
                 bg_processes = {}
-                if "EMB" in key:
-                    bg_processes = [processes[process] for process in ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]]
-                    # former with: "EWKL", "EWKJ"
-                else:
-                    bg_processes = [processes[process] for process in ["ZTT", "ZL", "ZJ", "TT", "VV"]]
-                    # alternative: ["DYJetsToLL", "TT", "VV"]]
-                    # former with "EWK"
+                bg_processes = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]  # ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]]
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](
                     era=self.era,
                     directory=self._directory,
@@ -153,19 +148,28 @@ class ETauFES(Shapes):
                     friend_directory=[],
                     qcd_ss_to_os_extrapolation_factor=1.09,
                 ))
+
             elif key == 'QCDEstimation_SStoOS_MTETEM':
                 print 'QCDEstimation_SStoOS_MTETEM is not yet setup'
                 exit(1)
-            elif key == 'jetFakes':
-                import copy
+
+            elif 'jetFakes' in key:
                 ff_parameters_list = copy.deepcopy(parameters_list)
                 ff_parameters_list['friend_directory'].extend(self._fake_factor_friend_directory)
+
+                if estimation_method == 'NewFakeEstimationLT':
+                    # ? also TTT and VVT for no EMB case?
+                    ff_parameters_list['nofake_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
+                    try:
+                        ff_parameters_list['data_process'] = processes['data_obs']
+                    except:
+                        raise Exception("couldn't access processes['data_obs'] object")
+
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ff_parameters_list))
+
             else:
                 # if key == 'ZL': print '-->getProcesses::', key, parameters_list
-                processes[key] = Process(
-                    combine_name,
-                    self._estimation_methods[estimation_method](**parameters_list))
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
 
         return processes
 
@@ -445,12 +449,13 @@ class ETauFES(Shapes):
                             )
                         )
 
-                for variation in fake_factor_variations_et:
-                    self._systematics.add_systematic_variation(
-                        variation=variation,
-                        process=channel_holder._processes["jetFakes"],
-                        channel=channel_holder._channel_obj,
-                        era=self.era)
+                for k in [k for k in channel_holder._processes.keys() if 'jetFakes' in k]:
+                    for variation in fake_factor_variations_et:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[k],
+                            channel=channel_holder._channel_obj,
+                            era=self.era)
 
     def produce(self):
         print self._systematics

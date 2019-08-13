@@ -1,107 +1,133 @@
-# Backgrounds
-# process name : method that will be invoked
-data_obs                : DataEstimation
-data                    : DataEstimation
-ZTT                     : ZTTEstimation
-EMB                     : ZTTEmbeddedEstimation
-ZL                      : ZLEstimation
-ZLL                     : ZLEstimation
-ZJ                      : ZJEstimation
-DYJetsToLL              : DYJetsToLLEstimation
-EWKT                    : EWKTEstimation
-EWKL                    : EWKLEstimation
-EWKJ                    : EWKJEstimation
-jetFakes                : FakeEstimationLT
-WMC                     : WEstimation
-W                       : WEstimation
-# W                       : WEstimationWithQCD
-QCD                     : QCDEstimationWithW
-WEMB                    : WEstimationWithQCD
-QCDEMB                  : QCDEstimationWithW
-TT                      : TTEstimation
-TTT                     : TTTEstimation
-TTL                     : TTLEstimation
-TTJ                     : TTJEstimation
-VV                      : VVEstimation
-VVT                     : VVTEstimation
-VVL                     : VVLEstimation
-VVJ                     : VVJEstimation
+_complexEstimationMethods: [
+  'WEstimationWithQCD',
+  'QCDEstimationWithW',
+  'NewFakeEstimationLT',
+  'NewFakeEstimationTT',
+]
 
-# SM Signals
-ggH125                  : ggHEstimation
-qqH125                  : qqHEstimation
-ggH_0J125               : ggHEstimation_0J
-ggH_1J_PTH_0_60125      : ggHEstimation_1J_PTH_0_60
-ggH_1J_PTH_60_120125    : ggHEstimation_1J_PTH_60_120
-ggH_1J_PTH_120_200125   : ggHEstimation_1J_PTH_120_200
-ggH_1J_PTH_GT200125     : ggHEstimation_1J_PTH_GT200
-ggH_GE2J_PTH_0_60125    : ggHEstimation_GE2J_PTH_0_60
-ggH_GE2J_PTH_60_120125  : ggHEstimation_GE2J_PTH_60_120
-ggH_GE2J_PTH_120_200125 : ggHEstimation_GE2J_PTH_120_200
-ggH_GE2J_PTH_GT200125   : ggHEstimation_GE2J_PTH_GT200
-ggH_VBFTOPO_JET3VETO125 : ggHEstimation_VBFTOPO_JET3VETO
-ggH_VBFTOPO_JET3125     : ggHEstimation_VBFTOPO_JET3
-qqH_VBFTOPO_JET3VETO125 : qqHEstimation_VBFTOPO_JET3VETO
-qqH_VBFTOPO_JET3125     : qqHEstimation_VBFTOPO_JET3
-qqH_REST125             : qqHEstimation_REST
-qqH_VH2JET125           : qqHEstimation_VH2JET
-qqH_PTJET1_GT200125     : qqHEstimation_PTJET1_GT200
+_complexEstimationMethodsRequirements:
+  jetFakes:
+    NewFakeEstimationLT: ["ZTT", "ZL", "TTL", "VVL"]
+  jetFakesEMB:
+    NewFakeEstimationLT: ["EMB", "ZL", "TTL", "VVL"]
 
-# MSSM Signals
-bbH_250                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM250_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_250                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM250_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_300                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_300                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_700                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM700_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_700                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM700_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_2300                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_2300                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_100                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM100_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_110                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM110_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_2600                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_1200                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_2900                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_120                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM120_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_130                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM130_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_3200                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM3200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_1400                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_350                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM350_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_140                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM140_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_400                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_1500                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1500_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_450                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM450_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_1600                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_600                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_160                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM160_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_1800                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_800                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_180                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM180_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_80                  : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM80_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_2000                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2000_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_900                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_200                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-bbH_90                  : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM90_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_100                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM100_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_110                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM110_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_2600                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_1200                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_2900                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_120                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM120_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_130                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM130_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_3200                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM3200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_1400                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_350                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM350_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_140                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM140_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_400                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_1500                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1500_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_450                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM450_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_1600                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_600                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_1800                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_180                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM180_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_800                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_2000                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2000_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_80                  : SUSYggHEstimation #  SUSYGluGluToHToTauTauM80_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_200                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_900                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
-ggH_90                  : SUSYggHEstimation #  SUSYGluGluToHToTauTauM90_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  WEMB:
+    WEstimationWithQCD: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
+  QCDEMB:
+    QCDEstimationWithW: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
+
+  W:
+    WEstimationWithQCD: ["ZTT", "ZL", "ZJ", "TT", "VV"]
+  QCD:
+    QCDEstimationWithW: ["ZTT", "ZL", "ZJ", "TT", "VV"]
+
+_known_processes:
+  # Backgrounds
+  # process name : method that will be invoked
+  data_obs                : DataEstimation
+  data                    : DataEstimation
+  ZTT                     : ZTTEstimation
+  EMB                     : ZTTEmbeddedEstimation
+  ZL                      : ZLEstimation
+  ZLL                     : ZLEstimation
+  ZJ                      : ZJEstimation
+  DYJetsToLL              : DYJetsToLLEstimation
+  EWKT                    : EWKTEstimation
+  EWKL                    : EWKLEstimation
+  EWKJ                    : EWKJEstimation
+  jetFakes                : NewFakeEstimationLT
+  jetFakesEMB             : NewFakeEstimationLT
+  # jetFakes                : FakeEstimationLT
+  WMC                     : WEstimation
+  W                       : WEstimation
+  # W                       : WEstimationWithQCD
+  QCD                     : QCDEstimationWithW
+  WEMB                    : WEstimationWithQCD
+  QCDEMB                  : QCDEstimationWithW
+  TT                      : TTEstimation
+  TTT                     : TTTEstimation
+  TTL                     : TTLEstimation
+  TTJ                     : TTJEstimation
+  VV                      : VVEstimation
+  VVT                     : VVTEstimation
+  VVL                     : VVLEstimation
+  VVJ                     : VVJEstimation
+
+  # SM Signals
+  ggH125                  : ggHEstimation
+  qqH125                  : qqHEstimation
+  ggH_0J125               : ggHEstimation_0J
+  ggH_1J_PTH_0_60125      : ggHEstimation_1J_PTH_0_60
+  ggH_1J_PTH_60_120125    : ggHEstimation_1J_PTH_60_120
+  ggH_1J_PTH_120_200125   : ggHEstimation_1J_PTH_120_200
+  ggH_1J_PTH_GT200125     : ggHEstimation_1J_PTH_GT200
+  ggH_GE2J_PTH_0_60125    : ggHEstimation_GE2J_PTH_0_60
+  ggH_GE2J_PTH_60_120125  : ggHEstimation_GE2J_PTH_60_120
+  ggH_GE2J_PTH_120_200125 : ggHEstimation_GE2J_PTH_120_200
+  ggH_GE2J_PTH_GT200125   : ggHEstimation_GE2J_PTH_GT200
+  ggH_VBFTOPO_JET3VETO125 : ggHEstimation_VBFTOPO_JET3VETO
+  ggH_VBFTOPO_JET3125     : ggHEstimation_VBFTOPO_JET3
+  qqH_VBFTOPO_JET3VETO125 : qqHEstimation_VBFTOPO_JET3VETO
+  qqH_VBFTOPO_JET3125     : qqHEstimation_VBFTOPO_JET3
+  qqH_REST125             : qqHEstimation_REST
+  qqH_VH2JET125           : qqHEstimation_VH2JET
+  qqH_PTJET1_GT200125     : qqHEstimation_PTJET1_GT200
+
+  # MSSM Signals
+  bbH_250                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM250_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_250                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM250_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_300                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_300                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_700                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM700_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_700                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM700_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_2300                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_2300                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2300_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_100                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM100_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_110                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM110_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_2600                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_1200                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_2900                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_120                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM120_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_130                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM130_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_3200                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM3200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_1400                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_350                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM350_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_140                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM140_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_400                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_1500                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1500_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_450                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM450_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_1600                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_600                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_160                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM160_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_1800                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM1800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_800                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_180                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM180_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_80                  : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM80_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_2000                : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM2000_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_900                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_200                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  bbH_90                  : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM90_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_100                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM100_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_110                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM110_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_2600                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_1200                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_2900                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_120                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM120_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_130                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM130_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_3200                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM3200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_1400                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_350                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM350_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_140                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM140_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_400                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM400_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_1500                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1500_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_450                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM450_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_1600                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_600                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_1800                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM1800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_180                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM180_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_800                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM800_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_2000                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2000_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_80                  : SUSYggHEstimation #  SUSYGluGluToHToTauTauM80_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_200                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_900                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+  ggH_90                  : SUSYggHEstimation #  SUSYGluGluToHToTauTauM90_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
