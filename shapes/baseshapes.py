@@ -41,6 +41,7 @@ class Shapes(object):
                  fes_extra_cuts={},
                  force_cuts={},
                  no_force_cuts=False,
+                 invert_cuts=None,
                  extra_chain=None,
                  gof_channel=None,
                  gof_variable=None,
@@ -92,6 +93,8 @@ class Shapes(object):
         self._fes_friend_directory = [os.path.expandvars(i) for i in fes_friend_directory]
         self._fes_extra_cuts = fes_extra_cuts
         self._no_force_cuts = no_force_cuts
+        self._force_cuts = force_cuts
+        self._invert_cuts = invert_cuts
         if self._no_force_cuts:
             self._logger.warning("All forced cuts are dropped:" + str(self._fes_extra_cuts))
             self._force_cuts = {}
@@ -148,6 +151,9 @@ class Shapes(object):
             self._output_file = "{}.root".format('_'.join([self._context_analysis, self._methods_collection_key]))
         elif not self._output_file.endswith('.root'):
             self._output_file = "{}.root".format(self._output_file)
+
+        if self._no_force_cuts:
+            self._output_file = 'noForceCuts_' + self._output_file
 
         # Holds Systematics for all the channels. TODO: add the per-channel systematics to ChannelHolder
         self._systematics = Systematics(
@@ -268,6 +274,7 @@ class Shapes(object):
         parser.add_argument("--extra-chain", type=str, help="Extra pipelines")
         parser.add_argument("--context-analysis", type=str, help="Context analysis.")
         parser.add_argument("--variables-names", nargs='*', type=str, help="Variable names.")
+        parser.add_argument("--invert-cuts", nargs='*', type=str, help="Invert cuts by their key names.")
 
         # Arguments with defaults that might be changed in the config file
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
@@ -311,7 +318,7 @@ class Shapes(object):
         # Arguments with defaults that can not be changed in the config file
         parser.add_argument('--dry', action='store_true', default=False, help='dry run')
         parser.add_argument('--debug', action='store_true', default=False, help='cherry-debug')
-        parser.add_argument('--no-force-cuts', action='store_true', default=False, help='drop force cuts')
+        parser.add_argument('--no-force-cuts', action='store_true', default=False, help='drop force cuts. Note: will add a prefix to the output file')
 
         args = parser.parse_args()
 
