@@ -1,8 +1,9 @@
 _complexEstimationMethods: [
-  'WEstimationWithQCD',
-  'QCDEstimationWithW',
-  'NewFakeEstimationLT',
-  'NewFakeEstimationTT',
+  WEstimationWithQCD ,
+  QCDEstimationWithW ,
+  NewFakeEstimationLT ,
+  NewFakeEstimationTT ,
+  QCDEstimation_SStoOS_MTETEM ,
 ]
 
 _complexEstimationMethodsRequirements:
@@ -12,14 +13,19 @@ _complexEstimationMethodsRequirements:
     NewFakeEstimationLT: ["EMB", "ZL", "TTL", "VVL"]
 
   WEMB:
-    WEstimationWithQCD: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
+    WEstimationWithQCD: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"] # ["EMB", "ZLL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL", "EWKJ"] qcd_ss_to_os_extrapolation_factor=1.09
   QCDEMB:
-    QCDEstimationWithW: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
+    QCDEstimationWithW: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"] # ["EMB", "ZLL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL", "EWKJ"] qcd_ss_to_os_extrapolation_factor=1.09
 
   W:
-    WEstimationWithQCD: ["ZTT", "ZL", "ZJ", "TT", "VV"]
+    WEstimationWithQCD: ["ZTT", "ZL", "ZJ", "TT", "VV"] # ["ZTT", "ZLL", "ZJ", "TT", "VV", "EWK"]
   QCD:
-    QCDEstimationWithW: ["ZTT", "ZL", "ZJ", "TT", "VV"]
+    QCDEstimationWithW: ["ZTT", "ZL", "ZJ", "TT", "VV"] # ["ZTT", "ZLL", "ZJ", "TT", "VV", "EWK"]
+
+  QCDSStoOS:
+    QCDEstimation_SStoOS_MTETEM: ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
+  QCDSStoOSEMB:
+    QCDEstimation_SStoOS_MTETEM: ["EMB", "ZL", "ZJ", "W", "TTJ", "TTL", "VVJ", "VVL"]
 
 _known_processes:
   # Backgrounds
@@ -42,6 +48,8 @@ _known_processes:
   W                       : WEstimation
   # W                       : WEstimationWithQCD
   QCD                     : QCDEstimationWithW
+  QCDSStoOS               : QCDEstimation_SStoOS_MTETEM
+  QCDSStoOSEMB            : QCDEstimation_SStoOS_MTETEM
   WEMB                    : WEstimationWithQCD
   QCDEMB                  : QCDEstimationWithW
   TT                      : TTEstimation
