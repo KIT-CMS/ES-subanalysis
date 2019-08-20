@@ -140,14 +140,13 @@ class Shapes(object):
                 print 'no jet multiplicity:', i, 'in known_cuts.yaml'
                 exit(1)
 
-
         self._channels = {}
 
         if self._output_file == '':
-            self._output_file = "{}.root".format(self._context_analysis)
-        elif len(self._output_file) > 5 and self._output_file[-5:] == '.root':
-            pass
-        else:
+            print self._context_analysis, self._methods_collection_key
+            print type(self._context_analysis), type(self._methods_collection_key)
+            self._output_file = "{}.root".format('_'.join([self._context_analysis, self._methods_collection_key]))
+        elif not self._output_file.endswith('.root'):
             self._output_file = "{}.root".format(self._output_file)
 
         # Holds Systematics for all the channels. TODO: add the per-channel systematics to ChannelHolder
@@ -257,7 +256,7 @@ class Shapes(object):
         parser.add_argument("--datasets", type=str, help="Kappa datsets database.")
         parser.add_argument("--binning", type=str, help="Binning configuration.")
 
-        # Arguments with None or none default
+        # Arguments with None default
         parser.add_argument("--era", type=str, help="Experiment era.")
         parser.add_argument("--gof-variable", type=str, help="Variable for goodness of fit shapes.")
         parser.add_argument("--gof-channel", type=str, help="Channel for goodness of fit shapes.")
@@ -273,7 +272,7 @@ class Shapes(object):
         # Arguments with defaults that might be changed in the config file
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
         parser.add_argument("--processes", nargs='+', type=str, help="Processes from the standart map of processes")  # TODO: enable passing via syntax <name>:<class name>
-        parser.add_argument("--methods-collection-key", nargs=1, type=str, help="Methods collection key")
+        parser.add_argument("--methods-collection-key", type=str, help="Methods collection key")
         parser.add_argument("--module", nargs=1, type=str, help="Module to import where estimation methods are defined")  # TODO: enable passing via syntax <name>:<class name>
         parser.add_argument('-n', "--num-threads", type=int, help="Number of threads to be used.")
         parser.add_argument("--backend", choices=["classic", "tdf"], type=str, help="Backend. Use classic or tdf.")
