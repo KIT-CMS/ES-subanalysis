@@ -149,21 +149,38 @@ class ETauFES(Shapes):
                     qcd_ss_to_os_extrapolation_factor=1.09,
                 ))
 
-            elif key == 'QCDEstimation_SStoOS_MTETEM':
-                print 'QCDEstimation_SStoOS_MTETEM is not yet setup'
-                exit(1)
+            elif 'QCDSStoOS' in key:  # key == 'QCDEstimation_SStoOS_MTETEM':
+                qcdsstoos_parameters_list = copy.deepcopy(parameters_list)
+
+                qcdsstoos_parameters_list['bg_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
+                qcdsstoos_parameters_list['extrapolation_factor'] = 1.00  # 1.17?
+                try:
+                    qcdsstoos_parameters_list['data_process'] = processes['data_obs']
+                except:
+                    try:
+                        qcdsstoos_parameters_list['data_process'] = processes['data']
+                    except:
+                        raise Exception("couldn't access processes['data_obs'] of data object")
+
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**qcdsstoos_parameters_list))
 
             elif 'jetFakes' in key:
                 ff_parameters_list = copy.deepcopy(parameters_list)
                 ff_parameters_list['friend_directory'].extend(self._fake_factor_friend_directory)
 
+                # import pdb; pdb.set_trace()
                 if estimation_method == 'NewFakeEstimationLT':
                     # ? also TTT and VVT for no EMB case?
+                    # nofake_processes = ["EMB", "ZL", "TTL", "VVL"] if "EMB" in key else ["ZTT", "ZL", "TTL", "VVL"]
+                    # ff_parameters_list['nofake_processes'] = [processes[process] for process in nofake_processes]
                     ff_parameters_list['nofake_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
                     try:
                         ff_parameters_list['data_process'] = processes['data_obs']
                     except:
-                        raise Exception("couldn't access processes['data_obs'] object")
+                        try:
+                            ff_parameters_list['data_process'] = processes['data']
+                        except:
+                            raise Exception("couldn't access processes['data'] or data_obs object")
 
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ff_parameters_list))
 
