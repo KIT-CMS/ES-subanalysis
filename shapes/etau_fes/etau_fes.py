@@ -275,6 +275,22 @@ class ETauFES(Shapes):
             # channel_holder._channel_obj.cuts.remove("tau_iso")
             # channel_holder._channel_obj.cuts.add(Cut('byLooseIsolationMVArun2017v2DBoldDMwLT2017_2 > 0.5', "tau_iso"))
 
+            # used at 2017
+            # channel_holder._channel_obj.cuts.remove("dilepton_veto")
+            # channel_holder._channel_obj.cuts.remove('trg_selection')
+            # channel_holder._channel_obj.cuts.add(Cut("(trg_singleelectron_27 == 1) || (trg_singleelectron_32 == 1) || (trg_singleelectron_35) || (trg_crossele_ele24tau30 == 1) || (isEmbedded && pt_1>20 && pt_1<24)", "trg_selection"))
+
+            for k in self._invert_cuts:
+                if k in channel_holder._channel_obj.cuts.names:
+                    # import pdb; pdb.set_trace()
+                    warning_message = "Inverting cut %s from old value [%s] " % (k, channel_holder._channel_obj.cuts.get(k))
+                    channel_holder._channel_obj.cuts.get(k).invert()
+                    warning_message += "to new value [%s]" % (channel_holder._channel_obj.cuts.get(k))
+                    self._logger.warning(warning_message)
+                else:
+                    self._logger.error("Couldn't invert cut %s - not found in the original cuts: " + channel_holder)
+                    # print channel_holder
+
             for k, v in self._force_cuts.iteritems():
                 channel_holder._channel_obj.cuts.remove(k)
                 if v is not None:
