@@ -384,10 +384,10 @@ class Shapes(object):
     def getHostKey():
         import socket
         hostname = socket.gethostname()
-        known_hosts = ['naf', 'cern', 'ekp', 'rwth', 'bms1']
+        known_hosts = ['naf', 'cern', 'ekp', 'rwth', 'bms1', 'bms2', 'bms3']
         for host in known_hosts:
             if host in hostname:
-                return host
+                return host if 'bms' not in host else 'bms'
         return 'unknown_host'
 
     @classmethod
