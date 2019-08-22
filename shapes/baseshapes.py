@@ -39,8 +39,12 @@ class Shapes(object):
                  fake_factor_friend_directory=None,
                  fes_friend_directory=None,
                  fes_extra_cuts={},
+                 et_minplotlev_cuts={},
                  force_cuts={},
-                 no_force_cuts=False,
+                 no_fes_extra_cuts=None,
+                 no_et_minplotlev_cuts=None,
+                 no_force_cuts=None,
+                 no_extra_cuts=None,
                  invert_cuts=None,
                  extra_chain=None,
                  gof_channel=None,
@@ -68,11 +72,13 @@ class Shapes(object):
                  decay_mode=None,
                  jets_multiplicity=None,
                  indent=0,
+                 update_process_per_category=None,
                  ):
         self._logger = logging.getLogger(__name__)
 
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
+        # print directory
         self._directory = os.path.expandvars(directory)
         self._datasets = datasets
         self._binning = binning
@@ -86,18 +92,47 @@ class Shapes(object):
         self._debug = debug
         self._dry = dry
         self._era_name = era
+        # self._et_friend_directory = os.path.expandvars(et_friend_directory)
+        # self._mt_friend_directory = os.path.expandvars(mt_friend_directory)
+        # self._tt_friend_directory = os.path.expandvars(tt_friend_directory)
+        # self._fake_factor_friend_directory = os.path.expandvars(fake_factor_friend_directory)
+        # self._fes_friend_directory = os.path.expandvars(fes_friend_directory)
         self._et_friend_directory = [os.path.expandvars(i) for i in et_friend_directory]
         self._mt_friend_directory = [os.path.expandvars(i) for i in mt_friend_directory]
         self._tt_friend_directory = [os.path.expandvars(i) for i in tt_friend_directory]
         self._fake_factor_friend_directory = [os.path.expandvars(i) for i in fake_factor_friend_directory]
         self._fes_friend_directory = [os.path.expandvars(i) for i in fes_friend_directory]
+
         self._fes_extra_cuts = fes_extra_cuts
-        self._no_force_cuts = no_force_cuts
+        self._et_minplotlev_cuts = et_minplotlev_cuts
         self._force_cuts = force_cuts
         self._invert_cuts = invert_cuts
+        self._no_fes_extra_cuts = no_fes_extra_cuts
+        self._no_et_minplotlev_cuts = no_et_minplotlev_cuts
+        self._no_force_cuts = no_force_cuts
+        self._no_extra_cuts = no_extra_cuts
+        self._update_process_per_category = update_process_per_category
+
+        if self._no_fes_extra_cuts:
+            self._logger.warning("All extra cuts are dropped:" + str(self._fes_extra_cuts))
+            self._fes_extra_cuts = {}
+
+        if self._no_et_minplotlev_cuts:
+            self._logger.warning("All forced cuts are dropped:" + str(self._et_minplotlev_cuts))
+            self._et_minplotlev_cuts = {}
+
         if self._no_force_cuts:
-            self._logger.warning("All forced cuts are dropped:" + str(self._fes_extra_cuts))
+            self._logger.warning("All forced cuts are dropped:" + str(self._force_cuts))
             self._force_cuts = {}
+
+        if self._no_extra_cuts:
+            self._logger.warning("All extra cuts are dropped:" + str(self._fes_extra_cuts))
+            self._logger.warning("All et_minplotlev_cuts cuts are dropped:" + str(self._et_minplotlev_cuts))
+            self._logger.warning("All forced cuts are dropped:" + str(self._force_cuts))
+            self._fes_extra_cuts = {}
+            self._et_minplotlev_cuts = {}
+            self._force_cuts = {}
+
         self._extra_chain = extra_chain
         self._gof_channel = gof_channel
         self._gof_variable = gof_variable
@@ -152,7 +187,7 @@ class Shapes(object):
         elif not self._output_file.endswith('.root'):
             self._output_file = "{}.root".format(self._output_file)
 
-        if self._no_force_cuts:
+        if self._no_extra_cuts:
             self._output_file = 'noForceCuts_' + self._output_file
 
         # Holds Systematics for all the channels. TODO: add the per-channel systematics to ChannelHolder
@@ -246,9 +281,10 @@ class Shapes(object):
 
         return config
 
-    # TODO: cleanup
+    # TODO: cleanup, move to separate class?
     @classmethod
     def parse_arguments(cls, include_defaults=True, debug=False):
+        # Note: importance:: defaults < config < terminal
         self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name + ': '
         if debug:
             print '\n', self_name
@@ -276,7 +312,7 @@ class Shapes(object):
         parser.add_argument("--variables-names", nargs='*', type=str, help="Variable names.")
         parser.add_argument("--invert-cuts", nargs='*', type=str, help="Invert cuts by their key names.")
 
-        # Arguments with defaults that might be changed in the config file
+        # Arguments with defaults that might be changed in the config file.
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
         parser.add_argument("--processes", nargs='+', type=str, help="Processes from the standart map of processes")  # TODO: enable passing via syntax <name>:<class name>
         parser.add_argument("--methods-collection-key", type=str, help="Methods collection key")
@@ -294,6 +330,11 @@ class Shapes(object):
         parser.add_argument("--jets-multiplicity", nargs='+', type=str, help="Needed for categorisation. Choices: njetN, njet0")
         parser.add_argument("--binning-key", type=str, help="Used only to pick the binning! example: gof, control")
         parser.add_argument("--log-level", type=str, help="Log level")
+        parser.add_argument('--no-fes-extra-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
+        parser.add_argument('--no-et-minplotlev-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
+        parser.add_argument('--no-force-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
+        parser.add_argument('--no-extra-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
+        parser.add_argument('--update-process-per-category', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
 
         defaultArguments['channels'] = []
         defaultArguments['processes'] = []
@@ -314,11 +355,15 @@ class Shapes(object):
         defaultArguments['jets_multiplicity'] = ['njetN', 'njet0']
         defaultArguments['binning_key'] = 'control'
         defaultArguments['log_level'] = 'info'
+        defaultArguments['no_fes_extra_cuts'] = False
+        defaultArguments['no_et_minplotlev_cuts'] = False
+        defaultArguments['no_force_cuts'] = False
+        defaultArguments['no_extra_cuts'] = False
+        defaultArguments['update_process_per_category'] = False
 
-        # Arguments with defaults that can not be changed in the config file
+        # Arguments with defaults that can NOT be changed in the config file
         parser.add_argument('--dry', action='store_true', default=False, help='dry run')
         parser.add_argument('--debug', action='store_true', default=False, help='cherry-debug')
-        parser.add_argument('--no-force-cuts', action='store_true', default=False, help='drop force cuts. Note: will add a prefix to the output file')
 
         args = parser.parse_args()
 
