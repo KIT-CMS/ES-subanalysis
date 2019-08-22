@@ -43,6 +43,12 @@ def produce_shapes_variables(config):
 
     print '\n # 8 - convert to synched shapes'
 
+    import subprocess
+    command = 'send "FES shape production finished: %s"' % (shapes._output_file)
+    process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+    output, error = process.communicate()
+
+
     shapes_dir = os.path.join('/'.join(os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]), 'converted_shapes')
     convertToSynced(
         input_path=shapes._output_file,
