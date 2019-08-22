@@ -416,7 +416,7 @@ class TESShapes(Shapes):
                     for n in self._tau_es_neutral:
                         shift_str = 'ch' + root_str(c) + '_nt' + root_str(n)
                         shifts.append([shift_str, mult_factor(c), mult_factor(n)])
-
+                # https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2017#MC_Matching
                 for shift_str, ch, nt in shifts:
                     variation = ReplaceExpressions(
                         name='CMS_tes_gamma_' + 'nominal_' + '13TeV_' + shift_str,
