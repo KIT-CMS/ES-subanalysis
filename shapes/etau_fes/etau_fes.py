@@ -153,7 +153,7 @@ class ETauFES(Shapes):
                 qcdsstoos_parameters_list = copy.deepcopy(parameters_list)
 
                 qcdsstoos_parameters_list['bg_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
-                qcdsstoos_parameters_list['extrapolation_factor'] = 1.00  # 1.17?
+                qcdsstoos_parameters_list['extrapolation_factor'] = 1.04  # 1.00  # 1.17?
                 try:
                     qcdsstoos_parameters_list['data_process'] = processes['data_obs']
                 except:
@@ -297,6 +297,12 @@ class ETauFES(Shapes):
                     channel_holder._channel_obj.cuts.add(Cut(v, k))
                 self._logger.warning('global cut value forced: {"%s": "%s"}' % (k, v))
 
+            for k, v in self._et_minplotlev_cuts.iteritems():
+                channel_holder._channel_obj.cuts.remove(k)
+                if v is not None:
+                    channel_holder._channel_obj.cuts.add(Cut(v, k))
+                self._logger.warning('global cut value forced: {"%s": "%s"}' % (k, v))
+
             self._logger.info('...getProcesses')
             channel_holder._processes = self.getProcesses(
                 channel_obj=channel_holder._channel_obj,
@@ -343,6 +349,29 @@ class ETauFES(Shapes):
         else:
             raise 'addChannel can\'t add non-ChannelHolder objects'
 
+    def getUpdateProcessPerCategory(self, process, category):
+        # values calculated for MVAv2, 'dilepton_veto': Null
+        # TODO: have a config for this
+        if '2017' in process._estimation_method._era.__class__.__name__ and 'et' in category.name:
+            if process.name == "QCDSStoOS":
+                # import pdb; pdb.set_trace()
+                if 'alldm' in category.name:
+                    if 'njetN' in category.name:
+                        process._estimation_method._extrapolation_factor = 1.38
+                    elif 'njet0' in category.name:
+                        process._estimation_method._extrapolation_factor = 1.008
+                elif 'dm0' in category.name:
+                    if 'njetN' in category.name:
+                        process._estimation_method._extrapolation_factor = 1.170
+                    elif 'njet0' in category.name:
+                        process._estimation_method._extrapolation_factor = 1.137
+                elif 'dm1' in category.name and 'dm10' not in category.name:
+                    if 'njetN' in category.name:
+                        process._estimation_method._extrapolation_factor = 0.997
+                    elif 'njet0' in category.name:
+                        process._estimation_method._extrapolation_factor = 0.965
+        return process
+
     # TODO: split to call corresponding functions instead of passing list of strings
     def evaluateSystematics(self, *argv):
         self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
@@ -354,18 +383,16 @@ class ETauFES(Shapes):
                 print '\n nominal...'
                 from itertools import product
                 for process, category in product(processes, categories):
-                    # print process._estimation_method._friend_directories
                     self._systematics.add(
                         Systematic(
                             category=category,
-                            process=process,
+                            process=self.getUpdateProcessPerCategory(process, category) if self._update_process_per_category else process,
                             analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
                             era=self.era,
                             variation=Nominal(),
                             mass="125",  # TODO : check if this is used anywhere
                         )
                     )
-                    # print "\tnew sys:", self._systematics._systematics[-1].name, len(self._systematics._systematics), self._systematics._systematics[-1]._process.estimation_method._friend_directories
 
             if 'TES' in self._shifts:
                 print '\n\nTES...'
@@ -491,8 +518,13 @@ class ETauFES(Shapes):
                             era=self.era)
 
     def produce(self):
-        print self._systematics
-        self._systematics.produce()
+        self._logger.debug(self._systematics)
+        # import pdb; pdb.set_trace()
+        # # !import code; code.interact(local=vars())
+        if not self._dry:
+            self._systematics.produce()
+        else:
+            self._logger.info("Dry run, stopping")
 
 
 if __name__ == '__main__':

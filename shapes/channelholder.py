@@ -53,6 +53,7 @@ class ChannelHolder(object):
                  categorries=None,
                  systematics=None,
                  friend_directory=None,
+                 year=None,
                  ):
         self._ofset = ofset
         self._logger = logger
@@ -67,6 +68,15 @@ class ChannelHolder(object):
         self._systematics = systematics
         self._friend_directory = friend_directory
 
+        try:
+            self._year = ''.join(c for c in self._channel_obj.__class__.__name__ if c.isdigit())
+        except:
+            self._logger.warning('ChannelHolder initialized, but channel_obj might be not valid: %s' % str(channel_obj))
+        if year != self._year:
+            self._logger.warning('ChannelHolder extracted %s as a reference year but overriten by passed value %s' % (str(self._year), str(year)))
+            self._year = year
+
+        self._logger.debug('ChannelHolder initialized with year %s' % str(self._year))
         # assert type(self._cuts) is not None, "ChannelHolder::_cuts not set"
         # assert type(self._processes) is not None, "ChannelHolder::_processes not set"
         # assert type(self._categorries) is not None, "ChannelHolder::_categorries not set"
