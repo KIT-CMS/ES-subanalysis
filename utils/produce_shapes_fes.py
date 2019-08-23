@@ -45,7 +45,7 @@ def produce_shapes_variables(config):
 
     import subprocess
     command = 'send "FES shape production finished: %s"' % (shapes._output_file)
-    process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+    process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, shell=True)
     output, error = process.communicate()
 
 
