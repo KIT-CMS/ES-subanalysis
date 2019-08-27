@@ -54,6 +54,7 @@ class ChannelHolder(object):
                  systematics=None,
                  friend_directory=None,
                  year=None,
+                 nnominals=None,
                  ):
         self._ofset = ofset
         self._logger = logger
@@ -67,6 +68,7 @@ class ChannelHolder(object):
         self._categorries = categorries  # linked to all needed for channel-category cuts
         self._systematics = systematics
         self._friend_directory = friend_directory
+        self._nnominals = nnominals
 
         try:
             self._year = ''.join(c for c in self._channel_obj.__class__.__name__ if c.isdigit())
