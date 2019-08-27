@@ -22,7 +22,7 @@ def produce_shapes_variables(config):
 
     shapes.setup_logging(
         output_file="{}_etau_fes.log".format(shapes._tag),
-        level='debug',  # config['log_level']
+        level='debug' if shapes._log_level is None else shapes._log_level,
         logger=shapes._logger
     )
 
@@ -44,17 +44,22 @@ def produce_shapes_variables(config):
     print '\n # 8 - convert to synched shapes'
 
     import subprocess
-    command = 'send "FES shape production finished: %s"' % (shapes._output_file)
-    process = subprocess.Popen(command.split(), stdout=subprocess.PIPE, shell=True)
+    process = subprocess.Popen(['send', 'FES shape production finished: %s' % (shapes._output_file)], stdout=subprocess.PIPE, shell=True)
     output, error = process.communicate()
 
+    if shapes._output_file_dir.endswith('/shapes'):
+        converted_shapes_dir = shapes._output_file_dir[:-6] + 'converted_shapes'
+    else:
+        converted_shapes_dir = os.path.join(shapes._output_file_dir, 'converted_shapes')
 
-    shapes_dir = os.path.join('/'.join(os.path.realpath(os.path.dirname(__file__)).split('/')[:-1]), 'converted_shapes')
-    convertToSynced(
+    # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
+    converted_shapes_file = convertToSynced(
         input_path=shapes._output_file,
-        output_dir=os.path.join(shapes_dir, shapes._output_file[:-5]),
+        output_dir=os.path.join(converted_shapes_dir),
+        variables=shapes._variables_names,
+        debug=shapes._debug,
     )
-
+    print 'converted_shapes_file:', converted_shapes_file
     # print '\n # 9 - implement the nominal ploting if you want'
 
     print 'done'

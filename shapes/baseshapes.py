@@ -55,7 +55,7 @@ class Shapes(object):
                  tag=None,
                  output_file=None,
                  output_file_name=None,
-                 output_dir=None,
+                 output_file_dir=None,
                  tt_friend_directory=None,
                  context_analysis=None,
                  variables_names=None,  # X
@@ -164,8 +164,8 @@ class Shapes(object):
 
         # Setting output file attribute
         self._output_file = output_file
-        self._output_file_name = output_file_name
-        self._output_dir = output_dir if output_dir is not None and output_dir is not '' else os.getcwd()
+        self._output_file_name = output_file_name if output_file_name is not None else ''
+        self._output_file_dir = output_file_dir if output_file_dir is not None and output_file_dir is not '' else os.getcwd()
         with open('data/known_processes.yaml', 'r') as f:
             file_known_processes = yaml.load(f)
             self._known_processes = file_known_processes['_known_processes']
@@ -198,13 +198,14 @@ class Shapes(object):
             self._output_file_name = 'noForceCuts_' + self._output_file_name
 
         # check output dir exists
-        if self._output_dir is not None and len(self._output_dir) > 1 and not os.path.isdir(self._output_dir):
+        if self._output_file_dir is not None and len(self._output_file_dir) > 1 and not os.path.isdir(self._output_file_dir):
             try:
-                os.makedirs(self._output_dir)
+                os.makedirs(self._output_file_dir)
             except:
-                raise ValueError("%s::%s: failed to create a required output directory: %s" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._output_dir))
+                raise ValueError("%s::%s: failed to create a required output directory: %s" % (self.__class__.__name__, sys._getframe().f_code.co_name, self._output_file_dir))
+
         # set full file path
-        self._output_file = os.path.join(self._output_dir, self._output_file_name)
+        self._output_file = os.path.join(self._output_file_dir, self._output_file_name)
 
         self._logger.debug("Context analysis: %s\n methods collection key: %s" % (self._context_analysis, self._methods_collection_key))
         self._logger.info("Output file: %s" % (self._output_file))
@@ -215,6 +216,7 @@ class Shapes(object):
             num_threads=self._num_threads,
             skip_systematic_variations=self._skip_systematic_variations
         )
+        # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
 
     @property
     def variables_names(self):
@@ -341,7 +343,7 @@ class Shapes(object):
         parser.add_argument("--tag", type=str, help="Tag of output files.")
         parser.add_argument("--output-file", type=str, help="Output file  for file with final shapes that enter datacards. Invalidates output-file-name and output-file-dir")
         parser.add_argument("--output-file-name", type=str, help="Output file name for file with final shapes that enter datacards. If none is given context_analysis is used as a root for this name")
-        parser.add_argument("--output-dir", type=str, help="Output file directory")
+        parser.add_argument("--output-file-dir", type=str, help="Output file directory")
         parser.add_argument("--skip-systematic-variations", type=str, help="Do not produce the systematic variations.")
         parser.add_argument("--tes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
         parser.add_argument("--fes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
@@ -366,7 +368,7 @@ class Shapes(object):
         defaultArguments['tag'] = 'ERA_CHANNEL'
         defaultArguments['output_file'] = None
         defaultArguments['output_file_name'] = ''
-        defaultArguments['output_dir'] = ''
+        defaultArguments['output_file_dir'] = ''
         defaultArguments['skip_systematic_variations'] = False
         defaultArguments['context_analysis'] = 'etFes'
         defaultArguments['tes_sys_processes'] = ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
