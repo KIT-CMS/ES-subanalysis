@@ -138,6 +138,13 @@ class ETauFES(Shapes):
             if estimation_method in ['WEstimationWithQCD', 'QCDEstimationWithW']:
                 bg_processes = {}
                 bg_processes = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]  # ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]]
+                # if "EMB" in key:
+                #     bg_processes = [processes[process] for process in ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]]
+                #     # former with: "EWKL", "EWKJ"
+                # else:
+                #     bg_processes = [processes[process] for process in ["ZTT", "ZL", "ZJ", "TT", "VV"]]
+                #     # alternative: ["DYJetsToLL", "TT", "VV"]]
+                #     # former with "EWK"
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](
                     era=self.era,
                     directory=self._directory,
@@ -236,8 +243,16 @@ class ETauFES(Shapes):
                             cuts=cuts,
                             variable=var)
                     )
+                    # self._logger.warning("The cuts include all the minimal level filter values!")
+                    # categories[-1].cuts.add(Cut('nDiElectronVetoPairsOS < 0.5', 'nDiElectronVetoPairsOS'))
+                    # categories[-1].cuts.add(Cut('extraelec_veto < 0.5', 'extraelec_veto'))
+                    # categories[-1].cuts.add(Cut('extramuon_veto < 0.5', 'extramuon_veto'))
 
                     # Add the DM splitting
+                    # print dm, self._known_cuts['decay_mode']
+                    # print len(categories)
+                    # print categories[-1]
+                    # print Cut(self._known_cuts['decay_mode'][dm], dm)
                     self._logger.debug("Add the dm splitting: %s, %s" % (self._known_cuts['decay_mode'][dm], dm))
                     categories[-1].cuts.add(Cut(self._known_cuts['decay_mode'][dm], dm))
 
@@ -253,6 +268,7 @@ class ETauFES(Shapes):
         log_categories = '\t', 'Cattegories:\n'
         for category in categories:
             log_categories += '\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'
+
         self._logger.info(log_categories)
 
         return categories
@@ -394,6 +410,10 @@ class ETauFES(Shapes):
                         )
                     )
 
+            channel_holder._nnominals = len([i for i in self._systematics._systematics if i.variation.is_nominal()])
+            if channel_holder._nnominals == 0:
+                raise Exception("no nominals were found - yet not implemented.")
+
             if 'TES' in self._shifts:
                 print '\n\nTES...'
                 tau_es_3prong_variations = create_systematic_variations(name="CMS_scale_t_3prong_13TeV", property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
@@ -460,11 +480,13 @@ class ETauFES(Shapes):
 
             if 'FES_shifts' in self._shifts:
                 print '\n\nFES_shifts...'
+                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
                 # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
                 root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
                 for es in self._etau_es_shifts:
                     shift_str = root_str(es)
-                    for pipeline in ["eleTauEsOneProngShift_", "eleTauEsOneProngPiZerosShift_", "eleTauEsThreeProngShift_"]:  # TODO: add inclusive
+                    # TODO: here the pipeline WILL depend on the category per DM
+                    for pipeline in ["eleTauEsInclusiveShift_", "eleTauEsOneProngShift_", "eleTauEsOneProngPiZerosShift_", "eleTauEsThreeProngShift_"]:  # TODO: add inclusive
                         variation = DifferentPipeline(name='CMS_fes_' + pipeline + '13TeV_', pipeline=pipeline, direction=shift_str)
                         proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
                         print '\nvariation name:', variation.name, '\nintersection self._fes_sys_processes:', proc_intersection
@@ -475,9 +497,22 @@ class ETauFES(Shapes):
                                 channel=channel_holder._channel_obj,
                                 era=self.era
                             )
-                            for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
-                                self._systematics._systematics[-1].category.cuts.add(Cut(cut_expression, cut_key))
-                            self._systematics._systematics[-1]._process._estimation_method._directory=self._fes_friend_directory[0]
+
+                            for shift_systematic in self._systematics._systematics[-channel_holder._nnominals:]:
+                                for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
+                                    shift_systematic.category.cuts.add(Cut(cut_expression, cut_key))
+                                shift_systematic._process._estimation_method._directory = self._fes_friend_directory[0]
+
+                            # for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
+                            #     self._systematics._systematics[-1].category.cuts.add(Cut(cut_expression, cut_key))
+                            # self._systematics._systematics[-1]._process._estimation_method._directory = self._fes_friend_directory[0]
+                            # exit(1)
+                            # for i in self._systematics._systematics: print 'name:', i._variation._name if 'Nominal' == i._variation._name else  ['pipeline:', i._variation._pipeline, i._process._estimation_method._directory]
+                            # self._systematics._systematics[-1]._variation._name, self._systematics._systematics[-1]._category._name
+                            # self._systematics._systematics[-1]._variation._pipeline
+                            # self._systematics._systematics[-1]._process._estimation_method._directory
+
+
             if 'FF' in self._shifts:
                 print '\n\n FF related uncertainties ...'
                 fake_factor_variations_et = []
