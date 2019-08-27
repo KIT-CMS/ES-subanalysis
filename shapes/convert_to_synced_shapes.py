@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
  python convert_to_synced_shapes.py --input etFes_2017_all_shapes.root --output converted_shapes
-
+ # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 """
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True  # disable ROOT internal argument parser
@@ -18,6 +18,7 @@ logger = logging.getLogger("")
 intersection = lambda x, y: list(set(x) & set(y))
 
 map_pipes = {
+    # For FES
     '0jet_alldm': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
     '0jet_dm0': 'CMS_fes_eleTauEsOneProngShift_13TeV_',
     '0jet_dm1': 'CMS_fes_eleTauEsOneProngPiZerosShift_13TeV_',
@@ -35,6 +36,7 @@ map_pipes = {
 
     'inclusive': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
 
+    # For single-process runs
     'jeta_1': 'jeta_1',
     'jeta_2': 'jeta_2',
     'm_vis': 'm_vis',
@@ -59,14 +61,10 @@ def parse_arguments():
         description="Convert shapes from the shape producer to the sync format."
     )
 
-    parser.add_argument('--output', '-o', default="", type=str,
-                        help='Output directory')
-    parser.add_argument('--input', '-i', type=str, nargs=1,
-                        help='Path to single input ROOT file.')
-    parser.add_argument('--variables', type=str, nargs='*', default=None,
-                        help='variables.')
-    parser.add_argument('--debug', default=False, action="store_true",
-                        help="Debug option [Default: %(default)s]")
+    parser.add_argument('--input-file', '-i', type=str, nargs=1, help='Path to single input ROOT file.')
+    parser.add_argument('--output-dir', default="", type=str, help='Output directory')
+    parser.add_argument('--variables', '-v', type=str, nargs='*', default=['m_vis', 'njets_mvis', 'dm_mvis'], help='variables.')
+    parser.add_argument('--debug', default=0, action="store_const", const=1, help="Debug option [Default: %(default)s]")
 
     return parser.parse_args()
 
@@ -90,34 +88,30 @@ def checkDM(hist_map):
             print 'nominal:', k
 
 
-def constructMap(hist_map, input_file, debug=0, variables=None):
-    # pp.pprint(sorted(input_file.GetListOfKeys())); exit(1)
-    if variables is None:
-        print "convertToSynced::constructMap : no desired variables were asked to be updated."
-        return
-
+def constructMap(hist_map, variables, input_file, debug=0):
+    """
+    Read name and extract shape properties
+    """
     for key in input_file.GetListOfKeys():
-        # Read name and extract shape properties
         name = key.GetName()
+        if key.GetClassName() == 'TTree':
+            continue
         properties = [x for x in name.split("#") if not x == ""]
 
         if properties[5] not in variables:
-            print 'skip variable:', properties[5]
+            logger.debug('skip variable: %s' % properties[5])
             continue
 
-        # Get category name (and remove CHANNEL_ from category name)
-        category = properties[1][3:]
-        # Get other properties
+        # Extract properties from name
+        category = properties[1][3:]  # remove ${CHANNEL}_ from it)
         channel = properties[0]
         process = properties[2]
 
-        # Check that in the mapping of the names the channel and category is existent
-        if channel not in hist_map:
-            hist_map[channel] = {}
-        if category not in hist_map[channel]:
-            hist_map[channel][category] = {}
+        # Check that in the mapping of the names the channel and category is present
+        hist_map[channel] = {} if channel not in hist_map else hist_map[channel]
+        hist_map[channel][category] = {} if category not in hist_map[channel] else hist_map[channel][category]
 
-        # Push name of histogram to dict
+        # Push name of a histogram to the dict
         if len(properties) not in [7, 8]:
             logger.critical("Shape {} has an unexpected number of properties.".format(name))
             raise Exception
@@ -146,8 +140,9 @@ def constructMap(hist_map, input_file, debug=0, variables=None):
             print '\thist_map[et]:', hist_map['et']
             exit(1)
 
-    print 'categories in the root file: ', hist_map,
-    pp.pprint(hist_map['et'].keys())
+    print 'categories in the root file: '
+    pp.pprint(hist_map)
+    # pp.pprint(hist_map['et'].keys())
 
     # if debug:
     #     print '0jet_dm0_for_wjets_mc'
@@ -157,77 +152,86 @@ def constructMap(hist_map, input_file, debug=0, variables=None):
     #     print '0jet_dm0'
     #     pp.pprint(hist_map['et']['0jet_dm0'])
 
+
 # input_path=args.input[0], output_dir=args.output, debug=args.debug, variables=args.variables)
-def convertToSynced(input_path='', output_dir='', debug=False, variables=['m_vis', 'njets_mvis', 'dm_mvis']):
+def convertToSynced(variables, input_path, output_dir='', debug=False):
     # Open input ROOT file and output ROOT file
-    if len(input_path) > 5 and input_path[-5:] == '.root':
+    if len(input_path) > 5 and input_path.endswith('.root'):
             pass
     else:
         input_path = "{}.root".format(input_path)
 
-    print 'Input:', input_path
+    logger.info('Input file: %s' % input_path)
     input_file = ROOT.TFile(input_path, 'read')
 
     # Loop over shapes of input ROOT file and create map of input/output names
     hist_map = {}
     constructMap(hist_map=hist_map, input_file=input_file, debug=debug, variables=variables)
+    if hist_map == {}:
+        return None
+    # if debug: checkDM(hist_map)
 
-    # if debug:
-    #     checkDM(hist_map)
-
-    check = ["W", "QCD", "ZJ", "TTT", "TTJ", "VVT", "VVJ", "ZTT"]
+    check_if_missing = ["W", "QCD", "ZJ", "TTT", "TTJ", "VVT", "VVJ", "ZTT"]
     known_categories = map_pipes.keys()
+    # Each channel belongs to a different output file
     for channel in hist_map:
-        print 'channel:', channel
+        logger.debug('channel: %s' % channel)
         if output_dir == "":
+            if not os.path.isdir("converted_shapes"):
+                os.makedirs("converted_shapes")
             output_dir = os.path.join(os.getcwd(), "converted_shapes", input_path.split('/')[-1].split('.root')[0])
-        output_file_name = os.path.join(output_dir, "htt_{CHANNEL}.inputs-etFes.root").format(CHANNEL=channel)
-        print 'output:', output_file_name
+        # TODO: check if now made it encode the input file name properly
+        output_file_name = os.path.join(output_dir, input_path.split('.root')[0] + '_{CHANNEL}_converted.root'.format(CHANNEL=channel))
+        logger.info('output: %s' % output_file_name)
 
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
         output_file = ROOT.TFile(output_file_name, "RECREATE")
 
         if len(intersection(known_categories, hist_map[channel].keys())) == 0:
-            print 'No registered as known categories are found. Known:'
+            logger.critical('No registered as known categories are found. Known:')
             pp.pprint(known_categories)
-            print "found:"
+            logger.critical("found:")
             pp.pprint(hist_map[channel].keys())
         else:
-            print "Intersection:", intersection(known_categories, hist_map[channel].keys())
+            logger.info("Intersection:", intersection(known_categories, hist_map[channel].keys()))
 
         for category in intersection(known_categories, hist_map[channel].keys()):
-            print 'category:', category, '...'
+            logger.debug('category:', category, '...')
             # if category == '0jet_alldm':
             #         print 'add after next skimm'
             #         continue
 
             if category.endswith("_ss") or category.endswith("_B") or category.endswith('_for_wjets_mc'):
-                print '\t skipped'
+                logger.warning('\t skipped as bg est.')
                 continue
 
+            # Each channel*category belongs to a different dir
             output_file.cd()
             dir_name = "{CHANNEL}_{CATEGORY}".format(CHANNEL=channel, CATEGORY=category)
             output_file.mkdir(dir_name)
             output_file.cd(dir_name)
 
             for name in hist_map[channel][category]:
-                print 'name:', name, '...',
+                logger.debug('name: %s ...' % name)
                 name_output = hist_map[channel][category][name]
 
+                # Check the expected mapping of pipelines and categories
                 if category in map_pipes.keys():
                     if '_fes_' in name_output and map_pipes[category] not in name_output:
-                        # print '\t dropping', name_output
+                        logger.debug('Skipping FES shifts that should not belong to the limited dm/njets category: %s' % name_output)
+                        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
                         continue
                     else:
                         name_output = name_output.replace(map_pipes[category], '')
                 else:
-                    print 'unknown category to drop unnessesary pipelines:', category
-                    exit(1)
+                    logger.critical('unknown category to drop unnessesary pipelines: %s' % category)
+                    raise Exception
 
-                if name_output in check:
-                    check.remove(name_output)
+                if name_output in check_if_missing:
+                    check_if_missing.remove(name_output)
 
+                # the nominal ZL should be treated as ZL_0
                 if 'ZL' == name_output:
                     name_output += '_0'
 
@@ -238,26 +242,33 @@ def convertToSynced(input_path='', output_dir='', debug=False, variables=['m_vis
                     name_output = name_output.replace('2p', '2.')
                     name_output = name_output.replace('3p', '3.')
 
-                if category == '0jet_dm0' and 'ZL' in name_output:
-                    print '\t ', name_output
-                print name_output
+                logger.debug(name_output)
+
+                # Store the histogram in the root file
                 hist = input_file.Get(name)
                 hist.SetTitle(name_output)
                 hist.SetName(name_output)
                 hist.Write()
 
-            print "check:", check
+            logger.warning("Standart processes that were not found:" + " ".join(check_if_missing))
 
         output_file.Close()
 
-    # Clean-up
     input_file.Close()
-    print 'done'
+    logger.info('Done convertion')
     return output_file_name
 
 
 if __name__ == "__main__":
     args = parse_arguments()
-    setup_logging("convert_synced_shapes.log", logging.DEBUG)
-    print args.variables
-    convertToSynced(input_path=args.input[0], output_dir=args.output, debug=args.debug, variables=args.variables)
+    if args.debug:
+        setup_logging("convert_synced_shapes.log", logging.DEBUG)
+    else:
+        setup_logging("convert_synced_shapes.log", logging.INFO)
+    logger.debug('Converted variables: ' + ' '.join(args.variables))
+    print "Converted shapes:", convertToSynced(
+        input_path=args.input_file[0],
+        output_dir=args.output_dir,
+        debug=args.debug,
+        variables=args.variables
+    )
