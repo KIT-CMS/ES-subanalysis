@@ -140,11 +140,12 @@ def constructMap(hist_map, variables, input_file, debug=0):
             print '\thist_map[et]:', hist_map['et']
             exit(1)
 
-    print 'categories in the root file: '
-    pp.pprint(hist_map)
-    # pp.pprint(hist_map['et'].keys())
+    if debug > 1:
+        print 'categories in the root file: '
+        pp.pprint(hist_map)
 
     # if debug:
+    #     pp.pprint(hist_map['et'].keys())
     #     print '0jet_dm0_for_wjets_mc'
     #     pp.pprint(hist_map['et']['0jet_dm0_for_wjets_mc'])
     #     print '0jet_dm0_ss_for_qcd'
@@ -153,6 +154,7 @@ def constructMap(hist_map, variables, input_file, debug=0):
     #     pp.pprint(hist_map['et']['0jet_dm0'])
 
 
+# import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
 # input_path=args.input[0], output_dir=args.output, debug=args.debug, variables=args.variables)
 def convertToSynced(variables, input_path, output_dir='', debug=False):
     # Open input ROOT file and output ROOT file
@@ -176,16 +178,24 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
     # Each channel belongs to a different output file
     for channel in hist_map:
         logger.debug('channel: %s' % channel)
+
         if output_dir == "":
             if not os.path.isdir("converted_shapes"):
                 os.makedirs("converted_shapes")
             output_dir = os.path.join(os.getcwd(), "converted_shapes", input_path.split('/')[-1].split('.root')[0])
         # TODO: check if now made it encode the input file name properly
-        output_file_name = os.path.join(output_dir, input_path.split('.root')[0] + '_{CHANNEL}_converted.root'.format(CHANNEL=channel))
+        output_file_name = os.path.join(output_dir, input_path.split('/')[-1].split('.root')[0] + '_{CHANNEL}_converted.root'.format(CHANNEL=channel))
         logger.info('output: %s' % output_file_name)
 
         if not os.path.exists(output_dir):
-            os.mkdir(output_dir)
+            if os.pardir not in output_dir:
+                os.makedirs(output_dir)
+            else:
+                try:
+                    os.mkdir(output_dir)
+                except:
+                    raise Exception("Couldn't create output dir for the converted shapes %s. Try removing '..' from the path." % output_dir)
+
         output_file = ROOT.TFile(output_file_name, "RECREATE")
 
         if len(intersection(known_categories, hist_map[channel].keys())) == 0:
