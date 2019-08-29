@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
  python convert_to_synced_shapes.py --input etFes_2017_all_shapes.root --output converted_shapes
+ python shapes/convert_to_synced_shapes.py --input /ceph/ohlushch/shapes/FES/shapes/etFes_Legacy_FES_with_EMB_QCDSStoOS.root --output /ceph/ohlushch/shapes/FES/converted_shapes/converted_shapes --variables m_vis
  # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 """
 import ROOT
@@ -204,7 +205,7 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
             logger.critical("found:")
             pp.pprint(hist_map[channel].keys())
         else:
-            logger.info("Intersection:", intersection(known_categories, hist_map[channel].keys()))
+            logger.info("Intersection: [%s]" % ', '.join(intersection(known_categories, hist_map[channel].keys())))
 
         for category in intersection(known_categories, hist_map[channel].keys()):
             logger.debug('category:', category, '...')
@@ -225,6 +226,8 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
             for name in hist_map[channel][category]:
                 logger.debug('name: %s ...' % name)
                 name_output = hist_map[channel][category][name]
+                name_output = 'QCD' if name_output.startswith('QCD') else name_output
+                name_output = 'W' if name_output.startswith('W') else name_output
 
                 # Check the expected mapping of pipelines and categories
                 if category in map_pipes.keys():
