@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-
+import importlib
+import copy
 import logging
 from rootpy import log
 from rootpy.logger.magic import DANGER
@@ -13,6 +14,9 @@ pp = pprint.PrettyPrinter(indent=4)
 
 from shape_producer.systematics import Systematics
 from channelholder import ChannelHolder
+from shape_producer.process import Process  # move to ChannelsHolder
+from shape_producer.variable import Variable  # move to ChannelsHolder
+from shape_producer.binning import VariableBinning  # move to ChannelsHolder
 # from inidecorator import inidecorator
 
 # TODO: wrapper for introduction of methods
@@ -284,6 +288,16 @@ class Shapes(object):
             categorries=categorries,
         )
 
+    def addChannel(self, name, channel_holder):
+        """
+        Appends to the _channels dict only the ChannelHolder items
+        """
+        # print "ETauFES::addChannel:", name, type(channel_holder)
+        if isinstance(channel_holder, ChannelHolder):
+            self._channels[name] = channel_holder
+        else:
+            raise 'addChannel can\'t add non-ChannelHolder objects'
+
     def __str__(self):
         self._logger.debug("Shapes ofset:", self._ofset)
         print "ofset", self._ofset
@@ -536,14 +550,204 @@ class Shapes(object):
         common_config.update(config)
         return common_config
 
+    # TODO: needs to belong to ChannelHolder
+    def getVariables(self, channel_obj, variable_names, binning):
+        """
+        Returns dict of Variables for Channel
+        """
+        # print "ETauFES::getVariables"
+        variables = {}
+
+        for key in variable_names:
+            variables[key] = Variable(
+                key,
+                VariableBinning(binning[key]["bins"]),
+                expression=binning[key]["expression"],
+            )
+
+        return variables
+
     def evaluateChannel(self, channel):
         pass  # self._channels.add()
 
     def evaluateChannels(self):
-        pass
+        """
+        Evaluates all requested channels
+        """
+        # print "ETauFES::evaluateChannels"
+        for channel in self._channels_key:
+            self.addChannel(
+                name=channel,
+                channel_holder=self.getEvaluatedChannel(channel=channel, variables=self._variables_names),
+            )
 
     def evaluateEra(self):
-        pass
+        """
+        "Era selection"
+        """
+        from shape_producer.era import Run2016 as Run2016
+        from shape_producer.era import Run2018 as Run2018
+        from shape_producer.era import Run2017 as Run2017
+
+        if "2017" in self._era_name:
+            # self.importEstimationMethods(era=self._era_name, context_analysis=self._context_analysis)
+            self.era = Run2017(self._datasets)  # self.lazy("Run2017")() #
+        elif "2018" in self._era_name:
+            self.era = Run2018(self._datasets)
+        elif "2016" in self._era_name:
+            self.era = Run2016(self._datasets)
+        else:
+            self.logger.critical("Era {} is not implemented.".format(self.era))
+            raise Exception
+
+    def __getattr__(self, key):
+        """
+        Syntactic sugar to return a getEstimationMethod object defined by *key* in case no other attribute
+        was resolved.
+        """
+        print "__getattr__::key", key
+        return self.getEstimationMethod(key)
+
+    def getEstimationMethod(self, key):
+        """
+        Returns class that corresponds to the requested estimation method
+        """
+        print "getEstimationMethod::key", key
+        if key in self._estimation_methods:
+            return self._estimation_methods[key]
+        else:
+            raise KeyError("unknown getEstimationMethod key:" + key)
+
+    def importEstimationMethods(self, module, *methods):  # TODO: add arguments validity
+        """
+        Manual importing of module
+        """
+        for method in methods:
+                if method in self._estimation_methods:
+                    print 'Warning: Estimation method', method, 'already defined - skipped redefinition'
+                    continue
+                self._estimation_methods[method] = getattr(importlib.import_module(module), method)
+
+    # TODO: add wraper to set initial parameters to self.*
+    def importEstimationMethods(self, era=None, context_analysis=None, channels_key=None):  # TODO: add arguments validity
+        """
+        Standalone importing
+        """
+        # print "ETauFES::Standalone importing"
+        if channels_key is None:
+            channels_key = self._channels_key
+
+        imported_module = self.getModule()
+        for channel_name in channels_key:
+            # print "test:", self._known_estimation_methods[era][context_analysis]#[channel_name]#['methods']
+            for combine_name, method in self.getMethodsDict(era=era, context=context_analysis, channel_name=channel_name).iteritems():
+                if method in self._estimation_methods:
+                    print 'Warning: Estimation method', method, 'already defined - skipped redefinition'
+                # print 'module:', self._estimation_methods
+                self._estimation_methods[method] = getattr(importlib.import_module(imported_module), method)
+
+    # TODO: needs to belong to ChannelHolder
+    # TODO:reimplement the function to take parameters_list as input argument
+    def getProcesses(self, channel_obj, friend_directory):  # TODO: use a set of parameters; TODO: add a fn to re-set the QCD estimation method
+        """
+        Returns dict of Processes for Channel
+        """
+        # print "ETauFES::getProcesses"
+        parameters_list = {
+            'era': self.era,
+            'directory': self._directory,
+            'channel': channel_obj,
+            'friend_directory': friend_directory,
+            'folder': self._nominal_folder,
+        }
+        channel_name = channel_obj._name
+        context = self._context_analysis
+        era = self._era_name
+        processes = {}
+        renaming = self._renaming
+
+        # TODO: move to config step
+        # Move all the complex methods to the end of the processes list
+        from collections import OrderedDict
+        orderedProcesses = OrderedDict(self.getMethodsDict(era=era, context=context, channel_name=channel_name))
+        for combine_name, estimation_method in self.getMethodsDict(era=era, context=context, channel_name=channel_name).iteritems():
+            if estimation_method in self._complexEstimationMethods:
+                temp = estimation_method
+                del orderedProcesses[combine_name]
+                orderedProcesses[combine_name] = temp
+
+        # print 'Create all Processes'
+        for combine_name, estimation_method in orderedProcesses.iteritems():
+            key = combine_name if combine_name not in renaming.keys() else renaming[combine_name]
+
+            if estimation_method not in self._estimation_methods.keys():
+                raise KeyError("Unknown estimation method: " + estimation_method)
+
+            if key in processes.keys():  # TODO: add the check of the config
+                print "Key added in list of processes twice. channel: " + channel_name + "; key:" + key
+                continue
+
+            if estimation_method in ['WEstimationWithQCD', 'QCDEstimationWithW']:
+                bg_processes = {}
+                bg_processes = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]  # ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]]
+                # if "EMB" in key:
+                #     bg_processes = [processes[process] for process in ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]]
+                #     # former with: "EWKL", "EWKJ"
+                # else:
+                #     bg_processes = [processes[process] for process in ["ZTT", "ZL", "ZJ", "TT", "VV"]]
+                #     # alternative: ["DYJetsToLL", "TT", "VV"]]
+                #     # former with "EWK"
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](
+                    era=self.era,
+                    directory=self._directory,
+                    channel=channel_obj,
+                    bg_processes=bg_processes,
+                    data_process=processes["data_obs"],
+                    w_process=processes["WMC"],
+                    friend_directory=[],
+                    qcd_ss_to_os_extrapolation_factor=1.09,
+                ))
+
+            elif 'QCDSStoOS' in key:  # key == 'QCDEstimation_SStoOS_MTETEM':
+                qcdsstoos_parameters_list = copy.deepcopy(parameters_list)
+
+                qcdsstoos_parameters_list['bg_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
+                qcdsstoos_parameters_list['extrapolation_factor'] = 1.04  # 1.00  # 1.17?
+                try:
+                    qcdsstoos_parameters_list['data_process'] = processes['data_obs']
+                except:
+                    try:
+                        qcdsstoos_parameters_list['data_process'] = processes['data']
+                    except:
+                        raise Exception("couldn't access processes['data_obs'] of data object")
+
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**qcdsstoos_parameters_list))
+
+            elif 'jetFakes' in key:
+                ff_parameters_list = copy.deepcopy(parameters_list)
+                ff_parameters_list['friend_directory'].extend(self._fake_factor_friend_directory)
+
+                # import pdb; pdb.set_trace()
+                if estimation_method == 'NewFakeEstimationLT':
+                    # ? also TTT and VVT for no EMB case?
+                    # nofake_processes = ["EMB", "ZL", "TTL", "VVL"] if "EMB" in key else ["ZTT", "ZL", "TTL", "VVL"]
+                    # ff_parameters_list['nofake_processes'] = [processes[process] for process in nofake_processes]
+                    ff_parameters_list['nofake_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
+                    try:
+                        ff_parameters_list['data_process'] = processes['data_obs']
+                    except:
+                        try:
+                            ff_parameters_list['data_process'] = processes['data']
+                        except:
+                            raise Exception("couldn't access processes['data'] or data_obs object")
+
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ff_parameters_list))
+
+            else:
+                # if key == 'ZL': print '-->getProcesses::', key, parameters_list
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
+
+        return processes
 
     # TODO: use a set of parameters
     # TODO: add a fn to re-set the QCD estimation method
@@ -602,8 +806,14 @@ class Shapes(object):
         self._logger.warning('Not implemented!')
         pass
 
-    def produceShapes():
-        pass
+    def produce(self):
+        self._logger.debug(self._systematics)
+        # import pdb; pdb.set_trace()
+        # # !import code; code.interact(local=vars())
+        if not self._dry:
+            self._systematics.produce()
+        else:
+            self._logger.info("Dry run, stopping")
 
 
 if __name__ == '__main__':

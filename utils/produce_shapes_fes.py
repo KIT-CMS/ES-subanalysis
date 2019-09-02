@@ -10,18 +10,20 @@ from rootpy.logger.magic import DANGER
 DANGER.enabled = False
 
 from shapes import styled
-from shapes.etau_fes import ETauFES as analysis_shapes
+from shapes.etau_fes import ETauFES as analysis_shapes_et
+from shapes.mtau_fes import MTauFES as analysis_shapes_mt
 from shape_producer.systematics import Systematics
 from shapes.convert_to_synced_shapes import convertToSynced
 
 
 def produce_shapes_variables(config):
+    analysis_shapes = analysis_shapes_mt if config['context_analysis'] == 'mtFes' else analysis_shapes_et
 
     print '\n # 2 - setup_logging'
     shapes = analysis_shapes(**config)
 
     shapes.setup_logging(
-        output_file="{}_etau_fes.log".format(shapes._tag),
+        output_file=shapes._output_file.replace('.root', '.log'),
         level='debug' if shapes._log_level is None else shapes._log_level,
         logger=shapes._logger
     )
@@ -70,11 +72,18 @@ def main():
     debug = True
 
     styled.HEADER('\n # 1 - prepareConfig')
-    config = analysis_shapes.prepareConfig(
-        analysis_shapes=analysis_shapes,
+    config = analysis_shapes_et.prepareConfig(
+        analysis_shapes=analysis_shapes_et,
         config_file='data/et_fes_legacy2017_config.yaml',
         debug=debug
     )
+    if config['context_analysis'] == 'mtFes':
+        styled.HEADER('\n # 1 - prepareConfig')
+        config = analysis_shapes_mt.prepareConfig(
+            analysis_shapes=analysis_shapes_mt,
+            config_file='data/mt_fes_legacy_config.yaml',
+            debug=debug
+        )
 
     produce_shapes_variables(config=config)
 
