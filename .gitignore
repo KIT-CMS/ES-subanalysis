@@ -120,3 +120,4 @@ output/
 CMSSW_*/
 temp_*
 delme_*
+websync/
