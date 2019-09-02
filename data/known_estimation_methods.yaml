@@ -1,0 +1,106 @@
+processes: []
+
+_known_estimation_modules:
+    default:
+        module: Null
+    '2016':
+        module: shape_producer.estimation_methods_2016
+    '2017':
+        module: shape_producer.estimation_methods_2017
+    '2018':
+        module: shape_producer.estimation_methods_2018
+
+_known_methods_collections:
+    renaming:
+        data_obs                : data
+        jetFakes                : FAKES
+
+    Legacy_FES_with_FF:
+        data_obs                : DataEstimation  # combine
+        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
+        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
+        VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
+        # Classical: to comb: "ZTT", "W", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ",
+        ZTT                     : ZTTEstimation  # combine; class. QCD & W
+        #W                       : WEstimationWithQCD  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
+        QCD                     : QCDEstimationWithW  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
+        TTT                     : TTTEstimation  # combine
+        VVT                     : VVTEstimation  # combine
+        TTJ                     : TTJEstimation  # combine
+        TTL                     : TTLEstimation  # new to combine
+        VVL                     : VVLEstimation  # new to combine
+        VVJ                     : VVJEstimation  # combine
+        # EMB
+        EMB                     : ZTTEmbeddedEstimation
+        jetFakesEMB             : NewFakeEstimationLT # needs ["EMB", "ZL", "TTL", "VVL"]
+        WEMB                    : WEstimationWithQCD # needs ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
+        QCDEMB                  : QCDEstimationWithW # needs ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
+        # for classical QCD & W :  ["DYJetsToLL", "TT", "VV", "EWKW"[?]  || previously needed bg: "ZTT", "ZL", "ZJ", "TT", "VV", "EWK" [?]
+        # where "DYJetsToLL" = {"ZTT", "ZL", "ZJ", "EWKZ"}
+        # DYJetsToLL              : DYJetsToLLEstimation
+        WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
+        jetFakes                : NewFakeEstimationLT # needs ["ZTT", "ZL", "TTL", "VVL"]
+
+    Legacy_FES_with_EMB_with_FF:
+        data_obs                : DataEstimation  # combine
+        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
+        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        TTJ                     : TTJEstimation  # combine
+        TTL                     : TTLEstimation  # new to combine
+        VVL                     : VVLEstimation  # new to combine
+        VVJ                     : VVJEstimation  # combine
+        W                       : WEstimation
+        EMB                     : ZTTEmbeddedEstimation
+        jetFakesEMB             : NewFakeEstimationLT # needs ["EMB", "ZL", "TTL", "VVL"]
+
+    Legacy_FES_with_QCDwithW:
+        data_obs                : DataEstimation  # combine
+        ZTT                     : ZTTEstimation
+        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
+        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
+        VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
+        W                       : WEstimationWithQCD  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
+        QCD                     : QCDEstimationWithW  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
+        WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
+
+    Legacy_FES_with_EMB_QCDwithW:
+        data_obs                : DataEstimation  # combine
+        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
+        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        TTJ                     : TTJEstimation  # combine
+        TTL                     : TTLEstimation  # new to combine
+        VVL                     : VVLEstimation  # new to combine
+        VVJ                     : VVJEstimation  # combine
+        EMB                     : ZTTEmbeddedEstimation
+        WMC                     : WEstimation
+        WEMB                    : WEstimationWithQCD # needs ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
+        QCDEMB                  : QCDEstimationWithW # needs ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
+
+    Legacy_FES_with_QCDSStoOS:
+        data_obs                : DataEstimation  # combine
+        ZTT                     : ZTTEstimation
+        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
+        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        TTT                     : TTTEstimation  # combine
+        TTJ                     : TTJEstimation  # combine
+        TTL                     : TTLEstimation  # new to combine
+        VVT                     : VVTEstimation  # combine
+        VVL                     : VVLEstimation  # new to combine
+        VVJ                     : VVJEstimation  # combine
+        W                       : WEstimation  # class. QCD & W ; now contains also EWKW
+        QCDSStoOS               : QCDEstimation_SStoOS_MTETEM  # combine needs ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
+
+    Legacy_FES_with_EMB_QCDSStoOS:
+        data_obs                : DataEstimation  # combine
+        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
+        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        TTJ                     : TTJEstimation  # combine
+        TTL                     : TTLEstimation  # new to combine
+        VVL                     : VVLEstimation  # new to combine
+        VVJ                     : VVJEstimation  # combine
+        EMB                     : ZTTEmbeddedEstimation
+        W                       : WEstimation  # class. QCD & W ; now contains also EWKW
+        QCDSStoOSEMB               : QCDEstimation_SStoOS_MTETEM  # combine needs ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]],
+

@@ -27,7 +27,7 @@ class ETauFES(Shapes):
         self._variables = []
         self._estimation_methods = {}
 
-        self._etau_es_shifts = self._known_estimation_methods[self._era_name][self._context_analysis]['etau_es_shifts']
+        # self._etau_es_shifts = self._known_estimation_methods[self._era_name][self._context_analysis]['etau_es_shifts']
 
     def evaluateEra(self):
         """

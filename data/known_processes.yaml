@@ -1,3 +1,8 @@
+tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
+fes_sys_processes: ['ZL', 'DYJetsToLL']
+emb_sys_processes: ['EMB']
+zpt_sys_processes: ['ZTT', 'ZL', 'ZJ']
+
 _complexEstimationMethods: [
   WEstimationWithQCD ,
   QCDEstimationWithW ,

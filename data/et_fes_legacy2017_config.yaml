@@ -1,6 +1,7 @@
 backend: classic
 channels: [et]
 num_threads: 1
+datasets: datasets/datasets.json
 binning: data/binning.yaml
 binning_key: gof
 era: '2017'
@@ -8,37 +9,71 @@ tag: etauFES
 context_analysis: etFes
 methods_collection_key: "Legacy_FES_with_QCDSStoOS" # Legacy_FES_with_EMB_QCDSStoOS ; in 2017: Original_FES_with_FF
 
-output_file: Null # keep it empty and let it be constructed
-output_file_name: Null # keep it empty and let it be constructed from context_analysis + methods_collection_key
+output_file: Null  # keep it empty for auto-naming
+output_file_name: Null  # keep it empty for auto-naming: context_analysis + methods_collection_key
+
 user_specific:
   output_file_dir:
-    default: ''
+    byhost:
+      default: Null
     glusheno:
-      naf: '/nfs/dust/cms/user/glusheno/shapes/FES/shapes'
+      naf: /nfs/dust/cms/user/glusheno/shapes/FES/shapes/ET
     ohlushch:
-      bms: '/ceph/ohlushch/shapes/FES/shapes'
+      bms: /ceph/ohlushch/shapes/FES/shapes/ET
 
-  # Note: shared samples should Not be used in the FES subanalysis since those contain the old FES corrections
+  ## Path to inputs with nominal pipeline and systematics
+  ## Note: shared samples should Not be used in the FES subanalysis since those contain the old FES corrections
   directory:
-    default: Null
+    byhost:
+      default: Null
+      naf:
+        '2017': /nfs/dust/cms/group/higgs-kit/Legacy/FES/FESshifts_2017/merged/
+      bms:
+        '2017': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2017/merged_nominal
     glusheno:
       naf: /nfs/dust/cms/group/higgs-kit/Legacy/FES/FESshifts_2017/merged/
     #TODO: check on how to use $ARTUS_OUTPUTS_2017 and shifts with common friends
     ohlushch:
       bms: /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2017/merged_nominal #"$ARTUS_OUTPUTS_2017"
 
+  et_friend_directory:
+    byhost:
+      default: []
+  mt_friend_directory:
+    byhost:
+      default: []
+  tt_friend_directory:
+    byhost:
+      default: []
+  fake_factor_friend_directory:
+    byhost:
+      default: ["$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"]
+
+  ## FES shifts pipelines should be stored separatelys
+  fes_friend_directory:
+    byhost:
+      default: []
+      bms:
+        '2017': ["/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2017/merged_shifts"]  # "/ceph/ohlushch/naf/FES/FES/FESshifts_2017/merged/"
+
+# et_friend_directory: ''
+# mt_friend_directory: ''
+# tt_friend_directory: ''
+# fake_factor_friend_directory: "$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"
+# fes_friend_directory: "/ceph/ohlushch/naf/FES/FES/FESshifts_2017/merged/"
+
 skip_systematic_variations: False
 variables_names: [
   # m_1, m_2,
   # mt_1, mt_2,
-  # # pt_1, pt_2,
-  # # eta_1, eta_2,
-  # # jpt_1, jpt_2,
-  # # jeta_1, jeta_2,
-  # # decayMode_1, decayMode_2,
-  # # iso_1, iso_2,
-  # # d0_1, d0_2,
-  # # dZ_1, dZ_2
+  # pt_1, pt_2,
+  # eta_1, eta_2,
+  # jpt_1, jpt_2,
+  # jeta_1, jeta_2,
+  # decayMode_1, decayMode_2,
+  # iso_1, iso_2,
+  # d0_1, d0_2,
+  # dZ_1, dZ_2
   m_vis,
   # njets,
   # mt_tot,
@@ -46,40 +81,23 @@ variables_names: [
   # # npv,
   # njets,
   # nbtag,
-  # # met,
-  # # mjj,
-  # # dijetpt,
-  # # pZetaMissVis,
-  # # rho,
-]
-
-gof_channel: Null
-gof_variable: Null
-
-et_friend_directory: []
-mt_friend_directory: []
-tt_friend_directory: []
-fake_factor_friend_directory: ["$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"]
-# et_friend_directory: ''
-# mt_friend_directory: ''
-# tt_friend_directory: ''
-# fake_factor_friend_directory: "$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"
-# fes_friend_directory: "/ceph/ohlushch/naf/FES/FES/FESshifts_2017/merged/"
-# Only for fes shifts pipelines
-fes_friend_directory: [
-  # "/ceph/ohlushch/naf/FES/FES/FESshifts_2017/merged/"
-  "/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2017/merged_shifts"
+  # met,
+  # mjj,
+  # dijetpt,
+  # pZetaMissVis,
+  # rho,
 ]
 
 ## Cuts enabling
 update_process_per_category: False
 no_fes_extra_cuts: False
-no_et_minplotlev_cuts: True
-no_force_cuts: False
-no_extra_cuts: False  # disabling all cuts at once
+no_et_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
+no_mt_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
+no_force_cuts: False  # forcing
+no_extra_cuts: False  # disabling all below mentioned cuts
+
 ## Cuts definitions
-# Cuts applied to FES_shifts pipelines
-fes_extra_cuts: {}
+fes_extra_cuts: {}  # Cuts applied to FES pipelines
 # applied to all pipelines! # minimal plot level cuts ; might be not callable with smHtt samples
 et_minplotlev_cuts:
   'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
@@ -98,7 +116,7 @@ force_cuts:
 # Invert cuts if present
 invert_cuts: [] # Cuts to be inverted. Applied prior the force-cuts and don't affect them.
 
-# processed is the intersection with list from _known_estimation_methods
+## Processed is the intersection with list from _known_estimation_methods
 shifts: [
   nominal,
   # TES,
@@ -106,10 +124,7 @@ shifts: [
   FES_shifts,
   # Zpt,
 ]
-tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
-fes_sys_processes: ['ZL', 'DYJetsToLL'] # only for fes shifts pipelines and shifts of e->tau in the analysis; EMB removed since it has only genuine taus
-emb_sys_processes: ['EMB']
-zpt_sys_processes: ['ZTT', 'ZL', 'ZJ']
+
 decay_mode: [
   'alldm',
   'dm0',
@@ -121,250 +136,10 @@ jets_multiplicity: [
   'njet0'
 ]
 
-
-datasets: datasets/datasets.json
-
-processes: []
-module: Null
-_known_estimation_methods:
-  '2016': Null
-  '2017':
-      etFes:  # used in 2016 processes: "W", "ZTT", "ZL", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ", "ZL"
-        etau_es_shifts: [
+etau_es_shifts: [
             -4, -3, -2, -1.75, -1.5, -1.25, -1, -0.75, -0.5, -0.25,
             0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5,
             2.75, 3, 3.25, 3.5, 3.75, 4, 5, 6, 7, 8,
             9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
         ]
-        module: shape_producer.estimation_methods_2017
-        et:
-          renaming:
-            data_obs                : data
-            jetFakes                : FAKES
-
-          test_DY:
-            data_obs                : DataEstimation
-            ZTT                     : ZTTEstimation
-            ZL                      : ZLEstimation
-            ZJ                      : ZJEstimation
-            EMB                     : ZTTEmbeddedEstimation
-            DYJetsToLL              : DYJetsToLLEstimation
-
-          test_DY_fast:
-            data_obs                : DataEstimation
-            ZTT                     : ZTTEstimation
-            EMB                     : ZTTEmbeddedEstimation
-
-          test_DY_splitting:
-            ZL                      : ZLEstimation
-            ZTT                     : ZTTEstimation
-            ZJ                      : ZJEstimation
-            DYJetsToLL              : DYJetsToLLEstimation
-
-          Artur_DY: # Artur's example for testing ; missing for FES bg: 'TTT' 'VVT' 'TTJ' 'VVJ'
-            data_obs                : DataEstimation  # combine
-            ZTT                     : ZTTEstimation
-            ZL                      : ZLEstimation
-            ZJ                      : ZJEstimation
-            TT                      : TTEstimation
-            VV                      : VVEstimation
-            WMC                     : WEstimation
-            W                       : WEstimationWithQCD # bg: ["ZTT", "ZL", "ZJ", "TT", "VV"]], needs "WMC", qcd_ss_to_os_extrapolation_factor=1.09
-            QCD                     : QCDEstimationWithW # bg: ["ZTT", "ZL", "ZJ", "TT", "VV"]], needs "WMC", qcd_ss_to_os_extrapolation_factor=1.09
-
-          Embedded_FES:
-            data_obs                : DataEstimation  # combine
-            ZL                      : ZLEstimation  # combine ; Signal
-            TTT                     : TTTEstimation  # combine
-            VVT                     : VVTEstimation  # combine
-            TTJ                     : TTJEstimation  # combine
-            VVJ                     : VVJEstimation  # combine
-            WMC                     : WEstimation
-            DYJetsToLL              : DYJetsToLLEstimation
-            ZLL                     : ZLEstimation
-            ZJ                      : ZJEstimation  # combine ; embedding
-            TTL                     : TTLEstimation  # embedding
-            VVL                     : VVLEstimation  # embedding
-            EMB                     : ZTTEmbeddedEstimation  # alternative to ZTT ; embedding swallows processes with T in the end (TTT and VVT)
-            WEMB                    : WEstimationWithQCD # bg with old splitting: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL"[?], "EWKJ"[?]]]
-            QCDEMB                  : QCDEstimationWithW # bg with old splitting: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL"[?], "EWKJ"[?]]]
-
-          Original_FES: # with classical bg estimations
-          # methods:
-            data_obs                : DataEstimation  # combine
-            ZL                      : ZLEstimation  # combine; Signal ; class. QCD & W
-            # Classical: to comb: "ZTT", "W", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ",
-            ZTT                     : ZTTEstimation  # combine; class. QCD & W
-            W                       : WEstimationWithQCD  # combine
-            QCD                     : QCDEstimationWithW  # combine
-            TTT                     : TTTEstimation  # combine
-            VVT                     : VVTEstimation  # combine
-            TTJ                     : TTJEstimation  # combine
-            TTL                     : TTLEstimation  # new to combine
-            VVL                     : VVLEstimation  # new to combine
-            VVJ                     : VVJEstimation  # combine
-            # for classical QCD & W :  ["DYJetsToLL", "TT", "VV", "EWKW"[?]  || previously needed bg: "ZTT", "ZL", "ZJ", "TT", "VV", "EWK" [?]
-            # where "DYJetsToLL" = {"ZTT", "ZL", "ZJ", "EWKZ"}
-            # DYJetsToLL              : DYJetsToLLEstimation
-            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-            TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
-            VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
-            WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
-
-          # Original_FES_with_FF: # with classical bg estimations and EMB
-          Original_FES_with_FF:
-            # ggH125                  : ggH
-            # qqH125                  : qqH
-            data_obs                : DataEstimation  # combine
-            ZL                      : ZLEstimation  # combine; Signal ; class. QCD & W
-            # Classical: to comb: "ZTT", "W", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ",
-            ZTT                     : ZTTEstimation  # combine; class. QCD & W
-            W                       : WEstimationWithQCD  # combine
-            QCD                     : QCDEstimationWithW  # combine
-            TTT                     : TTTEstimation  # combine
-            VVT                     : VVTEstimation  # combine
-            TTJ                     : TTJEstimation  # combine
-            TTL                     : TTLEstimation  # new to combine
-            VVL                     : VVLEstimation  # new to combine
-            VVJ                     : VVJEstimation  # combine
-            # for classical QCD & W :  ["DYJetsToLL", "TT", "VV", "EWKW"[?]  || previously needed bg: "ZTT", "ZL", "ZJ", "TT", "VV", "EWK" [?]
-            # where "DYJetsToLL" = {"ZTT", "ZL", "ZJ", "EWKZ"}
-            # DYJetsToLL              : DYJetsToLLEstimation
-            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-            TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
-            VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
-            WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
-            jetFakes                : FakeEstimationLT
-            # EMB                     : ZTTEmbeddedEstimation  # NEED A NEW ARTUS RUN
-
-          Legacy_FES_with_FF:
-            data_obs                : DataEstimation  # combine
-            ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
-            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-            TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
-            VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
-            # Classical: to comb: "ZTT", "W", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ",
-            ZTT                     : ZTTEstimation  # combine; class. QCD & W
-            #W                       : WEstimationWithQCD  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
-            QCD                     : QCDEstimationWithW  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
-            TTT                     : TTTEstimation  # combine
-            VVT                     : VVTEstimation  # combine
-            TTJ                     : TTJEstimation  # combine
-            TTL                     : TTLEstimation  # new to combine
-            VVL                     : VVLEstimation  # new to combine
-            VVJ                     : VVJEstimation  # combine
-            # EMB
-            EMB                     : ZTTEmbeddedEstimation
-            jetFakesEMB             : NewFakeEstimationLT # needs ["EMB", "ZL", "TTL", "VVL"]
-            WEMB                    : WEstimationWithQCD # needs ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
-            QCDEMB                  : QCDEstimationWithW # needs ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
-            # for classical QCD & W :  ["DYJetsToLL", "TT", "VV", "EWKW"[?]  || previously needed bg: "ZTT", "ZL", "ZJ", "TT", "VV", "EWK" [?]
-            # where "DYJetsToLL" = {"ZTT", "ZL", "ZJ", "EWKZ"}
-            # DYJetsToLL              : DYJetsToLLEstimation
-            WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
-            jetFakes                : NewFakeEstimationLT # needs ["ZTT", "ZL", "TTL", "VVL"]
-
-          Legacy_FES_with_EMB_with_FF:
-            data_obs                : DataEstimation  # combine
-            ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
-            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-            TTJ                     : TTJEstimation  # combine
-            TTL                     : TTLEstimation  # new to combine
-            VVL                     : VVLEstimation  # new to combine
-            VVJ                     : VVJEstimation  # combine
-            W                       : WEstimation
-            EMB                     : ZTTEmbeddedEstimation
-            jetFakesEMB             : NewFakeEstimationLT # needs ["EMB", "ZL", "TTL", "VVL"]
-
-          Legacy_FES_with_QCDwithW:
-            data_obs                : DataEstimation  # combine
-            ZTT                     : ZTTEstimation
-            ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
-            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-            TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
-            VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
-            W                       : WEstimationWithQCD  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
-            QCD                     : QCDEstimationWithW  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
-            WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
-
-          Legacy_FES_with_EMB_QCDwithW:
-            data_obs                : DataEstimation  # combine
-            ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
-            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-            TTJ                     : TTJEstimation  # combine
-            TTL                     : TTLEstimation  # new to combine
-            VVL                     : VVLEstimation  # new to combine
-            VVJ                     : VVJEstimation  # combine
-            EMB                     : ZTTEmbeddedEstimation
-            WMC                     : WEstimation
-            WEMB                    : WEstimationWithQCD # needs ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
-            QCDEMB                  : QCDEstimationWithW # needs ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]
-
-          Legacy_FES_with_QCDSStoOS:
-            data_obs                : DataEstimation  # combine
-            ZTT                     : ZTTEstimation
-            ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
-            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-            TTT                     : TTTEstimation  # combine
-            TTJ                     : TTJEstimation  # combine
-            TTL                     : TTLEstimation  # new to combine
-            VVT                     : VVTEstimation  # combine
-            VVL                     : VVLEstimation  # new to combine
-            VVJ                     : VVJEstimation  # combine
-            W                       : WEstimation  # class. QCD & W ; now contains also EWKW
-            QCDSStoOS               : QCDEstimation_SStoOS_MTETEM  # combine needs ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
-
-          Legacy_FES_with_EMB_QCDSStoOS:
-            data_obs                : DataEstimation  # combine
-            ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
-            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-            TTJ                     : TTJEstimation  # combine
-            TTL                     : TTLEstimation  # new to combine
-            VVL                     : VVLEstimation  # new to combine
-            VVJ                     : VVJEstimation  # combine
-            EMB                     : ZTTEmbeddedEstimation
-            W                       : WEstimation  # class. QCD & W ; now contains also EWKW
-            QCDSStoOSEMB               : QCDEstimation_SStoOS_MTETEM  # combine needs ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]],
-
-          # FF no embedding
-          # methods:
-          FF_no_emb:
-            data_obs                : DataEstimation
-            ZTT                     : ZTTEstimation
-            ZL                      : ZLEstimation
-            ZJ                      : ZJEstimation
-            TTT                     : TTTEstimation
-            TTL                     : TTLEstimation
-            TTJ                     : TTJEstimation
-            VVT                     : VVTEstimation
-            VVL                     : VVLEstimation
-            VVJ                     : VVJEstimation
-            jetFakes                : FakeEstimationLT
-            W                       : WEstimation
-
-          # Original_and_Embeding
-          Original_and_Embeding:
-            data_obs                : DataEstimation  # combine
-            ZL                      : ZLEstimation  # combine; Signal ; class. QCD & W
-            # Classical: to comb: "ZTT", "W", "QCD", "ZJ", "TTT", "TTJ","VVT","VVJ",
-            ZTT                     : ZTTEstimation  # combine; class. QCD & W
-            W                       : WEstimationWithQCD  # combine
-            QCD                     : QCDEstimationWithW  # combine
-            TTT                     : TTTEstimation  # combine
-            VVT                     : VVTEstimation  # combine
-            TTJ                     : TTJEstimation  # combine
-            VVJ                     : VVJEstimation  # combine
-            # for classical QCD & W :  ["DYJetsToLL", "TT", "VV", "EWKW"[?]  || previously needed bg: "ZTT", "ZL", "ZJ", "TT", "VV", "EWK" [?]
-            # where "DYJetsToLL" = {"ZTT", "ZL", "ZJ", "EWKZ"}
-            DYJetsToLL              : DYJetsToLLEstimation
-            ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-            TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
-            VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
-            WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
-            # Needed for embedding
-            TTL                     : TTLEstimation  # embedding
-            VVL                     : VVLEstimation  # embedding
-            EMB                     : ZTTEmbeddedEstimation  # alternative to ZTT ; embedding swallows processes with T in the end (TTT and VVT)
-            WEMB                    : WEstimationWithQCD # bg with old splitting: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL"[?], "EWKJ"[?]]]
-            QCDEMB                  : QCDEstimationWithW # bg with old splitting: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL"[?], "EWKJ"[?]]]
 

@@ -43,6 +43,7 @@ class Shapes(object):
                  force_cuts={},
                  no_fes_extra_cuts=None,
                  no_et_minplotlev_cuts=None,
+                 no_mt_minplotlev_cuts=None,
                  no_force_cuts=None,
                  no_extra_cuts=None,
                  invert_cuts=None,
@@ -63,6 +64,13 @@ class Shapes(object):
                  methods_collection_key='methods',
                  module=None,
                  _known_estimation_methods=None,
+                 _known_processes=None,
+                 _complexEstimationMethods=None,
+                 _complexEstimationMethodsRequirements=None,
+                 _known_methods_collections=None,
+                 _known_estimation_modules=None,
+                 _renaming=None,
+                 _known_cuts=None,
                  nominal_folder='nominal',
                  etau_es_shifts=None,
                  tes_sys_processes=None,
@@ -111,6 +119,7 @@ class Shapes(object):
         self._invert_cuts = invert_cuts
         self._no_fes_extra_cuts = no_fes_extra_cuts
         self._no_et_minplotlev_cuts = no_et_minplotlev_cuts
+        self._no_mt_minplotlev_cuts = no_mt_minplotlev_cuts
         self._no_force_cuts = no_force_cuts
         self._no_extra_cuts = no_extra_cuts
         self._update_process_per_category = update_process_per_category
@@ -145,7 +154,16 @@ class Shapes(object):
         self._variables_names = variables_names
         self._processes = processes
         self._module = module
+
         self._known_estimation_methods = _known_estimation_methods
+        self._known_processes = _known_processes
+        self._complexEstimationMethods = _complexEstimationMethods
+        self._complexEstimationMethodsRequirements = _complexEstimationMethodsRequirements
+        self._known_methods_collections = _known_methods_collections
+        self._known_estimation_modules = _known_estimation_modules
+        self._renaming = _renaming
+        self._known_cuts = _known_cuts
+
         self._nominal_folder = nominal_folder
         self._etau_es_shifts = etau_es_shifts
         self._tes_sys_processes = tes_sys_processes
@@ -166,21 +184,14 @@ class Shapes(object):
         self._output_file = output_file
         self._output_file_name = output_file_name if output_file_name is not None else ''
         self._output_file_dir = output_file_dir if output_file_dir is not None and output_file_dir is not '' else os.getcwd()
-        with open('data/known_processes.yaml', 'r') as f:
-            file_known_processes = yaml.load(f)
-            self._known_processes = file_known_processes['_known_processes']
-            self._complexEstimationMethods = file_known_processes['_complexEstimationMethods']
-            self._complexEstimationMethodsRequirements = file_known_processes['_complexEstimationMethodsRequirements']
-        self._renaming = yaml.load(open('data/renaming.yaml'))
 
-        self._known_cuts = yaml.load(open('data/known_cuts.yaml'))
         for i in self._decay_mode:
             if i not in self._known_cuts['decay_mode'].keys():
-                print 'no dm:', i, 'in known_cuts.yaml'
+                self._logger.critical('no dm: %s in known_cuts.yaml' % i)
                 exit(1)
         for i in self._jets_multiplicity:
             if i not in self._known_cuts['jets_multiplicity'].keys():
-                print 'no jet multiplicity:', i, 'in known_cuts.yaml'
+                self._logger.critical('no jet multiplicity: %s in known_cuts.yaml' % i)
                 exit(1)
 
         self._channels = {}
@@ -466,8 +477,32 @@ class Shapes(object):
         if debug:
             print '\n', self_name
 
+        common_config = {}
+        with open('data/known_processes.yaml', 'r') as f:
+            file_known_processes = yaml.load(f)
+            common_config['_known_processes'] = file_known_processes['_known_processes']
+            common_config['_complexEstimationMethods'] = file_known_processes['_complexEstimationMethods']
+            common_config['_complexEstimationMethodsRequirements'] = file_known_processes['_complexEstimationMethodsRequirements']
+            common_config['tes_sys_processes'] = file_known_processes['tes_sys_processes']
+            common_config['fes_sys_processes'] = file_known_processes['fes_sys_processes']
+            common_config['emb_sys_processes'] = file_known_processes['emb_sys_processes']
+            common_config['zpt_sys_processes'] = file_known_processes['zpt_sys_processes']
+
+        with open('data/known_estimation_methods.yaml', 'r') as f:
+            file_known_estimation_methods = yaml.load(f)
+            common_config['_known_methods_collections'] = file_known_estimation_methods['_known_methods_collections']
+            common_config['_known_estimation_modules'] = file_known_estimation_methods['_known_estimation_modules']
+            common_config['processes'] = file_known_estimation_methods['processes']
+
+        with open('data/renaming.yaml', 'r') as f:
+            common_config['_renaming'] = yaml.load(f)
+
+        with open('data/known_cuts.yaml', 'r') as f:
+            common_config['_known_cuts'] = yaml.load(f)
+
         assert isinstance(config_file, basestring), self_name + 'config obj of unset type'
         assert config_file.endswith('.yaml') or config_file.endswith('.yml'), self_name + 'config path is not yaml format'
+
         with open(config_file, 'r') as stream:
             try:
                 import getpass
@@ -476,18 +511,30 @@ class Shapes(object):
 
                 config = yaml.load(stream)
 
-                for user_specific_key in config['user_specific'].keys():
-                    user_specific = config['user_specific'][user_specific_key]
-                    config[user_specific_key] = user_specific['default']
-                    if username in user_specific and hostname in user_specific[username]:
-                        config[user_specific_key] = user_specific[username][hostname]
+                for option_name in config['user_specific'].keys():
+                    option_dict = config['user_specific'][option_name]
+                    try:
+                        config[option_name] = option_dict[username][hostname]
+                        print 'Set by host/username: %s = %s' % (option_name, config[option_name])
+                    except:
+                        try:
+                            config[option_name] = option_dict['byhost'][hostname]
+                            print'Set by host: %s = %s' % (option_name, config[option_name])
+                        except:
+                            config[option_name] = option_dict['byhost']['default']
+                            print'Set to default: %s = %s' % (option_name, config[option_name])
+
                 del config['user_specific']
 
-                return config
+                # return config
 
             except yaml.YAMLError as exc:
                 print self_name + 'yaml config couldn\' be loaded:\n', config_file, '\n', exc
                 raise
+
+        # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
+        common_config.update(config)
+        return common_config
 
     def evaluateChannel(self, channel):
         pass  # self._channels.add()
@@ -510,10 +557,18 @@ class Shapes(object):
         if context is None:
             context = self._context_analysis
 
-        if self._module is None:
-            return self._known_estimation_methods[era][context]['module']
-        else:
-            return self._module
+        try:
+            module = self._known_estimation_modules[era][context]['module']
+            self._logger.info("Module by era '%s' context '%s': %s" % (era, context, module))
+        except:
+            try:
+                module = self._known_estimation_modules[era]['module']
+                self._logger.info("Module by era '%s': %s" % (era, module))
+            except:
+                module = self._known_estimation_modules['default']['module']
+                self._logger.info("Default modulte: %s" % (module))
+
+        return module
 
     def getMethodsDict(self, channel_name, era=None, context=None):
         # TODO: make initialisation universal
@@ -522,15 +577,15 @@ class Shapes(object):
         era = str(era)
         if context is None:
             context = self._context_analysis
-        # print self._known_processes.keys()
 
         if len(self._processes) == 0:
             try:
-                return self._known_estimation_methods[era][context][channel_name][self._methods_collection_key]
+                return self._known_methods_collections[self._methods_collection_key]
             except:
                 self._logger.error(' '.join("Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name))
                 self._logger.error('Possible _known_estimation_methods:')
                 pp.pprint(self._known_estimation_methods[era][context][channel_name])
+                raise Exception
         else:
             d = {}
             for i in self._processes:
