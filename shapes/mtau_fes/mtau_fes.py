@@ -1,0 +1,338 @@
+import sys
+import importlib
+import logging
+import copy
+
+from shapes import Shapes
+
+from shapes.channelholder import ChannelHolder
+# TODO: needs to be moved from global imports
+# from shape_producer.process import Process  # move to ChannelsHolder
+# from shape_producer.variable import Variable  # move to ChannelsHolder
+# from shape_producer.binning import VariableBinning  # move to ChannelsHolder
+from shape_producer.categories import Category  # move to ChannelsHolder
+from shape_producer.cutstring import Cut, Cuts, Weight  # move to ChannelsHolder
+from shape_producer.systematics import Systematic
+from shape_producer.systematic_variations import Nominal, DifferentPipeline, create_systematic_variations, \
+    ReplaceWeight, SquareAndRemoveWeight
+
+
+class MTauFES(Shapes):
+    def __init__(self, **kvargs):
+        logging.getLogger(__name__).info("Init " + self.__class__.__name__)
+        super(MTauFES, self).__init__(**kvargs)
+
+        self._logger = logging.getLogger(__name__)
+
+        self._variables = []
+        self._estimation_methods = {}
+
+
+    # TODO: needs to belong to ChannelHolder ;
+    # TODO: need to generalise - living dummy argument
+    def getCategorries(self, channel_holder, cuts=None):
+        """
+        Returns dict of Cattegories for Channel
+        """
+        # self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+        categories = []
+        for name, var in channel_holder._variables.iteritems():
+            # Cuts common for all categories
+            cuts = Cuts()
+            # if name != "mt_1":
+            #     if 'm_t' in channel_holder._channel_obj.cuts.names:
+            #         self._logger.warning('Removing the existing cut m_t in category: ' +
+            #             channel_holder._channel_obj.cuts.get('m_t')._weightstring +
+            #             ' --> mt_1 < 70'
+            #         )
+            #         channel_holder._channel_obj.cuts.remove("m_t")
+
+            for njet in self._jets_multiplicity:
+                for dm in self._decay_mode:
+                    self._logger.info('%s : ..adding category {%s && %s}', sys._getframe().f_code.co_name, njet, dm)
+                    categories.append(
+                        Category(
+                            name=njet + '_' + dm,
+                            channel=channel_holder._channel_obj,
+                            cuts=cuts,
+                            variable=var)
+                    )
+                    # Add the DM splitting cattegorization
+                    self._logger.debug("Add the dm splitting: %s, %s" % (self._known_cuts['decay_mode'][dm], dm))
+                    categories[-1].cuts.add(Cut(self._known_cuts['decay_mode'][dm], dm))
+
+                    # Add the njets splitting:
+                    self._logger.debug("Add the njets splitting: %s, %s" % (str(self._known_cuts['jets_multiplicity'][njet]), str(njet)))
+                    categories[-1].cuts.add(Cut(str(self._known_cuts['jets_multiplicity'][njet]), str(njet)))
+
+                    # Remove cuts introduced in categorysation for the plots of isolation
+                    if name == "iso_1" or name == "iso_2":
+                        categories[-1].cuts.remove("ele_iso")
+                        categories[-1].cuts.remove("tau_iso")
+
+        log_categories = '\t', 'Cattegories:\n'
+        for category in categories:
+            log_categories += '\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'
+
+        self._logger.info(log_categories)
+
+        return categories
+
+    def getEvaluatedChannel(self, channel, variables):
+        """
+        Creates and returns channel_holder for requested channel
+        """
+        if channel == 'mt':
+            if self._era_name == '2017':
+                from shape_producer.channel import MTSM2017 as channel_obj
+            elif self._era_name == '2018':
+                from shape_producer.channel import MTSM2018 as channel_obj
+            elif self._era_name == '2016':
+                from shape_producer.channel import MTSM2016 as channel_obj
+
+            channel_holder = ChannelHolder(
+                ofset=self._ofset + 1,
+                logger=self._logger,
+                debug=self._debug,
+                channel_obj=channel_obj(),
+                friend_directory=self._mt_friend_directory,
+            )
+
+            # channel_holder._channel_obj.cuts.remove("tau_iso")
+            # channel_holder._channel_obj.cuts.add(Cut('byLooseIsolationMVArun2017v2DBoldDMwLT2017_2 > 0.5', "tau_iso"))
+
+            # used at 2017
+            # channel_holder._channel_obj.cuts.remove("dilepton_veto")
+            # channel_holder._channel_obj.cuts.remove('trg_selection')
+            # channel_holder._channel_obj.cuts.add(Cut("(trg_singleelectron_27 == 1) || (trg_singleelectron_32 == 1) || (trg_singleelectron_35) || (trg_crossele_ele24tau30 == 1) || (isEmbedded && pt_1>20 && pt_1<24)", "trg_selection"))
+
+            for k in self._invert_cuts:
+                if k in channel_holder._channel_obj.cuts.names:
+                    # import pdb; pdb.set_trace()
+                    warning_message = "Inverting cut %s from old value [%s] " % (k, channel_holder._channel_obj.cuts.get(k))
+                    channel_holder._channel_obj.cuts.get(k).invert()
+                    warning_message += "to new value [%s]" % (channel_holder._channel_obj.cuts.get(k))
+                    self._logger.warning(warning_message)
+                else:
+                    self._logger.error("Couldn't invert cut %s - not found in the original cuts: " + channel_holder)
+                    # print channel_holder
+
+            for k, v in self._force_cuts.iteritems():
+                channel_holder._channel_obj.cuts.remove(k)
+                if v is not None:
+                    channel_holder._channel_obj.cuts.add(Cut(v, k))
+                self._logger.warning('global cut value forced: {"%s": "%s"}' % (k, v))
+
+            for k, v in self._mt_minplotlev_cuts.iteritems():
+                channel_holder._channel_obj.cuts.remove(k)
+                if v is not None:
+                    channel_holder._channel_obj.cuts.add(Cut(v, k))
+                self._logger.warning('global cut value forced: {"%s": "%s"}' % (k, v))
+
+            self._logger.info('...getProcesses')
+            channel_holder._processes = self.getProcesses(
+                channel_obj=channel_holder._channel_obj,
+                friend_directory=self._mt_friend_directory
+            )
+            self._logger.info('...getVariables')
+            channel_holder._variables = self.getVariables(
+                channel_obj=channel_holder._channel_obj,
+                variable_names=variables,
+                binning=self.binning[self._binning_key][channel_holder._channel_obj._name]
+            )
+            self._logger.info('...getCategorries')
+            channel_holder._categorries = self.getCategorries(
+                channel_holder=channel_holder
+            )
+            self._logger.info('...getChannelSystematics')
+            channel_holder._systematics = self.getChannelSystematics(  # NOTE: for a single channel
+                channel_holder=channel_holder
+            )
+
+            return channel_holder
+        else:
+            raise KeyError("getEvaluatedChannel: channel not setup. channel:" + channel +
+                "; context:" + self._context_analysis + '; eta: ' + self._era_name)
+
+    def getUpdateProcessPerCategory(self, process, category):
+        # values calculated for MVAv2, 'dilepton_veto': Null
+        # TODO: have a config for this; measure the values for other channels than et
+        if '2017' in process._estimation_method._era.__class__.__name__ and 'et' in category.name:
+            if process.name == "QCDSStoOS":
+                # import pdb; pdb.set_trace()
+                if 'alldm' in category.name:
+                    if 'njetN' in category.name:
+                        process._estimation_method._extrapolation_factor = 1.38
+                    elif 'njet0' in category.name:
+                        process._estimation_method._extrapolation_factor = 1.008
+                elif 'dm0' in category.name:
+                    if 'njetN' in category.name:
+                        process._estimation_method._extrapolation_factor = 1.170
+                    elif 'njet0' in category.name:
+                        process._estimation_method._extrapolation_factor = 1.137
+                elif 'dm1' in category.name and 'dm10' not in category.name:
+                    if 'njetN' in category.name:
+                        process._estimation_method._extrapolation_factor = 0.997
+                    elif 'njet0' in category.name:
+                        process._estimation_method._extrapolation_factor = 0.965
+        return process
+
+    # TODO: split to call corresponding functions instead of passing list of strings
+    def evaluateSystematics(self, *argv):
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+        for channel_name, channel_holder in self._channels.iteritems():
+            processes = channel_holder._processes.values()
+            categories = channel_holder._categorries
+
+            if 'nominal' in self._shifts:
+                print '\n nominal...'
+                from itertools import product
+                for process, category in product(processes, categories):
+                    self._systematics.add(
+                        Systematic(
+                            category=category,
+                            process=self.getUpdateProcessPerCategory(process, category) if self._update_process_per_category else process,
+                            analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
+                            era=self.era,
+                            variation=Nominal(),
+                            mass="125",  # TODO : check if this is used anywhere
+                        )
+                    )
+
+            channel_holder._nnominals = len([i for i in self._systematics._systematics if i.variation.is_nominal()])
+            if channel_holder._nnominals == 0:
+                raise Exception("no nominals were found - yet not implemented.")
+
+            if 'TES' in self._shifts:
+                print '\n\nTES...'
+                tau_es_3prong_variations = create_systematic_variations(name="CMS_scale_t_3prong_13TeV", property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
+                tau_es_1prong_variations = create_systematic_variations(name="CMS_scale_t_1prong_13TeV", property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
+                tau_es_1prong1pizero_variations = create_systematic_variations(name="CMS_scale_t_1prong1pizero_13TeV", property_name="tauEsOneProngOnePiZero", systematic_variation=DifferentPipeline)
+
+                for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
+                    # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
+                    proc_intersection = list(set(self._tes_sys_processes) & set(channel_holder._processes.keys()))
+                    print '\nvariation name:', variation.name, '\nintersection self._tes_sys_processes:', proc_intersection
+                    for process_nick in proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            if 'EMB' in self._shifts:
+                print '\n\nEMB shifts...'
+                decayMode_variations = []
+                decayMode_variations.append(
+                    ReplaceWeight(
+                        "CMS_3ProngEff_13TeV", "decayMode_SF",
+                        Weight("embeddedDecayModeWeight_effUp_pi0Nom", "decayMode_SF"),
+                        "Up"))
+                decayMode_variations.append(
+                    ReplaceWeight(
+                        "CMS_3ProngEff_13TeV", "decayMode_SF",
+                        Weight("embeddedDecayModeWeight_effDown_pi0Nom", "decayMode_SF"),
+                        "Down"))
+                decayMode_variations.append(
+                    ReplaceWeight(
+                        "CMS_1ProngPi0Eff_13TeV", "decayMode_SF",
+                        Weight("embeddedDecayModeWeight_effNom_pi0Up", "decayMode_SF"),
+                        "Up"))
+                decayMode_variations.append(
+                    ReplaceWeight(
+                        "CMS_1ProngPi0Eff_13TeV", "decayMode_SF",
+                        Weight("embeddedDecayModeWeight_effNom_pi0Down", "decayMode_SF"),
+                        "Down"))
+                for variation in decayMode_variations:
+                    proc_intersection = list(set(self._emb_sys_processes) & set(channel_holder._processes.keys()))
+                    print '\nvariation name:', variation.name, '\nintersection self._emb_sys_processes:', proc_intersection
+                    for process_nick in proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            if 'Zpt' in self._shifts:
+                print '\n\nZ pt reweighting'
+                zpt_variations = create_systematic_variations(name="CMS_htt_dyShape_13TeV", property_name="zPtReweightWeight", systematic_variation=SquareAndRemoveWeight)
+                for variation in zpt_variations:
+                    for process_nick in self.intersection(self.zpt_sys_processes, channel_holder._processes.keys()):
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            if 'FES_shifts' in self._shifts:
+                print '\n\nFES_shifts...'
+                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
+                root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
+                for es in self._mtau_es_shifts:
+                    shift_str = root_str(es)
+                    # TODO: here the pipeline WILL depend on the category per DM
+                    for pipeline in ["muoTauEsInclusiveShift_", "muoTauEsOneProngShift_", "muoTauEsOneProngPiZerosShift_", "muoTauEsThreeProngShift_"]:
+                        variation = DifferentPipeline(name='CMS_fes_' + pipeline + '13TeV_', pipeline=pipeline, direction=shift_str)
+                        proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
+                        print '\nvariation name:', variation.name, '\nintersection self._fes_sys_processes:', proc_intersection
+                        for process_nick in proc_intersection:
+                            self._systematics.add_systematic_variation(
+                                variation=variation,
+                                process=channel_holder._processes[process_nick],
+                                channel=channel_holder._channel_obj,
+                                era=self.era
+                            )
+
+                            for shift_systematic in self._systematics._systematics[-channel_holder._nnominals:]:
+                                for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
+                                    shift_systematic.category.cuts.add(Cut(cut_expression, cut_key))
+                                shift_systematic._process._estimation_method._directory = self._fes_friend_directory[0]
+
+            if 'FF' in self._shifts:
+                print '\n\n FF related uncertainties ...'
+                fake_factor_variations_mt = []
+
+                for systematic_shift in [
+                        "ff_qcd{ch}_syst_13TeV{shift}",
+                        "ff_qcd_dm0_njet0{ch}_stat_13TeV{shift}",
+                        "ff_qcd_dm0_njet1{ch}_stat_13TeV{shift}",
+                        "ff_w_syst_13TeV{shift}",
+                        "ff_w_dm0_njet0{ch}_stat_13TeV{shift}",
+                        "ff_w_dm0_njet1{ch}_stat_13TeV{shift}",
+                        "ff_tt_syst_13TeV{shift}",
+                        "ff_tt_dm0_njet0_stat_13TeV{shift}",
+                        "ff_tt_dm0_njet1_stat_13TeV{shift}",
+                ]:
+                    for shift_direction in ["Up", "Down"]:
+                        fake_factor_variations_mt.append(
+                            ReplaceWeight(
+                                "CMS_%s" % (systematic_shift.format(ch='_mt', shift="")),
+                                "fake_factor",
+                                Weight(
+                                    "ff2_{syst}".format(
+                                        syst=systematic_shift.format(
+                                            ch="", shift="_%s" % shift_direction.lower()
+                                        ).replace("_13TeV", "")),
+                                    "fake_factor"
+                                ),
+                                shift_direction
+                            )
+                        )
+
+                for k in [k for k in channel_holder._processes.keys() if 'jetFakes' in k]:
+                    for variation in fake_factor_variations_mt:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[k],
+                            channel=channel_holder._channel_obj,
+                            era=self.era)
+
+
+if __name__ == '__main__':
+    args = MTauFES.parse_arguments()
+    mtau_fes = MTauFES(**args)
+    print mtau_fes
