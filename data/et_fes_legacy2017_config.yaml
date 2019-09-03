@@ -30,11 +30,14 @@ user_specific:
         '2017': /nfs/dust/cms/group/higgs-kit/Legacy/FES/FESshifts_2017/merged/
       bms:
         '2017': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2017/merged_nominal
+        '2018': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2018/merged_nominal
     glusheno:
       naf: /nfs/dust/cms/group/higgs-kit/Legacy/FES/FESshifts_2017/merged/
     #TODO: check on how to use $ARTUS_OUTPUTS_2017 and shifts with common friends
     ohlushch:
-      bms: /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2017/merged_nominal #"$ARTUS_OUTPUTS_2017"
+      bms:
+        '2017': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2017/merged_nominal #"$ARTUS_OUTPUTS_2017"
+        '2018': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2018/merged_nominal
 
   et_friend_directory:
     byhost:
@@ -125,16 +128,33 @@ shifts: [
   # Zpt,
 ]
 
-decay_mode: [
-  'alldm',
-  'dm0',
-  'dm1',
-  # 'dm10', # for FES is not interesting
-]
-jets_multiplicity: [
-  'njetN',
-  'njet0'
-]
+grid_categories:
+
+  eta_1_region: [
+    'inc_eta_1',
+    'eta_1_barel',
+    'eta_1_endcap',
+    'eta_1_endcap_real',
+  ]
+
+  decay_mode: [
+    'alldm',
+    'dm0',
+    'dm1',
+    # 'dm10', # for FES is not interesting
+  ]
+
+  jets_multiplicity: [
+    'njetN',
+    'njet0',
+  ]
+
+single_categories: {
+  # a:
+  #   'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
+  #   'extraelec_veto': 'extraelec_veto < 0.5'
+  #   'extramuon_veto': 'extramuon_veto < 0.5'
+}
 
 etau_es_shifts: [
             -4, -3, -2, -1.75, -1.5, -1.25, -1, -0.75, -0.5, -0.25,

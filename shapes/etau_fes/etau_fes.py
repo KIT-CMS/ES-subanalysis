@@ -1,7 +1,6 @@
 import sys
 import importlib
 import logging
-import copy
 
 from shapes import Shapes
 
@@ -10,8 +9,7 @@ from shapes.channelholder import ChannelHolder
 # from shape_producer.process import Process  # move to ChannelsHolder
 # from shape_producer.variable import Variable  # move to ChannelsHolder
 # from shape_producer.binning import VariableBinning  # move to ChannelsHolder
-from shape_producer.categories import Category  # move to ChannelsHolder
-from shape_producer.cutstring import Cut, Cuts, Weight  # move to ChannelsHolder
+from shape_producer.cutstring import Cut, Weight  # move to ChannelsHolder
 from shape_producer.systematics import Systematic
 from shape_producer.systematic_variations import Nominal, DifferentPipeline, create_systematic_variations, \
     ReplaceWeight, SquareAndRemoveWeight
@@ -28,65 +26,6 @@ class ETauFES(Shapes):
         self._estimation_methods = {}
 
         # self._etau_es_shifts = self._known_estimation_methods[self._era_name][self._context_analysis]['etau_es_shifts']
-
-    # TODO: needs to belong to ChannelHolder ;
-    # TODO: need to generalise - living dummy argument
-    def getCategorries(self, channel_holder, cuts=None):
-        """
-        Returns dict of Cattegories for Channel
-        """
-        # self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
-        categories = []
-        for name, var in channel_holder._variables.iteritems():
-            # Cuts common for all categories
-            cuts = Cuts()
-            # if name != "mt_1":
-            #     if 'm_t' in channel_holder._channel_obj.cuts.names:
-            #         self._logger.warning('Removing the existing cut m_t in category: ' +
-            #             channel_holder._channel_obj.cuts.get('m_t')._weightstring +
-            #             ' --> mt_1 < 70'
-            #         )
-            #         channel_holder._channel_obj.cuts.remove("m_t")
-
-            for njet in self._jets_multiplicity:
-                for dm in self._decay_mode:
-                    self._logger.info('%s : ..adding category {%s && %s}', sys._getframe().f_code.co_name, njet, dm)
-                    categories.append(
-                        Category(
-                            name=njet + '_' + dm,
-                            channel=channel_holder._channel_obj,
-                            cuts=cuts,
-                            variable=var)
-                    )
-                    # self._logger.warning("The cuts include all the minimal level filter values!")
-                    # categories[-1].cuts.add(Cut('nDiElectronVetoPairsOS < 0.5', 'nDiElectronVetoPairsOS'))
-                    # categories[-1].cuts.add(Cut('extraelec_veto < 0.5', 'extraelec_veto'))
-                    # categories[-1].cuts.add(Cut('extramuon_veto < 0.5', 'extramuon_veto'))
-
-                    # Add the DM splitting
-                    # print dm, self._known_cuts['decay_mode']
-                    # print len(categories)
-                    # print categories[-1]
-                    # print Cut(self._known_cuts['decay_mode'][dm], dm)
-                    self._logger.debug("Add the dm splitting: %s, %s" % (self._known_cuts['decay_mode'][dm], dm))
-                    categories[-1].cuts.add(Cut(self._known_cuts['decay_mode'][dm], dm))
-
-                    # Add the njets splitting:
-                    self._logger.debug("Add the njets splitting: %s, %s" % (str(self._known_cuts['jets_multiplicity'][njet]), str(njet)))
-                    categories[-1].cuts.add(Cut(str(self._known_cuts['jets_multiplicity'][njet]), str(njet)))
-
-                    # Remove cuts introduced in categorysation for the plots of isolation
-                    if name == "iso_1" or name == "iso_2":
-                        categories[-1].cuts.remove("ele_iso")
-                        categories[-1].cuts.remove("tau_iso")
-
-        log_categories = '\t', 'Cattegories:\n'
-        for category in categories:
-            log_categories += '\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'
-
-        self._logger.info(log_categories)
-
-        return categories
 
     def getEvaluatedChannel(self, channel, variables):
         """

@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
+import ast
+import six
 import sys
 import importlib
 import copy
 import logging
+import copy
+from itertools import product
 from rootpy import log
 from rootpy.logger.magic import DANGER
 
@@ -13,10 +17,12 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 from shape_producer.systematics import Systematics
+from shape_producer.categories import Category  # move to ChannelsHolder
 from channelholder import ChannelHolder
 from shape_producer.process import Process  # move to ChannelsHolder
 from shape_producer.variable import Variable  # move to ChannelsHolder
 from shape_producer.binning import VariableBinning  # move to ChannelsHolder
+from shape_producer.cutstring import Cut, Cuts
 # from inidecorator import inidecorator
 
 # TODO: wrapper for introduction of methods
@@ -83,8 +89,9 @@ class Shapes(object):
                  emb_sys_processes=None,
                  zpt_sys_processes=None,
                  shifts=None,
-                 decay_mode=None,
-                 jets_multiplicity=None,
+                 grid_categories={},
+                 parser_grid_categories={},
+                 single_categories={},
                  indent=0,
                  update_process_per_category=None,
                  ):
@@ -92,11 +99,27 @@ class Shapes(object):
 
         # TODO: Can be commented out if @inidecorator will be used
         self._ofset = ofset
-        # print directory
-        self._directory = os.path.expandvars(directory)
+
+        # Inputs with nominals and shifts
+        if isinstance(directory, dict):
+            try:
+                self._directory = directory[era]
+            except:
+                self._logger('directory is a dict but era "%s" is not a key:' % era)
+                pp.pprint(directory)
+                raise Exception
+        else:
+            self._directory = directory
+        assert isinstance(self._directory, six.string_types), "Shapes::directory not set"
+
         self._datasets = datasets
+        assert isinstance(self._datasets, six.string_types), "Shapes::datasets not set"
+
         self._binning = binning
         self._binning_key = binning_key
+        assert isinstance(self._binning, six.string_types), "Shapes::binning not set"
+        self._binning = yaml.load(open(self._binning))
+
         self._log_level = log_level
         self._indent = indent
         self._methods_collection_key = methods_collection_key
@@ -175,28 +198,23 @@ class Shapes(object):
         self._emb_sys_processes = emb_sys_processes
         self._zpt_sys_processes = zpt_sys_processes
         self._shifts = shifts
-        self._decay_mode = decay_mode
-        self._jets_multiplicity = jets_multiplicity
-        # print self._fes_extra_cuts; exit(1)
-        assert type(self._directory) is not None, "Shapes::directory not set"
-        assert type(self._datasets) is not None, "Shapes::datasets not set"
-        assert type(self._binning) is not None, "Shapes::binning not set"
 
-        self._binning = yaml.load(open(self._binning))
+        self._grid_categories = grid_categories
+        for k, v in parser_grid_categories.iteritems():
+            self._grid_categories[k] = copy.deepcopy(v)
+
+        self._single_categories = single_categories
+        assert isinstance(self._grid_categories, dict), "grid_categories:: should be dict"
+        assert isinstance(self._single_categories, dict), "single_categories:: should be dict"
 
         # Setting output file attribute
         self._output_file = output_file
         self._output_file_name = output_file_name if output_file_name is not None else ''
         self._output_file_dir = output_file_dir if output_file_dir is not None and output_file_dir is not '' else os.getcwd()
 
-        for i in self._decay_mode:
-            if i not in self._known_cuts['decay_mode'].keys():
-                self._logger.critical('no dm: %s in known_cuts.yaml' % i)
-                exit(1)
-        for i in self._jets_multiplicity:
-            if i not in self._known_cuts['jets_multiplicity'].keys():
-                self._logger.critical('no jet multiplicity: %s in known_cuts.yaml' % i)
-                exit(1)
+        for k, v in self._grid_categories.iteritems():
+            for i in v:
+                assert i in self._known_cuts[k].keys(), 'no dm: %s in known_cuts.yaml' % i
 
         self._channels = {}
 
@@ -357,6 +375,9 @@ class Shapes(object):
         parser.add_argument("--context-analysis", type=str, help="Context analysis.")
         parser.add_argument("--variables-names", nargs='*', type=str, help="Variable names.")
         parser.add_argument("--invert-cuts", nargs='*', type=str, help="Invert cuts by their key names.")
+        # parser.add_argument("--forve-cuts", action=type('', (argparse.Action, ), dict(__call__=lambda a, p, n, v, o: getattr(n, a.dest).update(dict([v.split('=')])))), default={})  # anonymously subclassing argparse.Action
+        parser.add_argument('--forve-cuts', type=ast.literal_eval, help="Dict of cuts to force. Format: --forve-cuts=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
+
 
         # Arguments with defaults that might be changed in the config file.
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
@@ -374,6 +395,7 @@ class Shapes(object):
         parser.add_argument("--fes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
         parser.add_argument("--emb-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
         parser.add_argument("--shifts", nargs='+', type=str, help="Pipelines, uncertainties variations, shifts : processed is the intersection of this list with list from _known_estimation_methods")
+        parser.add_argument("--eta-1-region", nargs='+', type=str, help="Needed for categorisation. Choices: eta_1_barel, eta_1_endcap, eta_1_endcap_real")
         parser.add_argument("--decay-mode", nargs='+', type=str, help="Needed for categorisation. Choices: all, dm0, dm1, dm10")
         parser.add_argument("--jets-multiplicity", nargs='+', type=str, help="Needed for categorisation. Choices: njetN, njet0")
         parser.add_argument("--binning-key", type=str, help="Used only to pick the binning! example: gof, control")
@@ -423,6 +445,12 @@ class Shapes(object):
             for argument, default in defaultArguments.iteritems():
                 if argument not in configuration:
                     configuration[argument] = default
+
+        configuration['parser_grid_categories'] = {}
+        if 'decay_mode' in configuration.keys():
+            configuration['parser_grid_categories']['decay_mode'] = configuration.pop('decay_mode')
+        if 'decay_mode' in configuration.keys():
+            configuration['parser_grid_categories']['jets_multiplicity'] = configuration.pop('jets_multiplicity')
 
         return configuration
 
@@ -797,6 +825,81 @@ class Shapes(object):
                     raise ValueError(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name + ': repeating process: ' + i)
                 d[i] = self._known_processes[i]
             return d
+
+    # TODO: needs to belong to ChannelHolder ;
+    def getCategorries(self, channel_holder, cuts=None):
+        """
+        Returns dict of Cattegories for Channel
+        """
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+
+        categories = []
+        intersection = lambda x, y: list(set(x) & set(y))
+        for name, var in channel_holder._variables.iteritems():
+            # Cuts common for all categories
+            cuts = Cuts()
+            # if name != "mt_1":
+            #     if 'm_t' in channel_holder._channel_obj.cuts.names:
+            #         self._logger.warning('Removing the existing cut m_t in category: ' +
+            #             channel_holder._channel_obj.cuts.get('m_t')._weightstring +
+            #             ' --> mt_1 < 70'
+            #         )
+            #         channel_holder._channel_obj.cuts.remove("m_t")
+
+            categories_by_space = [self._grid_categories[k] for k in self._grid_categories.keys()]
+            for category_space_cuts in product(*categories_by_space):
+                category_name = '_'.join(category_space_cuts)
+                self._logger.info('%s : ..adding category {%s}', sys._getframe().f_code.co_name, ' && '.join(category_space_cuts))
+                categories.append(
+                    Category(
+                        name=category_name,
+                        channel=channel_holder._channel_obj,
+                        cuts=cuts,
+                        variable=var)
+                )
+                # Remove cuts introduced in categorysation for the plots of isolation
+                if name == "iso_1" or name == "iso_2":
+                    categories[-1].cuts.remove("ele_iso")
+                    categories[-1].cuts.remove("tau_iso")
+
+                for cuts_class in self._known_cuts.keys():
+                    # Add the $cuts_class splitting cattegorization
+                    if cuts_class in self._grid_categories.keys():
+                        cut_class_key = intersection(category_space_cuts, self._known_cuts[cuts_class].keys())
+                        if len(cut_class_key) > 1:
+                            raise Exception("Too many %s values to unfold: [%s]" % (cuts_class, ', '.join(cut_class_key)))
+                        else:
+                            cut_class_key = cut_class_key[0]
+                            self._logger.debug("Add the %s splitting: {%s: %s}" % (cuts_class, cut_class_key, self._known_cuts[cuts_class][cut_class_key]))
+                            categories[-1].cuts.add(Cut(self._known_cuts[cuts_class][cut_class_key], cut_class_key))
+
+            for category_name, category_cuts in self._single_categories.iteritems():
+                self._logger.info('%s : ..adding category' % sys._getframe().f_code.co_name)
+                categories.append(
+                    Category(
+                        name=category_name,
+                        channel=channel_holder._channel_obj,
+                        cuts=cuts,
+                        variable=var)
+                )
+                # Remove cuts introduced in categorysation for the plots of isolation
+                if name == "iso_1" or name == "iso_2":
+                    categories[-1].cuts.remove("ele_iso")
+                    categories[-1].cuts.remove("tau_iso")
+
+                for cut_key, cut_expression in category_cuts.iteritems():
+                    categories[-1].cuts.remove(cut_key)
+                    if cut_expression is not None:
+                        categories[-1].cuts.add(Cut(cut_expression, cut_key))
+                    self._logger.debug('\t appending category cut: {"%s": "%s"}' % (cut_key, cut_expression))
+
+        log_categories = '\t', 'Cattegories:\n'
+        for category in categories:
+            log_categories += '\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'
+
+        self._logger.info(log_categories)
+
+        return categories
 
     def getChannelSystematics(self, channel_holder):
         """

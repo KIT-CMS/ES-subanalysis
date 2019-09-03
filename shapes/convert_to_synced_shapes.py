@@ -18,29 +18,11 @@ logger = logging.getLogger("")
 
 intersection = lambda x, y: list(set(x) & set(y))
 
-map_pipes = {
-    # For FES
-    '0jet_alldm': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
-    '0jet_dm0': 'CMS_fes_eleTauEsOneProngShift_13TeV_',
-    '0jet_dm1': 'CMS_fes_eleTauEsOneProngPiZerosShift_13TeV_',
-    '0jet_dm10': 'CMS_fes_eleTauEsThreeProngShift_13TeV_',
-
-    'njet0_alldm': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
-    'njet0_dm0': 'CMS_fes_eleTauEsOneProngShift_13TeV_',
-    'njet0_dm1': 'CMS_fes_eleTauEsOneProngPiZerosShift_13TeV_',
-    'njet0_dm10': 'CMS_fes_eleTauEsThreeProngShift_13TeV_',
-
-    'njetN_alldm': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
-    'njetN_dm0': 'CMS_fes_eleTauEsOneProngShift_13TeV_',
-    'njetN_dm1': 'CMS_fes_eleTauEsOneProngPiZerosShift_13TeV_',
-    'njetN_dm10': 'CMS_fes_eleTauEsThreeProngShift_13TeV_',
-
-    'inclusive': 'CMS_fes_eleTauEsInclusiveShift_13TeV_',
-
-    # For single-process runs
-    'jeta_1': 'jeta_1',
-    'jeta_2': 'jeta_2',
-    'm_vis': 'm_vis',
+fes_shifts_indicators = {
+    'TauEsInclusiveShift_13TeV_': 'alldm',
+    'TauEsOneProngShift_13TeV_': 'dm0',
+    'TauEsOneProngPiZerosShift_13TeV_': 'dm1',
+    'TauEsThreeProngShift_13TeV_': 'dm10',
 }
 
 
@@ -145,15 +127,6 @@ def constructMap(hist_map, variables, input_file, debug=0):
         print 'categories in the root file: '
         pp.pprint(hist_map)
 
-    # if debug:
-    #     pp.pprint(hist_map['et'].keys())
-    #     print '0jet_dm0_for_wjets_mc'
-    #     pp.pprint(hist_map['et']['0jet_dm0_for_wjets_mc'])
-    #     print '0jet_dm0_ss_for_qcd'
-    #     pp.pprint(hist_map['et']['0jet_dm0_ss_for_qcd'])
-    #     print '0jet_dm0'
-    #     pp.pprint(hist_map['et']['0jet_dm0'])
-
 
 # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
 # input_path=args.input[0], output_dir=args.output, debug=args.debug, variables=args.variables)
@@ -175,7 +148,6 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
     # if debug: checkDM(hist_map)
 
     check_if_missing = ["W", "QCD", "ZJ", "TTT", "TTJ", "VVT", "VVJ", "ZTT"]
-    known_categories = map_pipes.keys()
     # Each channel belongs to a different output file
     for channel in hist_map:
         logger.debug('channel: %s' % channel)
@@ -199,19 +171,8 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
 
         output_file = ROOT.TFile(output_file_name, "RECREATE")
 
-        if len(intersection(known_categories, hist_map[channel].keys())) == 0:
-            logger.critical('No registered as known categories are found. Known:')
-            pp.pprint(known_categories)
-            logger.critical("found:")
-            pp.pprint(hist_map[channel].keys())
-        else:
-            logger.info("Intersection: [%s]" % ', '.join(intersection(known_categories, hist_map[channel].keys())))
-
-        for category in intersection(known_categories, hist_map[channel].keys()):
-            logger.debug('category:', category, '...')
-            # if category == '0jet_alldm':
-            #         print 'add after next skimm'
-            #         continue
+        for category in hist_map[channel].keys():
+            logger.debug('category: %s ...' % category)
 
             if category.endswith("_ss") or category.endswith("_B") or category.endswith('_for_wjets_mc'):
                 logger.warning('\t skipped as bg est.')
@@ -230,16 +191,21 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                 name_output = 'W' if name_output.startswith('W') else name_output
 
                 # Check the expected mapping of pipelines and categories
-                if category in map_pipes.keys():
-                    if '_fes_' in name_output and map_pipes[category] not in name_output:
-                        logger.debug('Skipping FES shifts that should not belong to the limited dm/njets category: %s' % name_output)
-                        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                        continue
-                    else:
-                        name_output = name_output.replace(map_pipes[category], '')
+                if '_fes_' in name_output and not any(lambda f, v: v in category and f in name_output for f, v in fes_shifts_indicators.iteritems()):
+                    logger.debug('Skipping FES shifts that should not belong to the limited dm/njets category: %s' % name_output)
+                    # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                    continue
+                elif '_fes_' in name_output:
+                    new_name = name_output
+                    for f in fes_shifts_indicators:
+                        if f in new_name:
+                            new_name = new_name.split(f)[-1]
+                            break
+                    logger.debug('Replacing when converting: %s -> %s' % (name_output, new_name))
+                    name_output = new_name
                 else:
-                    logger.critical('unknown category to drop unnessesary pipelines: %s' % category)
-                    raise Exception
+                    logger.debug('Replacing when converting: %s -> %s' % (name_output, name_output.replace(category, '')))
+                    name_output = name_output.replace(category, '')
 
                 if name_output in check_if_missing:
                     check_if_missing.remove(name_output)
