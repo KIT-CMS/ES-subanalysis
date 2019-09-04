@@ -31,14 +31,19 @@ class ETauFES(Shapes):
         """
         Creates and returns channel_holder for requested channel
         """
-        if channel == 'et' and self._context_analysis == 'etFes' and self._era_name == '2017':
-            from shape_producer.channel import ETSM2017  # TODO: make this globally configurable
+        if channel == 'et':
+            if self._era_name == '2017':
+                from shape_producer.channel import ETSM2017 as channel_obj
+            elif self._era_name == '2018':
+                from shape_producer.channel import ETSM2018 as channel_obj
+            elif self._era_name == '2016':
+                from shape_producer.channel import ETSM2016 as channel_obj
 
             channel_holder = ChannelHolder(
                 ofset=self._ofset + 1,
                 logger=self._logger,
                 debug=self._debug,
-                channel_obj=ETSM2017(),
+                channel_obj=channel_obj(),
                 friend_directory=self._et_friend_directory,
             )
 
