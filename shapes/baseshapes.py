@@ -135,11 +135,25 @@ class Shapes(object):
         # self._tt_friend_directory = os.path.expandvars(tt_friend_directory)
         # self._fake_factor_friend_directory = os.path.expandvars(fake_factor_friend_directory)
         # self._fes_friend_directory = os.path.expandvars(fes_friend_directory)
-        self._et_friend_directory = [os.path.expandvars(i) for i in et_friend_directory]
-        self._mt_friend_directory = [os.path.expandvars(i) for i in mt_friend_directory]
-        self._tt_friend_directory = [os.path.expandvars(i) for i in tt_friend_directory]
-        self._fake_factor_friend_directory = [os.path.expandvars(i) for i in fake_factor_friend_directory]
-        self._fes_friend_directory = [os.path.expandvars(i) for i in fes_friend_directory]
+
+        map_friends_attr = {
+            '_et_friend_directory': et_friend_directory,
+            '_mt_friend_directory': mt_friend_directory,
+            '_tt_friend_directory': tt_friend_directory,
+            '_fake_factor_friend_directory': fake_factor_friend_directory,
+            '_fes_friend_directory': fes_friend_directory,
+        }
+
+        for k, v in map_friends_attr.iteritems():
+            if isinstance(v, dict):
+                try:
+                    setattr(self, k, [os.path.expandvars(i) for i in v[era]])
+                except:
+                    self._logger('%s is a dict but era "%s" is not a key:' % (k, era))
+                    pp.pprint(v)
+                    raise Exception
+            else:
+                setattr(self, k, [os.path.expandvars(i) for i in v])
 
         self._fes_extra_cuts = fes_extra_cuts
         self._et_minplotlev_cuts = et_minplotlev_cuts
@@ -407,6 +421,7 @@ class Shapes(object):
         parser.add_argument('--no-force-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
         parser.add_argument('--no-extra-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
         parser.add_argument('--update-process-per-category', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
+
 
         defaultArguments['channels'] = []
         defaultArguments['processes'] = []
