@@ -798,17 +798,10 @@ class Shapes(object):
                 self._logger.warning('Removing from estimetion method %s weight associated to %s' % (key, replace_weights_key))
                 new_weights = processes[key]._estimation_method.get_weights()
 
-                try:
+                if replace_weights_key in new_weights.names:
                     new_weights.remove(replace_weights_key)
-                except KeyError:
+                else:
                     self._logger.warning('\t\t ... nothing to remove')
-                    if replace_weights_key in new_weights.names:
-                        self._logger.warning('\t\t ... nothing to remove as planned')
-                    else:
-                        self._logger.critical('\t\t ... nothing to remove as NOT planned')
-                        raise Exception('\t\t ... nothing to remove as NOT planned')
-                except Exception as inst:
-                    raise inst
 
                 if isinstance(replace_weights_value, six.string_types):
                     self._logger.warning('\t\t ... adding weight {%s : %s}' % (replace_weights_key, replace_weights_value))
@@ -955,6 +948,7 @@ class Shapes(object):
         pass
 
     def produce(self):
+        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
         self._logger.debug(self._systematics)
         # import pdb; pdb.set_trace()
         # # !import code; code.interact(local=vars())

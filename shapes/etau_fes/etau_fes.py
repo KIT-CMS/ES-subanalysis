@@ -155,7 +155,7 @@ class ETauFES(Shapes):
                 raise Exception("no nominals were found - yet not implemented.")
 
             if 'TES' in self._shifts:
-                print '\n\nTES...'
+                self._logger.info('\n\nTES...')
                 tau_es_3prong_variations = create_systematic_variations(name="CMS_scale_t_3prong_13TeV", property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
                 tau_es_1prong_variations = create_systematic_variations(name="CMS_scale_t_1prong_13TeV", property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
                 tau_es_1prong1pizero_variations = create_systematic_variations(name="CMS_scale_t_1prong1pizero_13TeV", property_name="tauEsOneProngOnePiZero", systematic_variation=DifferentPipeline)
@@ -163,7 +163,7 @@ class ETauFES(Shapes):
                 for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
                     proc_intersection = list(set(self._tes_sys_processes) & set(channel_holder._processes.keys()))
-                    print '\nvariation name:', variation.name, '\nintersection self._tes_sys_processes:', proc_intersection
+                    self._logger.debug('\nnTES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
@@ -173,7 +173,7 @@ class ETauFES(Shapes):
                         )
 
             if 'EMB' in self._shifts:
-                print '\n\nEMB shifts...'
+                self._logger.info('\n\nEMB shifts...')
                 decayMode_variations = []
                 decayMode_variations.append(
                     ReplaceWeight(
@@ -197,7 +197,7 @@ class ETauFES(Shapes):
                         "Down"))
                 for variation in decayMode_variations:
                     proc_intersection = list(set(self._emb_sys_processes) & set(channel_holder._processes.keys()))
-                    print '\nvariation name:', variation.name, '\nintersection self._emb_sys_processes:', proc_intersection
+                    self._logger.debug('\nEMB::variation name: %s\nintersection self._emb_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
@@ -207,7 +207,7 @@ class ETauFES(Shapes):
                         )
 
             if 'Zpt' in self._shifts:
-                print '\n\nZ pt reweighting'
+                self._logger.info('\n\nZ pt reweighting')
                 zpt_variations = create_systematic_variations(name="CMS_htt_dyShape_13TeV", property_name="zPtReweightWeight", systematic_variation=SquareAndRemoveWeight)
                 for variation in zpt_variations:
                     for process_nick in self.intersection(self.zpt_sys_processes, channel_holder._processes.keys()):
@@ -219,7 +219,7 @@ class ETauFES(Shapes):
                         )
 
             if 'FES_shifts' in self._shifts:
-                print '\n\nFES_shifts...'
+                self._logger.info('\n\nFES_shifts...')
                 # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
                 # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
                 root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
@@ -227,9 +227,10 @@ class ETauFES(Shapes):
                     shift_str = root_str(es)
                     # TODO: here the pipeline WILL depend on the category per DM
                     for pipeline in ["eleTauEsInclusiveShift_", "eleTauEsOneProngShift_", "eleTauEsOneProngPiZerosShift_", "eleTauEsThreeProngShift_"]:  # TODO: add inclusive
+                        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
                         variation = DifferentPipeline(name='CMS_fes_' + pipeline + '13TeV_', pipeline=pipeline, direction=shift_str)
                         proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
-                        print '\nvariation name:', variation.name, '\nintersection self._fes_sys_processes:', proc_intersection
+                        self._logger.debug('\nvariation name: %s\nintersection self._fes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                         for process_nick in proc_intersection:
                             self._systematics.add_systematic_variation(
                                 variation=variation,
@@ -263,7 +264,7 @@ class ETauFES(Shapes):
                             # self._systematics._systematics[-1]._process._estimation_method._directory
 
             if 'FF' in self._shifts:
-                print '\n\n FF related uncertainties ...'
+                self._logger.info('\n\n FF related uncertainties ...')
                 fake_factor_variations_et = []
 
                 for systematic_shift in [
