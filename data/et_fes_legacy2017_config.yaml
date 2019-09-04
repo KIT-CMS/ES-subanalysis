@@ -128,12 +128,17 @@ shifts: [
   # Zpt,
 ]
 
+replace_weights: {
+    'leptonTauFakeRateWeight': Null
+}
+
 grid_categories:
 
   eta_1_region: [
     'inc_eta_1',
-    'eta_1_barel',
-    'eta_1_endcap',
+    # 'eta_1_barel',
+    # 'eta_1_endcap',
+    'eta_1_barel_real',
     'eta_1_endcap_real',
   ]
 

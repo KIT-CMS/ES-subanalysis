@@ -10,6 +10,7 @@ jets_multiplicity:
 
 eta_1_region:
   inc_eta_1: '1==1'
-  eta_1_barel: 'abs(eta_1)<1.460'
+  eta_1_barel: 'abs(eta_1)<=1.5'
   eta_1_endcap: 'abs(eta_1)>1.5' # switch to 1.5?
+  eta_1_barel_real: 'abs(eta_1)<1.460'
   eta_1_endcap_real: 'abs(eta_1)>1.558' # switch to 1.5?

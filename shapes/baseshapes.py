@@ -22,7 +22,7 @@ from channelholder import ChannelHolder
 from shape_producer.process import Process  # move to ChannelsHolder
 from shape_producer.variable import Variable  # move to ChannelsHolder
 from shape_producer.binning import VariableBinning  # move to ChannelsHolder
-from shape_producer.cutstring import Cut, Cuts
+from shape_producer.cutstring import Cut, Cuts, Weight
 # from inidecorator import inidecorator
 
 # TODO: wrapper for introduction of methods
@@ -94,6 +94,7 @@ class Shapes(object):
                  single_categories={},
                  indent=0,
                  update_process_per_category=None,
+                 replace_weights=None,
                  ):
         self._logger = logging.getLogger(__name__)
 
@@ -150,6 +151,7 @@ class Shapes(object):
         self._no_force_cuts = no_force_cuts
         self._no_extra_cuts = no_extra_cuts
         self._update_process_per_category = update_process_per_category
+        self._replace_weights = replace_weights
 
         if self._no_fes_extra_cuts:
             self._logger.warning("All extra cuts are dropped:" + str(self._fes_extra_cuts))
@@ -425,6 +427,7 @@ class Shapes(object):
         defaultArguments['shifts'] = ['nominal', 'TES', 'EMB', 'FES_shifts', 'TES_shifts']
         defaultArguments['decay_mode'] = ['all', 'dm0', 'dm1', 'dm10']
         defaultArguments['jets_multiplicity'] = ['njetN', 'njet0']
+        defaultArguments['eta_1_region'] = ['inc_eta_1', 'eta_1_barel', 'eta_1_endcap', 'eta_1_barel_real', 'eta_1_endcap_real']
         defaultArguments['binning_key'] = 'control'
         defaultArguments['log_level'] = 'info'
         defaultArguments['no_fes_extra_cuts'] = False
@@ -447,10 +450,9 @@ class Shapes(object):
                     configuration[argument] = default
 
         configuration['parser_grid_categories'] = {}
-        if 'decay_mode' in configuration.keys():
-            configuration['parser_grid_categories']['decay_mode'] = configuration.pop('decay_mode')
-        if 'decay_mode' in configuration.keys():
-            configuration['parser_grid_categories']['jets_multiplicity'] = configuration.pop('jets_multiplicity')
+        for k in ['decay_mode', 'jets_multiplicity', 'eta_1_region']:
+            if k in configuration.keys():
+                configuration['parser_grid_categories'][k] = configuration.pop(k)
 
         return configuration
 
@@ -670,7 +672,7 @@ class Shapes(object):
             # print "test:", self._known_estimation_methods[era][context_analysis]#[channel_name]#['methods']
             for combine_name, method in self.getMethodsDict(era=era, context=context_analysis, channel_name=channel_name).iteritems():
                 if method in self._estimation_methods:
-                    print 'Warning: Estimation method', method, 'already defined - skipped redefinition'
+                    self._logger.warning('Warning: Estimation method %s already defined - skipped redefinition' % method)
                 # print 'module:', self._estimation_methods
                 self._estimation_methods[method] = getattr(importlib.import_module(imported_module), method)
 
@@ -774,6 +776,32 @@ class Shapes(object):
             else:
                 # if key == 'ZL': print '-->getProcesses::', key, parameters_list
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
+
+            # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+            for replace_weights_key, replace_weights_value in self._replace_weights.iteritems():
+                self._logger.warning('Removing from estimetion method %s weight associated to %s' % (key, replace_weights_key))
+                new_weights = processes[key]._estimation_method.get_weights()
+
+                try:
+                    new_weights.remove(replace_weights_key)
+                except KeyError:
+                    self._logger.warning('\t\t ... nothing to remove')
+                    if replace_weights_key in new_weights.names:
+                        self._logger.warning('\t\t ... nothing to remove as planned')
+                    else:
+                        self._logger.critical('\t\t ... nothing to remove as NOT planned')
+                        raise Exception('\t\t ... nothing to remove as NOT planned')
+                except Exception as inst:
+                    raise inst
+
+                if isinstance(replace_weights_value, six.string_types):
+                    self._logger.warning('\t\t ... adding weight {%s : %s}' % (replace_weights_key, replace_weights_value))
+                    new_weights = new_weights.add(Weight(replace_weights_value, replace_weights_key))
+                elif replace_weights_value is not None:
+                    raise Exception('Undefined manipulation with weights during EstimationMethods initialization')
+
+                processes[key]._estimation_method.get_weights = lambda: new_weights
+                self._logger.debug('... new assigned weights:\n%s' % str(processes[key]._estimation_method.get_weights()))
 
         return processes
 
@@ -898,6 +926,7 @@ class Shapes(object):
             log_categories += '\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'
 
         self._logger.info(log_categories)
+        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 
         return categories
 
