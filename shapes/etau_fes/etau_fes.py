@@ -129,6 +129,8 @@ class ETauFES(Shapes):
     # TODO: split to call corresponding functions instead of passing list of strings
     def evaluateSystematics(self, *argv):
         self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+        intersection = lambda x, y: list(set(x) & set(y))
+
         for channel_name, channel_holder in self._channels.iteritems():
             processes = channel_holder._processes.values()
             categories = channel_holder._categorries
@@ -236,10 +238,20 @@ class ETauFES(Shapes):
                                 era=self.era
                             )
 
-                            for shift_systematic in self._systematics._systematics[-channel_holder._nnominals:]:
+                            # Upplying cuts that are only for fes shifts
+                            for shift_systematic in self._systematics._systematics[-len(categories):]:
                                 for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
                                     shift_systematic.category.cuts.add(Cut(cut_expression, cut_key))
                                 shift_systematic._process._estimation_method._directory = self._fes_friend_directory[0]
+
+                                # Removing shifts from unmatching by decay mode requirement categories
+                                if ('InclusiveShift' in pipeline and len(intersection(shift_systematic.category.cuts.names, ['dm0', 'dm1', 'dm10'])) != 0) \
+                                or ('OneProngShift' in pipeline and len(intersection(shift_systematic.category.cuts.names, ['alldm', 'dm1', 'dm10'])) != 0) \
+                                or ('OneProngPiZerosShift' in pipeline and len(intersection(shift_systematic.category.cuts.names, ['alldm', 'dm0', 'dm10'])) != 0) \
+                                or ('ThreeProngShift' in pipeline and len(intersection(shift_systematic.category.cuts.names, ['alldm', 'dm0', 'dm1'])) != 0):
+                                    self._logger.warning("Removing systematic shift %s from production because of unmatching dm in categorisation" % (shift_systematic.name))
+                                    self._systematics._systematics.remove(shift_systematic)
+                                    # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 
                             # for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
                             #     self._systematics._systematics[-1].category.cuts.add(Cut(cut_expression, cut_key))
