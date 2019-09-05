@@ -17,9 +17,9 @@ user_specific:
     byhost:
       default: Null
     glusheno:
-      naf: /nfs/dust/cms/user/glusheno/shapes/FES/shapes/ET
+      naf: /nfs/dust/cms/user/glusheno/shapes/FES/ET/shapes
     ohlushch:
-      bms: /ceph/ohlushch/shapes/FES/shapes/ET
+      bms: /ceph/ohlushch/shapes/FES/ET/shapes/
 
   ## Path to inputs with nominal pipeline and systematics
   ## Note: shared samples should Not be used in the FES subanalysis since those contain the old FES corrections

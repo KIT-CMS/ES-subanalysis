@@ -83,6 +83,7 @@ class Shapes(object):
                  _known_cuts=None,
                  nominal_folder='nominal',
                  etau_es_shifts=None,
+                 mtau_es_shifts=None,
                  tes_sys_processes=None,
                  tes_shifts_sys_processes=None,
                  fes_sys_processes=None,
@@ -394,7 +395,7 @@ class Shapes(object):
         # parser.add_argument("--forve-cuts", action=type('', (argparse.Action, ), dict(__call__=lambda a, p, n, v, o: getattr(n, a.dest).update(dict([v.split('=')])))), default={})  # anonymously subclassing argparse.Action
         parser.add_argument('--forve-cuts', type=ast.literal_eval, help="Dict of cuts to force. Format: --forve-cuts=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
         parser.add_argument("--etau-es-shifts", nargs='*', type=int, help="etau_es_shifts")
-
+        parser.add_argument("--mtau-es-shifts", nargs='*', type=int, help="mtau_es_shifts")
 
         # Arguments with defaults that might be changed in the config file.
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
@@ -422,7 +423,6 @@ class Shapes(object):
         parser.add_argument('--no-force-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
         parser.add_argument('--no-extra-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
         parser.add_argument('--update-process-per-category', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
-
 
         defaultArguments['channels'] = []
         defaultArguments['processes'] = []

@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 """
  python convert_to_synced_shapes.py --input etFes_2017_all_shapes.root --output converted_shapes
- python shapes/convert_to_synced_shapes.py --input /ceph/ohlushch/shapes/FES/shapes/etFes_Legacy_FES_with_EMB_QCDSStoOS.root --output /ceph/ohlushch/shapes/FES/converted_shapes/converted_shapes --variables m_vis
+ python shapes/convert_to_synced_shapes.py \
+    --input  /ceph/ohlushch/shapes/FES/ET/shapes/etFes_Legacy_FES_with_EMB_QCDSStoOS_etasplitting.root \
+    --output /ceph/ohlushch/shapes/FES/ET/converted_shapes \
+    --variables m_vis
  # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 """
 import ROOT
@@ -34,9 +37,9 @@ def setup_logging(output_file, level=logging.DEBUG):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    file_handler = logging.FileHandler(output_file, "w")
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    # file_handler = logging.FileHandler(output_file, "w")
+    # file_handler.setFormatter(formatter)
+    # logger.addHandler(file_handler)
 
 
 def parse_arguments():
@@ -172,11 +175,13 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
         output_file = ROOT.TFile(output_file_name, "RECREATE")
 
         for category in hist_map[channel].keys():
-            logger.debug('category: %s ...' % category)
-
             if category.endswith("_ss") or category.endswith("_B") or category.endswith('_for_wjets_mc'):
-                logger.warning('\t skipped as bg est.')
+                if debug:
+                    print
+                logger.debug('Category: %s ...\t skipped as the shape belongs to bg est.' % category)
                 continue
+            print
+            logger.info('Category: %s' % category)
 
             # Each channel*category belongs to a different dir
             output_file.cd()
@@ -184,6 +189,7 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
             output_file.mkdir(dir_name)
             output_file.cd(dir_name)
 
+            output_names = []
             for name in hist_map[channel][category]:
                 logger.debug('name: %s ...' % name)
                 name_output = hist_map[channel][category][name]
@@ -199,7 +205,7 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                     new_name = name_output
                     for f in fes_shifts_indicators:
                         if f in new_name:
-                            new_name = new_name.split(f)[-1]
+                            new_name = '_'.join([new_name.split('_')[0], new_name.split(f)[-1]])
                             break
                     logger.debug('Replacing when converting: %s -> %s' % (name_output, new_name))
                     name_output = new_name
@@ -215,13 +221,15 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                     name_output += '_0'
 
                 if 'ZL_' in name_output:
+                    old_name_output = name_output
                     name_output = name_output.replace('_neg', '_-')
                     name_output = name_output.replace('0p', '0.')
                     name_output = name_output.replace('1p', '1.')
                     name_output = name_output.replace('2p', '2.')
                     name_output = name_output.replace('3p', '3.')
+                    logger.debug('Replacing when converting: %s -> %s' % (old_name_output, name_output))
 
-                logger.debug(name_output)
+                output_names.append(name_output)
 
                 # Store the histogram in the root file
                 hist = input_file.Get(name)
@@ -229,7 +237,9 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                 hist.SetName(name_output)
                 hist.Write()
 
-            logger.warning("Standart processes that were not found:" + " ".join(check_if_missing))
+            output_names.sort()
+            logger.info('names: [%s]' % ', '.join(output_names))
+            logger.warning("Standart processes that were not found: " + " ".join(check_if_missing))
 
         output_file.Close()
 
@@ -239,11 +249,19 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
 
 
 if __name__ == "__main__":
+    import logging
+    from rootpy import log
+    # log.setLevel(log.INFO)
+    from rootpy.logger.magic import DANGER
+    DANGER.enabled = True  # set True to raise exceptions
+
     args = parse_arguments()
     if args.debug:
-        setup_logging("convert_synced_shapes.log", logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
+        # setup_logging("convert_synced_shapes.log", logging.DEBUG)
     else:
-        setup_logging("convert_synced_shapes.log", logging.INFO)
+        logger.setLevel(logging.INFO)
+        # setup_logging("convert_synced_shapes.log", logging.INFO)
     logger.debug('Converted variables: ' + ' '.join(args.variables))
     print "Converted shapes:", convertToSynced(
         input_path=args.input_file[0],

@@ -163,7 +163,7 @@ class ETauFES(Shapes):
                 for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
                     proc_intersection = list(set(self._tes_sys_processes) & set(channel_holder._processes.keys()))
-                    self._logger.debug('\nnTES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    self._logger.debug('\n\nTES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,

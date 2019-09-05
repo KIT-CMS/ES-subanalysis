@@ -7,7 +7,7 @@ import logging
 from rootpy import log
 # log.setLevel(log.INFO)
 from rootpy.logger.magic import DANGER
-DANGER.enabled = False
+DANGER.enabled = True  # set True to raise exceptions
 
 from shapes import styled
 from shapes.etau_fes import ETauFES as analysis_shapes_et
