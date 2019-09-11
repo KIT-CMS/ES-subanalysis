@@ -22,11 +22,32 @@ def produce_shapes_variables(config):
     print '\n # 2 - setup_logging'
     shapes = analysis_shapes(**config)
 
+    # handler, file_handler = shapes.setup_logging(
+    #     output_file="{}_tesshapes.log".format(shapes._tag),
+    #     level=config['log_level'],
+    #     logger=logging.getLogger(),  # shapes._logger,
+    #     danger=False,
+    #     add_file_handler=False,
+    #     add_stream_handler=False,
+    # )
+
     shapes.setup_logging(
         output_file=shapes._output_file.replace('.root', '.log'),
         level='debug' if shapes._log_level is None else shapes._log_level,
         logger=shapes._logger
     )
+    # # Disabling some printouts
+    logging.getLogger('shape_producer').setLevel(log.INFO)
+    # # logging.getLogger('shape_producer.systematics').setLevel(log.INFO)
+    # # logging.getLogger('shape_producer.histogram').setLevel(log.INFO)
+    logging.getLogger('shape_producer.histogram').setLevel(log.DEBUG)
+
+    # if handler is not None:
+    #     handler.setLevel(log.INFO)
+    #     # logging.getLogger('shape_producer.histogram').addHandler(handler)
+
+    # if file_handler is not None:
+    #     file_handler.setLevel(log.DEBUG)
 
     print '\n # 3 - Era evaluation'
     shapes.evaluateEra()
@@ -46,21 +67,24 @@ def produce_shapes_variables(config):
     print '\n # 8 - convert to synched shapes'
 
     import subprocess
-    process = subprocess.Popen(['send', 'FES shape production finished: %s' % (shapes._output_file)], stdout=subprocess.PIPE, shell=True)
+    process = subprocess.Popen(['send', '"FES shape production finished: %s"' % (shapes._output_file)], stdout=subprocess.PIPE, shell=True)
     output, error = process.communicate()
 
-    if shapes._output_file_dir.endswith('/shapes'):
+    if os.path.basename(os.path.normpath(shapes._output_file_dir)) =='shapes':
         converted_shapes_dir = shapes._output_file_dir[:-6] + 'converted_shapes'
     else:
         converted_shapes_dir = os.path.join(shapes._output_file_dir, 'converted_shapes')
 
     # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
-    converted_shapes_file = convertToSynced(
-        input_path=shapes._output_file,
-        output_dir=os.path.join(converted_shapes_dir),
-        variables=shapes._variables_names,
-        debug=shapes._debug,
-    )
+    if not shapes._dry:
+        converted_shapes_file = convertToSynced(
+            input_path=shapes._output_file,
+            output_dir=os.path.join(converted_shapes_dir),
+            variables=shapes._variables_names,
+            debug=shapes._debug,
+        )
+    else:
+        print 'dry run - skip converting'
     print 'converted_shapes_file:', converted_shapes_file
     # print '\n # 9 - implement the nominal ploting if you want'
 
@@ -78,7 +102,6 @@ def main():
         debug=debug
     )
     if config['context_analysis'] == 'mtFes':
-        styled.HEADER('\n # 1 - prepareConfig')
         config = analysis_shapes_mt.prepareConfig(
             analysis_shapes=analysis_shapes_mt,
             config_file='data/mt_fes_legacy_config.yaml',

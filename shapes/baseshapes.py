@@ -260,7 +260,7 @@ class Shapes(object):
             self._output_file_dir = os.path.dirname(self._output_file)
 
         if self._output_file_name == '':
-            self._output_file_name = "{}.root".format('_'.join([self._context_analysis, self._methods_collection_key]))
+            self._output_file_name = "{}.root".format('_'.join([self._era_name, self._context_analysis, self._methods_collection_key]))
         elif not self._output_file_name.endswith('.root'):
             self._output_file_name = "{}.root".format(self._output_file_name)
 

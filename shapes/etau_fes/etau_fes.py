@@ -109,20 +109,20 @@ class ETauFES(Shapes):
         if '2017' in process._estimation_method._era.__class__.__name__ and 'et' in category.name:
             if process.name == "QCDSStoOS":
                 # import pdb; pdb.set_trace()
-                if 'alldm' in category.name:
-                    if 'njetN' in category.name:
+                if not any(i in category.name for i in ['dm0', 'dm1']):
+                    if 'njet0' not in category.name:
                         process._estimation_method._extrapolation_factor = 1.38
-                    elif 'njet0' in category.name:
+                    else:
                         process._estimation_method._extrapolation_factor = 1.008
                 elif 'dm0' in category.name:
-                    if 'njetN' in category.name:
+                    if 'njet0' not in category.name:
                         process._estimation_method._extrapolation_factor = 1.170
-                    elif 'njet0' in category.name:
+                    else:
                         process._estimation_method._extrapolation_factor = 1.137
                 elif 'dm1' in category.name and 'dm10' not in category.name:
-                    if 'njetN' in category.name:
+                    if 'njet0' not in category.name:
                         process._estimation_method._extrapolation_factor = 0.997
-                    elif 'njet0' in category.name:
+                    else:
                         process._estimation_method._extrapolation_factor = 0.965
         return process
 
