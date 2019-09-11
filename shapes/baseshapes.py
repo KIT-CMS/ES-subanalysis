@@ -56,6 +56,10 @@ class Shapes(object):
                  no_mt_minplotlev_cuts=None,
                  no_force_cuts=None,
                  no_extra_cuts=None,
+                 no_grid_categories=None,
+                 no_single_categories=None,
+                 use_grid_categories=None,
+                 use_single_categories=None,
                  invert_cuts=None,
                  extra_chain=None,
                  gof_channel=None,
@@ -95,7 +99,7 @@ class Shapes(object):
                  single_categories={},
                  indent=0,
                  update_process_per_category=None,
-                 replace_weights=None,
+                 replace_weights={},
                  ):
         self._logger = logging.getLogger(__name__)
 
@@ -168,6 +172,15 @@ class Shapes(object):
         self._update_process_per_category = update_process_per_category
         self._replace_weights = replace_weights
 
+        self._no_grid_categories = no_grid_categories
+        self._no_single_categories = no_single_categories
+        self._use_grid_categories = use_grid_categories
+        self._use_single_categories = use_single_categories
+        print self._no_grid_categories, self._use_grid_categories
+        print self._no_single_categories, self._use_single_categories
+        assert self._no_grid_categories != self._use_grid_categories, "Cant use no_grid_categories and use_grid_categories together"
+        assert self._no_single_categories != self._use_single_categories, "Cant use no_single_categories and use_single_categories together"
+
         if self._no_fes_extra_cuts:
             self._logger.warning("All extra cuts are dropped:" + str(self._fes_extra_cuts))
             self._fes_extra_cuts = {}
@@ -216,11 +229,18 @@ class Shapes(object):
         self._zpt_sys_processes = zpt_sys_processes
         self._shifts = shifts
 
-        self._grid_categories = grid_categories
-        for k, v in parser_grid_categories.iteritems():
-            self._grid_categories[k] = copy.deepcopy(v)
+        if not self._no_grid_categories or self._use_grid_categories:
+            self._grid_categories = grid_categories
+            for k, v in parser_grid_categories.iteritems():
+                self._grid_categories[k] = copy.deepcopy(v)
+        else:
+            self._logger.warning('All grid categorries ignored')
+            self._grid_categories = {}
 
-        self._single_categories = single_categories
+        if not self._no_single_categories or self._use_single_categories:
+            self._single_categories = single_categories
+        else:
+            self._single_categories = {}
         assert isinstance(self._grid_categories, dict), "grid_categories:: should be dict"
         assert isinstance(self._single_categories, dict), "single_categories:: should be dict"
 
@@ -257,7 +277,7 @@ class Shapes(object):
         # set full file path
         self._output_file = os.path.join(self._output_file_dir, self._output_file_name)
 
-        self._logger.debug("Context analysis: %s\n methods collection key: %s" % (self._context_analysis, self._methods_collection_key))
+        self._logger.debug("Context analysis: %s\n methods collection key: %s\n year: %s" % (self._context_analysis, self._methods_collection_key, self._era_name))
         self._logger.info("Output file: %s" % (self._output_file))
 
         # Holds Systematics for all the channels. TODO: add the per-channel systematics to ChannelHolder
@@ -380,7 +400,7 @@ class Shapes(object):
         parser.add_argument("--binning", type=str, help="Binning configuration.")
 
         # Arguments with None default
-        parser.add_argument("--era", type=str, help="Experiment era.")
+        parser.add_argument("--era", "--year", type=str, help="Experiment era.")
         parser.add_argument("--gof-variable", type=str, help="Variable for goodness of fit shapes.")
         parser.add_argument("--gof-channel", type=str, help="Channel for goodness of fit shapes.")
         parser.add_argument("--et-friend-directory", type=str, help="Directory containing a friend tree for et.")
@@ -394,6 +414,8 @@ class Shapes(object):
         parser.add_argument("--invert-cuts", nargs='*', type=str, help="Invert cuts by their key names.")
         # parser.add_argument("--forve-cuts", action=type('', (argparse.Action, ), dict(__call__=lambda a, p, n, v, o: getattr(n, a.dest).update(dict([v.split('=')])))), default={})  # anonymously subclassing argparse.Action
         parser.add_argument('--forve-cuts', type=ast.literal_eval, help="Dict of cuts to force. Format: --forve-cuts=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
+        parser.add_argument('--replace-weights', type=ast.literal_eval, help="Dict of replace weights. Format: --replace-weights=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
+
         parser.add_argument("--etau-es-shifts", nargs='*', type=int, help="etau_es_shifts")
         parser.add_argument("--mtau-es-shifts", nargs='*', type=int, help="mtau_es_shifts")
 
@@ -418,11 +440,18 @@ class Shapes(object):
         parser.add_argument("--jets-multiplicity", nargs='+', type=str, help="Needed for categorisation. Choices: njetN, njet0")
         parser.add_argument("--binning-key", type=str, help="Used only to pick the binning! example: gof, control")
         parser.add_argument("--log-level", type=str, help="Log level")
-        parser.add_argument('--no-fes-extra-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
-        parser.add_argument('--no-et-minplotlev-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
-        parser.add_argument('--no-force-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
-        parser.add_argument('--no-extra-cuts', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
-        parser.add_argument('--update-process-per-category', action='store_true', help='drop extra cuts. Note: will add a prefix to the output file')
+
+        parser.add_argument('--no-fes-extra-cuts', action='store_true', default=None, help='drop extra cuts. Note: will add a prefix to the output file')
+        parser.add_argument('--no-et-minplotlev-cuts', action='store_true', default=None, help='drop et minplotlev cuts')
+        parser.add_argument('--no-mt-minplotlev-cuts', action='store_true', default=None, help='drop mt minplotlev cuts')
+        parser.add_argument('--no-force-cuts', action='store_true', default=None, help='drop extra cuts')
+        parser.add_argument('--no-extra-cuts', action='store_true', default=None, help='drop extra cuts')
+        parser.add_argument('--no-grid-categories', action='store_true', default=None, help='drop categorisation defined by grid_categories config.')
+        parser.add_argument('--no-single-categories', action='store_true', default=None, help='drop categorisation defined by single_categories config.')
+        parser.add_argument('--use-grid-categories', action='store_true', default=None, help='drop categorisation defined by grid_categories config.')
+        parser.add_argument('--use-single-categories', action='store_true', default=None, help='drop categorisation defined by single_categories config.')
+
+        parser.add_argument('--update-process-per-category', action='store_true', default=None, help='Used to update extrapolation factors for the QCD estimation methods if they are provided')
 
         defaultArguments['channels'] = []
         defaultArguments['processes'] = []
@@ -446,10 +475,16 @@ class Shapes(object):
         defaultArguments['eta_1_region'] = ['inc_eta_1', 'eta_1_barel', 'eta_1_endcap', 'eta_1_barel_real', 'eta_1_endcap_real']
         defaultArguments['binning_key'] = 'control'
         defaultArguments['log_level'] = 'info'
+
         defaultArguments['no_fes_extra_cuts'] = False
         defaultArguments['no_et_minplotlev_cuts'] = False
         defaultArguments['no_force_cuts'] = False
         defaultArguments['no_extra_cuts'] = False
+        defaultArguments['no_grid_categories'] = False
+        defaultArguments['no_single_categories'] = False
+        defaultArguments['use_grid_categories'] = False
+        defaultArguments['use_single_categories'] = False
+
         defaultArguments['update_process_per_category'] = False
 
         # Arguments with defaults that can NOT be changed in the config file
@@ -464,6 +499,19 @@ class Shapes(object):
             for argument, default in defaultArguments.iteritems():
                 if argument not in configuration:
                     configuration[argument] = default
+
+        assert not ('use_grid_categories' in configuration.keys() and 'no_grid_categories' in configuration.keys()), "no_grid_categories and use_grid_categories can't be set at the same time"
+        assert not ('use_single_categories' in configuration.keys() and 'no_single_categories' in configuration.keys()), "no_single_categories and use_single_categories can't be set at the same time"
+        # pp.pprint(configuration)
+        if 'use_grid_categories' in configuration.keys():
+            configuration['no_grid_categories'] = not configuration['use_grid_categories']
+        elif 'no_grid_categories' in configuration.keys():
+            configuration['use_grid_categories'] = not configuration['no_grid_categories']
+
+        if 'use_single_categories' in configuration.keys():
+            configuration['no_single_categories'] = not configuration['use_single_categories']
+        elif 'no_single_categories' in configuration.keys():
+            configuration['use_single_categories'] = not configuration['no_single_categories']
 
         configuration['parser_grid_categories'] = {}
         for k in ['decay_mode', 'jets_multiplicity', 'eta_1_region']:
@@ -796,7 +844,9 @@ class Shapes(object):
             # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
             for replace_weights_key, replace_weights_value in self._replace_weights.iteritems():
                 self._logger.warning('Removing from estimetion method %s weight associated to %s' % (key, replace_weights_key))
-                new_weights = processes[key]._estimation_method.get_weights()
+                self._logger.debug('... old weights:%s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
+                new_weights = copy.deepcopy(processes[key]._estimation_method.get_weights())
+                self._logger.debug('... old copy weights:\n%s' % (str(new_weights)))
 
                 if replace_weights_key in new_weights.names:
                     new_weights.remove(replace_weights_key)
@@ -805,14 +855,21 @@ class Shapes(object):
 
                 if isinstance(replace_weights_value, six.string_types):
                     self._logger.warning('\t\t ... adding weight {%s : %s}' % (replace_weights_key, replace_weights_value))
-                    new_weights = new_weights.add(Weight(replace_weights_value, replace_weights_key))
+                    new_weights.add(Weight(replace_weights_value, replace_weights_key))
                 elif replace_weights_value is not None:
                     raise Exception('Undefined manipulation with weights during EstimationMethods initialization')
 
-                processes[key]._estimation_method.get_weights = lambda: new_weights
-                self._logger.debug('... new assigned weights:\n%s' % str(processes[key]._estimation_method.get_weights()))
+                self._logger.debug('\t\t ... new_weights address:%s' % (hex(id(new_weights))))
+
+                processes[key]._estimation_method.get_weights = Shapes.make_get_weights_fun(new_weights)  #lambda: copy.deepcopy(new_weights)
+                self._logger.debug('... new assigned weights: %s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
 
         return processes
+
+    @staticmethod
+    def make_get_weights_fun(r):
+        new_weights = copy.deepcopy(r)
+        return lambda: new_weights
 
     # TODO: use a set of parameters
     # TODO: add a fn to re-set the QCD estimation method
@@ -884,34 +941,36 @@ class Shapes(object):
             #         channel_holder._channel_obj.cuts.remove("m_t")
 
             categories_by_space = [self._grid_categories[k] for k in self._grid_categories.keys()]
-            for category_space_cuts in product(*categories_by_space):
-                category_name = '_'.join(category_space_cuts)
-                self._logger.info('%s : ..adding category {%s}', sys._getframe().f_code.co_name, ' && '.join(category_space_cuts))
-                categories.append(
-                    Category(
-                        name=category_name,
-                        channel=channel_holder._channel_obj,
-                        cuts=cuts,
-                        variable=var)
-                )
-                # Remove cuts introduced in categorysation for the plots of isolation
-                if name == "iso_1" or name == "iso_2":
-                    categories[-1].cuts.remove("ele_iso")
-                    categories[-1].cuts.remove("tau_iso")
+            if len(categories_by_space) > 0:
+                for category_space_cuts in product(*categories_by_space):
+                    # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                    category_name = '_'.join(category_space_cuts)
+                    self._logger.info('%s : ..adding grid category %s: {%s}', sys._getframe().f_code.co_name, category_name, ' && '.join(category_space_cuts))
+                    categories.append(
+                        Category(
+                            name=category_name,
+                            channel=channel_holder._channel_obj,
+                            cuts=cuts,
+                            variable=var)
+                    )
+                    # Remove cuts introduced in categorysation for the plots of isolation
+                    if name == "iso_1" or name == "iso_2":
+                        categories[-1].cuts.remove("ele_iso")
+                        categories[-1].cuts.remove("tau_iso")
 
-                for cuts_class in self._known_cuts.keys():
-                    # Add the $cuts_class splitting cattegorization
-                    if cuts_class in self._grid_categories.keys():
-                        cut_class_key = intersection(category_space_cuts, self._known_cuts[cuts_class].keys())
-                        if len(cut_class_key) > 1:
-                            raise Exception("Too many %s values to unfold: [%s]" % (cuts_class, ', '.join(cut_class_key)))
-                        else:
-                            cut_class_key = cut_class_key[0]
-                            self._logger.debug("Add the %s splitting: {%s: %s}" % (cuts_class, cut_class_key, self._known_cuts[cuts_class][cut_class_key]))
-                            categories[-1].cuts.add(Cut(self._known_cuts[cuts_class][cut_class_key], cut_class_key))
+                    for cuts_class in self._known_cuts.keys():
+                        # Add the $cuts_class splitting cattegorization
+                        if cuts_class in self._grid_categories.keys():
+                            cut_class_key = intersection(category_space_cuts, self._known_cuts[cuts_class].keys())
+                            if len(cut_class_key) > 1:
+                                raise Exception("Too many %s values to unfold: [%s]" % (cuts_class, ', '.join(cut_class_key)))
+                            else:
+                                cut_class_key = cut_class_key[0]
+                                self._logger.debug("Add the %s splitting: {%s: %s}" % (cuts_class, cut_class_key, self._known_cuts[cuts_class][cut_class_key]))
+                                categories[-1].cuts.add(Cut(self._known_cuts[cuts_class][cut_class_key], cut_class_key))
 
             for category_name, category_cuts in self._single_categories.iteritems():
-                self._logger.info('%s : ..adding category' % sys._getframe().f_code.co_name)
+                self._logger.info('%s : ..adding single category %s' % (sys._getframe().f_code.co_name, category_name))
                 categories.append(
                     Category(
                         name=category_name,
@@ -930,9 +989,9 @@ class Shapes(object):
                         categories[-1].cuts.add(Cut(cut_expression, cut_key))
                     self._logger.debug('\t appending category cut: {"%s": "%s"}' % (cut_key, cut_expression))
 
-        log_categories = '\t', 'Cattegories:\n'
+        log_categories = '\tCattegories:\n'
         for category in categories:
-            log_categories += '\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'
+            log_categories += ''.join(['\t' * 2, category.name, '_:', category.cuts.__str__(indent=3 + self._indent) + '\n'])
 
         self._logger.info(log_categories)
         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())

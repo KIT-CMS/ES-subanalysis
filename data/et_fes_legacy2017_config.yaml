@@ -94,22 +94,28 @@ variables_names: [
   # rho,
 ]
 
-## Cuts enabling
+# Update extrapolation factors for QCD if available
 update_process_per_category: False
-no_fes_extra_cuts: False
-no_et_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
-no_mt_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
-no_force_cuts: False  # forcing
+
+## Cuts
 no_extra_cuts: False  # disabling all below mentioned cuts
 
-## Cuts definitions
-fes_extra_cuts: {}  # Cuts applied to FES pipelines
-# applied to all pipelines! # minimal plot level cuts ; might be not callable with smHtt samples
+# Cuts applied to FES pipelines
+no_fes_extra_cuts: False
+fes_extra_cuts: {}
+
+# Minimal plot level cuts
+# applied to all pipelines! ; might be not callable with smHtt samples
+no_mt_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
+no_et_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
 et_minplotlev_cuts:
   'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
   'extraelec_veto': 'extraelec_veto < 0.5'
   'extramuon_veto': 'extramuon_veto < 0.5'
+
+# Global cuts
 # applied to all pipelines! Here a global difference between master shapes and FES selection should be made
+no_force_cuts: False  # forcing
 force_cuts:
   'dilepton_veto': Null  # removes the cut; to enhance Z->ee; it need at artus minimalplotlevfilter nDiElectronVetoPairsOS cut to be disabled
   #
@@ -119,7 +125,9 @@ force_cuts:
   #
   # Completely obsolete:
   # 'trg_selection': "(trg_singleelectron_27 == 1) || (trg_singleelectron_32 == 1) || (trg_singleelectron_35) || (trg_crossele_ele24tau30 == 1) || (isEmbedded && pt_1>20 && pt_1<24)"  # used at 2017
+
 # Invert cuts if present
+# applied to all pipelines!
 invert_cuts: [] # Cuts to be inverted. Applied prior the force-cuts and don't affect them.
 
 ## Processed is the intersection with list from _known_estimation_methods
@@ -131,10 +139,15 @@ shifts: [
   # Zpt,
 ]
 
+## Weihgts
+# --replace-weights="{'leptonTauFakeRateWeight':'muTauFakeRateWeight'}"
 replace_weights: {
-    'leptonTauFakeRateWeight': Null
+    # 'leptonTauFakeRateWeight': "muTauFakeRateWeight"
 }
 
+## Categories
+# no_grid_categories: False
+use_grid_categories: True
 grid_categories:
 
   eta_1_region: [
@@ -157,12 +170,30 @@ grid_categories:
     'njet0',
   ]
 
-single_categories: {
-  # a:
-  #   'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
-  #   'extraelec_veto': 'extraelec_veto < 0.5'
-  #   'extramuon_veto': 'extramuon_veto < 0.5'
-}
+use_single_categories: False
+single_categories:
+
+  inclusive: {}  # signal region
+
+  inclusive_withminplotlev:
+    'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
+    'extraelec_veto': 'extraelec_veto < 0.5'
+    'extramuon_veto': 'extramuon_veto < 0.5'
+
+  mt1_lt70:
+    'm_t': 'mt_1<70'  # signal region
+
+  mt1_gt70:
+    'm_t': 'mt_1>70'
+
+  extra_elec_invert:
+    'extraelec_veto': 'extraelec_veto > 0.5'
+
+  nDiElectronVetoPairsOS_invert:
+    'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS > 0.5'
+
+  dilepton_veto_invert:
+    'dilepton_veto': 'dilepton_veto>0.5'
 
 etau_es_shifts: [
             -4, -3, -2, -1.75, -1.5, -1.25, -1, -0.75, -0.5, -0.25,
