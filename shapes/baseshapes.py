@@ -168,6 +168,11 @@ class Shapes(object):
         self._fes_extra_cuts = fes_extra_cuts
         self._et_minplotlev_cuts = et_minplotlev_cuts
         self._force_cuts = force_cuts
+        for year in ['2016', '2017', '2018']:
+            if year in self._force_cuts.keys():
+                yead_dict = self._force_cuts.pop(year)
+                if year == era:
+                    self._force_cuts.update(yead_dict)
         self._invert_cuts = invert_cuts
         self._no_fes_extra_cuts = no_fes_extra_cuts
         self._no_et_minplotlev_cuts = no_et_minplotlev_cuts
