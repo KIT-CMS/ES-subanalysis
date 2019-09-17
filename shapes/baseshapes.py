@@ -58,6 +58,11 @@ class Shapes(object):
                  no_extra_cuts=None,
                  no_grid_categories=None,
                  no_single_categories=None,
+                 use_fes_extra_cuts=None,
+                 use_et_minplotlev_cuts=None,
+                 use_mt_minplotlev_cuts=None,
+                 use_force_cuts=None,
+                 use_extra_cuts=None,
                  use_grid_categories=None,
                  use_single_categories=None,
                  invert_cuts=None,
@@ -169,17 +174,20 @@ class Shapes(object):
         self._no_mt_minplotlev_cuts = no_mt_minplotlev_cuts
         self._no_force_cuts = no_force_cuts
         self._no_extra_cuts = no_extra_cuts
-        self._update_process_per_category = update_process_per_category
-        self._replace_weights = replace_weights
-
         self._no_grid_categories = no_grid_categories
         self._no_single_categories = no_single_categories
+        self._use_fes_extra_cuts = use_fes_extra_cuts
+        self._use_et_minplotlev_cuts = use_et_minplotlev_cuts
+        self._use_mt_minplotlev_cuts = use_mt_minplotlev_cuts
+        self._use_force_cuts = use_force_cuts
+        self._use_extra_cuts = use_extra_cuts
         self._use_grid_categories = use_grid_categories
         self._use_single_categories = use_single_categories
-        print self._no_grid_categories, self._use_grid_categories
-        print self._no_single_categories, self._use_single_categories
-        assert self._no_grid_categories != self._use_grid_categories, "Cant use no_grid_categories and use_grid_categories together"
-        assert self._no_single_categories != self._use_single_categories, "Cant use no_single_categories and use_single_categories together"
+
+        for base in ['fes_extra_cuts', 'et_minplotlev_cuts', 'mt_minplotlev_cuts', 'force_cuts', 'extra_cuts', 'grid_categories', 'single_categories']:
+            use = getattr(self, '_use_' + base)
+            nouse = getattr(self, '_no_' + base)
+            assert nouse != use, "Cant use %s and %s together" % ('use_' + base, 'no_' + base)
 
         if self._no_fes_extra_cuts:
             self._logger.warning("All extra cuts are dropped:" + str(self._fes_extra_cuts))
@@ -448,8 +456,13 @@ class Shapes(object):
         parser.add_argument('--no-extra-cuts', action='store_true', default=None, help='drop extra cuts')
         parser.add_argument('--no-grid-categories', action='store_true', default=None, help='drop categorisation defined by grid_categories config.')
         parser.add_argument('--no-single-categories', action='store_true', default=None, help='drop categorisation defined by single_categories config.')
-        parser.add_argument('--use-grid-categories', action='store_true', default=None, help='drop categorisation defined by grid_categories config.')
-        parser.add_argument('--use-single-categories', action='store_true', default=None, help='drop categorisation defined by single_categories config.')
+        parser.add_argument('--use-fes-extra-cuts', action='store_true', default=None, help='use extra cuts. Note: will add a prefix to the output file')
+        parser.add_argument('--use-et-minplotlev-cuts', action='store_true', default=None, help='use et minplotlev cuts')
+        parser.add_argument('--use-mt-minplotlev-cuts', action='store_true', default=None, help='use mt minplotlev cuts')
+        parser.add_argument('--use-force-cuts', action='store_true', default=None, help='use extra cuts')
+        parser.add_argument('--use-extra-cuts', action='store_true', default=None, help='use extra cuts')
+        parser.add_argument('--use-grid-categories', action='store_true', default=None, help='use categorisation defined by grid_categories config.')
+        parser.add_argument('--use-single-categories', action='store_true', default=None, help='use categorisation defined by single_categories config.')
 
         parser.add_argument('--update-process-per-category', action='store_true', default=None, help='Used to update extrapolation factors for the QCD estimation methods if they are provided')
 
@@ -482,6 +495,12 @@ class Shapes(object):
         defaultArguments['no_extra_cuts'] = False
         defaultArguments['no_grid_categories'] = False
         defaultArguments['no_single_categories'] = False
+
+        defaultArguments['use_fes_extra_cuts'] = False
+        defaultArguments['use_et_minplotlev_cuts'] = False
+        defaultArguments['use_mt_minplotlev_cuts'] = False
+        defaultArguments['use_force_cuts'] = False
+        defaultArguments['use_extra_cuts'] = False
         defaultArguments['use_grid_categories'] = False
         defaultArguments['use_single_categories'] = False
 
@@ -492,7 +511,6 @@ class Shapes(object):
         parser.add_argument('--debug', action='store_true', default=False, help='cherry-debug')
 
         args = parser.parse_args()
-
         configuration = dict((k, v) for k, v in vars(args).iteritems() if v is not None)
 
         if include_defaults:
@@ -500,24 +518,23 @@ class Shapes(object):
                 if argument not in configuration:
                     configuration[argument] = default
 
-        assert not ('use_grid_categories' in configuration.keys() and 'no_grid_categories' in configuration.keys()), "no_grid_categories and use_grid_categories can't be set at the same time"
-        assert not ('use_single_categories' in configuration.keys() and 'no_single_categories' in configuration.keys()), "no_single_categories and use_single_categories can't be set at the same time"
-        # pp.pprint(configuration)
-        if 'use_grid_categories' in configuration.keys():
-            configuration['no_grid_categories'] = not configuration['use_grid_categories']
-        elif 'no_grid_categories' in configuration.keys():
-            configuration['use_grid_categories'] = not configuration['no_grid_categories']
-
-        if 'use_single_categories' in configuration.keys():
-            configuration['no_single_categories'] = not configuration['use_single_categories']
-        elif 'no_single_categories' in configuration.keys():
-            configuration['use_single_categories'] = not configuration['no_single_categories']
+        for base in ['fes_extra_cuts', 'et_minplotlev_cuts', 'mt_minplotlev_cuts', 'force_cuts', 'extra_cuts', 'grid_categories', 'single_categories']:
+            use = 'use_' + base
+            nouse = 'no_' + base
+            assert not (use in configuration.keys() and nouse in configuration.keys()), "%s and %s can't be set at the same time" % (use, nouse)
+            if use in configuration.keys():
+                print 'called --%s' % use, 'setting --%s=' % nouse, not configuration[use]
+                configuration[nouse] = not configuration[use]
+            elif nouse in configuration.keys():
+                print 'called --%s' % nouse, 'setting --%s=' % use, not configuration[nouse]
+                configuration[use] = not configuration[nouse]
 
         configuration['parser_grid_categories'] = {}
         for k in ['decay_mode', 'jets_multiplicity', 'eta_1_region']:
             if k in configuration.keys():
                 configuration['parser_grid_categories'][k] = configuration.pop(k)
 
+        # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
         return configuration
 
     @classmethod
