@@ -23,11 +23,11 @@ def produce_shapes_variables(config):
     shapes = analysis_shapes(**config)
 
     # handler, file_handler = shapes.setup_logging(
-    #     output_file="{}_tesshapes.log".format(shapes._tag),
-    #     level=config['log_level'],
-    #     logger=logging.getLogger(),  # shapes._logger,
+    #     output_file=shapes._output_file.replace('.root', '.log'),
+    #     level='debug' if shapes._log_level is None else shapes._log_level,
+    #     logger=shapes._logger,  # logging.getLogger()
     #     danger=False,
-    #     add_file_handler=False,
+    #     add_file_handler=True,
     #     add_stream_handler=False,
     # )
 
@@ -70,8 +70,9 @@ def produce_shapes_variables(config):
     process = subprocess.Popen(['send', '"FES shape production finished: %s"' % (shapes._output_file)], stdout=subprocess.PIPE, shell=True)
     output, error = process.communicate()
 
-    if os.path.basename(os.path.normpath(shapes._output_file_dir)) =='shapes':
-        converted_shapes_dir = shapes._output_file_dir[:-6] + 'converted_shapes'
+    if os.path.basename(os.path.normpath(shapes._output_file_dir)) == 'shapes':
+        import copy
+        converted_shapes_dir = copy.deepcopy(shapes._output_file_dir).replace('/shapes', '/converted_shapes')
     else:
         converted_shapes_dir = os.path.join(shapes._output_file_dir, 'converted_shapes')
 
@@ -85,6 +86,7 @@ def produce_shapes_variables(config):
         )
     else:
         print 'dry run - skip converting'
+    print 'shapes:', shapes._output_file
     print 'converted_shapes_file:', converted_shapes_file
     # print '\n # 9 - implement the nominal ploting if you want'
 

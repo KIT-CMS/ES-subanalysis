@@ -955,7 +955,7 @@ class Shapes(object):
         Returns dict of Cattegories for Channel
         """
         self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
-
+        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
         categories = []
         intersection = lambda x, y: list(set(x) & set(y))
         for name, var in channel_holder._variables.iteritems():

@@ -250,7 +250,7 @@ class ETauFES(Shapes):
                                 or ('OneProngShift' in pipeline and len(intersection(shift_systematic.category.cuts.names, ['alldm', 'dm1', 'dm10'])) != 0) \
                                 or ('OneProngPiZerosShift' in pipeline and len(intersection(shift_systematic.category.cuts.names, ['alldm', 'dm0', 'dm10'])) != 0) \
                                 or ('ThreeProngShift' in pipeline and len(intersection(shift_systematic.category.cuts.names, ['alldm', 'dm0', 'dm1'])) != 0):
-                                    self._logger.warning("Removing systematic shift %s from production because of unmatching dm in categorisation" % (shift_systematic.name))
+                                    self._logger.debug("Removing systematic shift %s from production because of unmatching dm in categorisation" % (shift_systematic.name))
                                     self._systematics._systematics.remove(shift_systematic)
                                     # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 
