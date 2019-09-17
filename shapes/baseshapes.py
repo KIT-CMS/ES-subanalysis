@@ -199,21 +199,21 @@ class Shapes(object):
             assert nouse != use, "Cant use %s and %s together" % ('use_' + base, 'no_' + base)
 
         if self._no_fes_extra_cuts:
-            self._logger.warning("All extra cuts are dropped:" + str(self._fes_extra_cuts))
+            self._logger.warning("All fes_extra_cuts are dropped:" + str(self._fes_extra_cuts))
             self._fes_extra_cuts = {}
 
         if self._no_et_minplotlev_cuts:
-            self._logger.warning("All forced cuts are dropped:" + str(self._et_minplotlev_cuts))
+            self._logger.warning("All et_minplotlev_cuts are dropped:" + str(self._et_minplotlev_cuts))
             self._et_minplotlev_cuts = {}
 
         if self._no_force_cuts:
-            self._logger.warning("All forced cuts are dropped:" + str(self._force_cuts))
+            self._logger.warning("All force_cuts are dropped:" + str(self._force_cuts))
             self._force_cuts = {}
 
         if self._no_extra_cuts:
-            self._logger.warning("All extra cuts are dropped:" + str(self._fes_extra_cuts))
-            self._logger.warning("All et_minplotlev_cuts cuts are dropped:" + str(self._et_minplotlev_cuts))
-            self._logger.warning("All forced cuts are dropped:" + str(self._force_cuts))
+            self._logger.warning("All fes_extra_cuts are dropped:" + str(self._fes_extra_cuts))
+            self._logger.warning("All et_minplotlev_cuts are dropped:" + str(self._et_minplotlev_cuts))
+            self._logger.warning("All force_cuts are dropped:" + str(self._force_cuts))
             self._fes_extra_cuts = {}
             self._et_minplotlev_cuts = {}
             self._force_cuts = {}
@@ -745,7 +745,7 @@ class Shapes(object):
         """
         for method in methods:
                 if method in self._estimation_methods:
-                    print 'Warning: Estimation method', method, 'already defined - skipped redefinition'
+                    self._logger.warning('Warning: Estimation method %s already defined - skipped redefinition' % method)
                     continue
                 self._estimation_methods[method] = getattr(importlib.import_module(module), method)
 
