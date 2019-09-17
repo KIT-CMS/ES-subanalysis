@@ -13,4 +13,13 @@ eta_1_region:
   eta_1_barel: 'abs(eta_1)<=1.5'
   eta_1_endcap: 'abs(eta_1)>1.5' # switch to 1.5?
   eta_1_barel_real: 'abs(eta_1)<1.460'
+  eta_1_gap: '(abs(eta_1)>=1.460)*(abs(eta_1)<=1.558)'
   eta_1_endcap_real: 'abs(eta_1)>1.558' # switch to 1.5?
+
+eta_2_region:
+  inc_eta_2: '1==1'
+  eta_2_barel: 'abs(eta_2)<=1.5'
+  eta_2_endcap: 'abs(eta_2)>1.5' # switch to 1.5?
+  eta_2_barel_real: 'abs(eta_2)<1.460'
+  eta_2_gap: '(abs(eta_2)>=1.460)*(abs(eta_2)<=1.558)'
+  eta_2_endcap_real: 'abs(eta_2)>1.558' # switch to 1.5?
