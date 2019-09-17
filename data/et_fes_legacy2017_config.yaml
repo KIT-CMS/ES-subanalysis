@@ -10,7 +10,7 @@ context_analysis: etFes
 methods_collection_key: "Legacy_FES_with_QCDSStoOS" # Legacy_FES_with_EMB_QCDSStoOS ; in 2017: Original_FES_with_FF
 
 output_file: Null  # keep it empty for auto-naming
-output_file_name: Null  # keep it empty for auto-naming: context_analysis + methods_collection_key
+output_file_name: Null  # keep it empty for auto-naming: era + context_analysis + methods_collection_key
 
 user_specific:
   output_file_dir:
@@ -69,7 +69,6 @@ user_specific:
 # fake_factor_friend_directory: "$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"
 # fes_friend_directory: "/ceph/ohlushch/naf/FES/FES/FESshifts_2017/merged/"
 
-skip_systematic_variations: False
 variables_names: [
   # m_1, m_2,
   # mt_1, mt_2,
@@ -108,7 +107,7 @@ fes_extra_cuts: {}
 # Minimal plot level cuts
 # applied to all pipelines! ; might be not callable with smHtt samples
 no_mt_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
-no_et_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
+no_et_minplotlev_cuts: False  # do not re-apply minplotlevel cuts
 et_minplotlev_cuts:
   'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
   'extraelec_veto': 'extraelec_veto < 0.5'
@@ -137,9 +136,10 @@ force_cuts:
 invert_cuts: [] # Cuts to be inverted. Applied prior the force-cuts and don't affect them.
 
 ## Processed is the intersection with list from _known_estimation_methods
+skip_systematic_variations: False
 shifts: [
   nominal,
-  # TES,
+  TES,
   # EMB,
   FES_shifts,
   # Zpt,
@@ -152,16 +152,16 @@ replace_weights: {
 }
 
 ## Categories
-# no_grid_categories: False
 use_grid_categories: True
 grid_categories:
 
-  eta_1_region: [
-    'inc_eta_1',
-    # 'eta_1_barel',
-    # 'eta_1_endcap',
-    'eta_1_barel_real',
-    'eta_1_endcap_real',
+  eta_2_region: [
+    'inc_eta_2',
+    # 'eta_2_barel',
+    # 'eta_2_endcap',
+    'eta_2_barel_real',
+    'eta_2_gap',
+    'eta_2_endcap_real',
   ]
 
   decay_mode: [
@@ -176,7 +176,7 @@ grid_categories:
     'njet0',
   ]
 
-use_single_categories: False
+use_single_categories: False # by dault not producing these shapes
 single_categories:
 
   inclusive: {}  # signal region
