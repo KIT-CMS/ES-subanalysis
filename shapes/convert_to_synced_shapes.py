@@ -3,9 +3,9 @@
 """
  python convert_to_synced_shapes.py --input etFes_2017_all_shapes.root --output converted_shapes
  python shapes/convert_to_synced_shapes.py \
-    --input  /ceph/ohlushch/shapes/FES/ET/shapes/etFes_Legacy_FES_with_EMB_QCDSStoOS_etasplitting.root \
-    --output /ceph/ohlushch/shapes/FES/ET/converted_shapes \
-    --variables m_vis
+    --input   /ceph/ohlushch/shapes/FES/ET/v3_noele27/shapes/2017_etFes_Legacy_FES_noupdate_QCDSStoOS_woFR.root \
+    --output /ceph/ohlushch/shapes/FES/ET/v3_noele27/sconverted_shapes \
+    --variables m_vis --debug
  # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 """
 import ROOT
@@ -223,10 +223,8 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                 if 'ZL_' in name_output:
                     old_name_output = name_output
                     name_output = name_output.replace('_neg', '_-')
-                    name_output = name_output.replace('0p', '0.')
-                    name_output = name_output.replace('1p', '1.')
-                    name_output = name_output.replace('2p', '2.')
-                    name_output = name_output.replace('3p', '3.')
+                    for i in range(0, 10):
+                        name_output = name_output.replace(str(i) + 'p', str(i) + '.')
                     logger.debug('Replacing when converting: %s -> %s' % (old_name_output, name_output))
 
                 output_names.append(name_output)

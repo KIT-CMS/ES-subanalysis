@@ -416,8 +416,8 @@ class Shapes(object):
         parser.add_argument('--forve-cuts', type=ast.literal_eval, help="Dict of cuts to force. Format: --forve-cuts=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
         parser.add_argument('--replace-weights', type=ast.literal_eval, help="Dict of replace weights. Format: --replace-weights=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
 
-        parser.add_argument("--etau-es-shifts", nargs='*', type=int, help="etau_es_shifts")
-        parser.add_argument("--mtau-es-shifts", nargs='*', type=int, help="mtau_es_shifts")
+        parser.add_argument("--etau-es-shifts", nargs='*', type=float, help="etau_es_shifts")
+        parser.add_argument("--mtau-es-shifts", nargs='*', type=float, help="mtau_es_shifts")
 
         # Arguments with defaults that might be changed in the config file.
         parser.add_argument("--channels", nargs='+', type=str, help="Channels to be considered.")
