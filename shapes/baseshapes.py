@@ -174,6 +174,10 @@ class Shapes(object):
                 if year == era:
                     self._force_cuts.update(yead_dict)
         self._invert_cuts = invert_cuts
+        self._update_process_per_category = update_process_per_category
+        self._replace_weights = replace_weights
+
+        # Cuts manipulations
         self._no_fes_extra_cuts = no_fes_extra_cuts
         self._no_et_minplotlev_cuts = no_et_minplotlev_cuts
         self._no_mt_minplotlev_cuts = no_mt_minplotlev_cuts
@@ -496,6 +500,7 @@ class Shapes(object):
 
         defaultArguments['no_fes_extra_cuts'] = False
         defaultArguments['no_et_minplotlev_cuts'] = False
+        defaultArguments['no_mt_minplotlev_cuts'] = False
         defaultArguments['no_force_cuts'] = False
         defaultArguments['no_extra_cuts'] = False
         defaultArguments['no_grid_categories'] = False
