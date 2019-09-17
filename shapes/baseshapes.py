@@ -726,15 +726,17 @@ class Shapes(object):
         Syntactic sugar to return a getEstimationMethod object defined by *key* in case no other attribute
         was resolved.
         """
-        print "__getattr__::key", key
+        if key == '_estimation_methods':
+            raise KeyError("The initialised value wasn't found or self._estimation_methods was tried to be accessed before initialization")
+        self._logger.debug("__getattr__::%s" % key)
         return self.getEstimationMethod(key)
 
     def getEstimationMethod(self, key):
         """
         Returns class that corresponds to the requested estimation method
         """
-        print "getEstimationMethod::key", key
-        if key in self._estimation_methods:
+        self._logger.debug("getEstimationMethod::%s" % key)
+        if key != '_estimation_methods' and key in self._estimation_methods:
             return self._estimation_methods[key]
         else:
             raise KeyError("unknown getEstimationMethod key:" + key)
