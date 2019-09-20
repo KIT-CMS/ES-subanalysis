@@ -72,7 +72,7 @@ def produce_shapes_variables(config):
 
     if os.path.basename(os.path.normpath(shapes._output_file_dir)) == 'shapes':
         import copy
-        converted_shapes_dir = copy.deepcopy(shapes._output_file_dir).replace('/shapes', '/converted_shapes')
+        converted_shapes_dir = os.path.join(os.path.dirname(os.path.normpath(shapes._output_file_dir)), 'converted_shapes')
     else:
         converted_shapes_dir = os.path.join(shapes._output_file_dir, 'converted_shapes')
 
