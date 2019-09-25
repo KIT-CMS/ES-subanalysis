@@ -224,6 +224,9 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                     old_name_output = name_output
                     name_output = name_output.replace('_neg', '_-')
                     for i in range(0, 10):
+                        if 'p' not in name_output and '.' not in name_output and name_output != 'ZL_0':
+                            logger.critical('\t name %s adding p0' % (name_output))
+                            name_output += 'p0'
                         name_output = name_output.replace(str(i) + 'p', str(i) + '.')
                     logger.debug('Replacing when converting: %s -> %s' % (old_name_output, name_output))
 
