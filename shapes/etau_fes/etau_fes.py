@@ -84,6 +84,7 @@ class ETauFES(Shapes):
                 friend_directory=self._et_friend_directory
             )
             self._logger.info('...getVariables')
+            self._logger.info('...binning')
             channel_holder._variables = self.getVariables(
                 channel_obj=channel_holder._channel_obj,
                 variable_names=variables,
@@ -135,20 +136,20 @@ class ETauFES(Shapes):
             processes = channel_holder._processes.values()
             categories = channel_holder._categorries
 
-            if 'nominal' in self._shifts:
-                print '\n nominal...'
-                from itertools import product
-                for process, category in product(processes, categories):
-                    self._systematics.add(
-                        Systematic(
-                            category=category,
-                            process=self.getUpdateProcessPerCategory(process, category) if self._update_process_per_category else process,
-                            analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
-                            era=self.era,
-                            variation=Nominal(),
-                            mass="125",  # TODO : check if this is used anywhere
-                        )
+            # print '\n nominal...'
+            self._logger.info('\n\nNominal...')
+            from itertools import product
+            for process, category in product(processes, categories):
+                self._systematics.add(
+                    Systematic(
+                        category=category,
+                        process=self.getUpdateProcessPerCategory(process, category) if self._update_process_per_category else process,
+                        analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
+                        era=self.era,
+                        variation=Nominal(),
+                        mass="125",  # TODO : check if this is used anywhere
                     )
+                )
 
             channel_holder._nnominals = len([i for i in self._systematics._systematics if i.variation.is_nominal()])
             if channel_holder._nnominals == 0:
@@ -210,7 +211,7 @@ class ETauFES(Shapes):
                 self._logger.info('\n\nZ pt reweighting')
                 zpt_variations = create_systematic_variations(name="CMS_htt_dyShape_13TeV", property_name="zPtReweightWeight", systematic_variation=SquareAndRemoveWeight)
                 for variation in zpt_variations:
-                    for process_nick in self.intersection(self.zpt_sys_processes, channel_holder._processes.keys()):
+                    for process_nick in ETauFES.intersection(self._zpt_sys_processes, channel_holder._processes.keys()):
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
