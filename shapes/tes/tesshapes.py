@@ -324,23 +324,21 @@ class TESShapes(Shapes):
             processes = channel_holder._processes.values()
             categories = channel_holder._categorries
 
-            if 'nominal' in self._shifts:
-                self._logger.info('\t.. nominal')
+            self._logger.info('\t.. nominal')
 
-                from itertools import product
-                for process, category in product(processes, categories):
-                    # self._logger.debug(process._estimation_method._friend_directories)
-                    self._systematics.add(
-                        Systematic(
-                            category=category,
-                            process=process,
-                            analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
-                            era=self.era,
-                            variation=Nominal(),
-                            mass="125",  # TODO : check if this is used anywhere
-                        )
+            from itertools import product
+            for process, category in product(processes, categories):
+                # self._logger.debug(process._estimation_method._friend_directories)
+                self._systematics.add(
+                    Systematic(
+                        category=category,
+                        process=process,
+                        analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
+                        era=self.era,
+                        variation=Nominal(),
+                        mass="125",  # TODO : check if this is used anywhere
                     )
-                    # self._logger.debug("\tnew sys:", self._systematics._systematics[-1].name, len(self._systematics._systematics), self._systematics._systematics[-1]._process.estimation_method._friend_directories)
+                )
 
             if 'Zpt' in self._shifts:
                 self._logger.info('\t.. Z pt reweighting')
@@ -352,7 +350,7 @@ class TESShapes(Shapes):
                 )
 
                 for variation in zpt_variations:
-                    for process_nick in self.intersection(self.zpt_sys_processes, channel_holder._processes.keys()):
+                    for process_nick in self.intersection(self._zpt_sys_processes, channel_holder._processes.keys()):
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
