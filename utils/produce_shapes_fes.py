@@ -31,16 +31,22 @@ def produce_shapes_variables(config):
     #     add_stream_handler=False,
     # )
 
+    debug_level = 'debug' if shapes._log_level is None else shapes._log_level
     shapes.setup_logging(
         output_file=shapes._output_file.replace('.root', '.log'),
-        level='debug' if shapes._log_level is None else shapes._log_level,
+        level=debug_level,
         logger=shapes._logger
     )
     # # Disabling some printouts
     logging.getLogger('shape_producer').setLevel(log.INFO)
     # # logging.getLogger('shape_producer.systematics').setLevel(log.INFO)
     # # logging.getLogger('shape_producer.histogram').setLevel(log.INFO)
-    logging.getLogger('shape_producer.histogram').setLevel(log.DEBUG)
+    if debug_level == 'debug':
+        logging.getLogger('shape_producer.histogram').setLevel(log.DEBUG)
+        # logging.getLogger('shape_producer.systematics').setLevel(log.DEBUG)
+        # logging.getLogger('shape_producer.systematic_variations').setLevel(log.DEBUG)
+    else:
+        logging.getLogger('shape_producer.histogram').setLevel(log.INFO)
 
     # if handler is not None:
     #     handler.setLevel(log.INFO)
