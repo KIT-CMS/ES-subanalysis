@@ -1038,11 +1038,20 @@ class Shapes(object):
         pass
 
     def produce(self):
+        self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
         self._logger.debug(self._systematics)
         # import pdb; pdb.set_trace()
         # # !import code; code.interact(local=vars())
         if not self._dry:
+            if 'nominal' not in self._shifts:
+                self._logger.warning("Nominal shapes will not be produced")
+                # import pdb; pdb.set_trace()
+                self._systematics._systematics = [i for i in self._systematics._systematics if i._variation._name != 'Nominal']
+            shapes_to_prod = '\n'
+            for i in self._systematics._systematics:
+                shapes_to_prod += " ".join(['\t', i._variation._name, i._process._name, i._category._name]) + '\n'
+            self._logger.info("Starting to produce following shapes: " + shapes_to_prod)
             self._systematics.produce()
         else:
             self._logger.info("Dry run, stopping")
