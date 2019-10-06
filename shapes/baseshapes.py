@@ -30,7 +30,9 @@ from shape_producer.cutstring import Cut, Cuts, Weight
 class Shapes(object):
     # _complexEstimationMethods = ['WEstimationWithQCD', 'QCDEstimationWithW', 'NewFakeEstimationLT', 'NewFakeEstimationTT']
 
-    intersection = lambda x, y: list(set(x) & set(y))
+    @staticmethod
+    def intersection(x, y):
+        return list(set(x) & set(y))
 
     # @inidecorator   # TODO: TEST
     def __init__(self,
