@@ -2,8 +2,15 @@ backend: classic
 channels: [et]
 num_threads: 1
 datasets: datasets/datasets.json
+
 binning: data/binning.yaml
 binning_key: gof
+
+# 1 GeV binning
+# binning: data/binning_fes.yaml
+# binning_key: etau_fes
+
+
 era: '2017'
 tag: etauFES
 context_analysis: etFes
