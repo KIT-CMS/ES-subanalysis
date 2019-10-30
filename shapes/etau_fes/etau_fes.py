@@ -12,7 +12,7 @@ from shapes.channelholder import ChannelHolder
 from shape_producer.cutstring import Cut, Weight  # move to ChannelsHolder
 from shape_producer.systematics import Systematic
 from shape_producer.systematic_variations import Nominal, DifferentPipeline, create_systematic_variations, \
-    ReplaceWeight, SquareAndRemoveWeight
+    ReplaceWeight, SquareAndRemoveWeight, AddWeight, Relabel
 
 
 class ETauFES(Shapes):
@@ -136,6 +136,10 @@ class ETauFES(Shapes):
             processes = channel_holder._processes.values()
             categories = channel_holder._categorries
 
+            # active processes in groups
+            mc_processes = [key for key in channel_holder._processes.keys() if 'data' not in key and 'EMB' not in key]
+            sm_ggH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["ggH125", "ggH_GG2H", "ggHToWW"])]
+
             # print '\n nominal...'
             self._logger.info('\n\nNominal...')
             from itertools import product
@@ -155,7 +159,9 @@ class ETauFES(Shapes):
             if channel_holder._nnominals == 0:
                 raise Exception("no nominals were found - yet not implemented.")
 
-            if 'TES' in self._shifts:
+            # TODO: decorrelate emb, mc, year
+            # Tau energy scale (general, MC-specific & EMB-specific), it is mt, et & tt specific
+            if 'TES' in self._shifts and channel_name in ['mt', 'et', 'tt']:
                 self._logger.info('\n\nTES...')
                 tau_es_3prong_variations = create_systematic_variations(name="CMS_scale_t_3prong_13TeV", property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
                 tau_es_1prong_variations = create_systematic_variations(name="CMS_scale_t_1prong_13TeV", property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
@@ -173,8 +179,34 @@ class ETauFES(Shapes):
                             era=self.era
                         )
 
+                # TODO -> uncorrelate
+                # self._logger.info('\n\nTES...')
+                # # general
+                # decorr = {
+                #     '': self._tes_sys_processes,
+                #     '_mc': self._tes_sys_processes_mc_uncor,
+                #     '_emb': self._tes_sys_processes_mc_uncor
+                # }
+                # for key, decorr_proc in decorr.iteritems():
+                #     tau_es_3prong_variations = create_systematic_variations(name="CMS_scale%s_t_3prong_13TeV" % key, property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
+                #     tau_es_1prong_variations = create_systematic_variations(name="CMS_scale%s_t_1prong_13TeV" % key, property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
+                #     tau_es_1prong1pizero_variations = create_systematic_variations(name="CMS_scale%s_t_1prong1pizero_13TeV" % key, property_name="tauEsOneProngOnePiZero", systematic_variation=DifferentPipeline)
+
+                #     for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
+                #         # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
+                #         proc_intersection = list(set(decorr_proc) & set(channel_holder._processes.keys()))
+                #         self._logger.debug('\n\nTES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                #         for process_nick in proc_intersection:
+                #             self._systematics.add_systematic_variation(
+                #                 variation=variation,
+                #                 process=channel_holder._processes[process_nick],
+                #                 channel=channel_holder._channel_obj,
+                #                 era=self.era
+                #             )
+
+            # EMB charged track correction uncertainty (DM-dependent)
             if 'EMB' in self._shifts:
-                self._logger.info('\n\nEMB shifts...')
+                self._logger.info('\n\n EMB shifts...')
                 decayMode_variations = []
                 decayMode_variations.append(
                     ReplaceWeight(
@@ -196,6 +228,7 @@ class ETauFES(Shapes):
                         "CMS_1ProngPi0Eff_13TeV", "decayMode_SF",
                         Weight("embeddedDecayModeWeight_effNom_pi0Down", "decayMode_SF"),
                         "Down"))
+
                 for variation in decayMode_variations:
                     proc_intersection = list(set(self._emb_sys_processes) & set(channel_holder._processes.keys()))
                     self._logger.debug('\nEMB::variation name: %s\nintersection self._emb_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
@@ -207,11 +240,78 @@ class ETauFES(Shapes):
                             era=self.era
                         )
 
+            # EMB?: 10% removed events in ttbar simulation (ttbar -> real tau tau events) added/subtracted to EMB shape to use as systematic.
+            if 'ZTTpTT' in self._shifts:
+                # ! Technical procedure different to usual systematic variations!
+                self._logger.info('\n\n ZTTpTT shifts...')
+
+                # for process_nick, category in product(proc_intersection, categories):
+                for category, shift in product(categories, ["Up", "Down"]):
+                    self._systematics.add(
+                        Systematic(
+                            category=category,
+                            process=channel_holder._processes['ZTTpTTTauTau%s' % shift],
+                            analysis=self._context_analysis,
+                            era=self.era,
+                            variation=Relabel("CMS_htt_emb_ttbar_13TeV", shift),
+                            mass="125"))
+
+            # TODO: check if in the loop there is only 1 year per loop iter
+            if 'prefiring' in self._shifts:
+                self._logger.info('\n\n prefiring shifts...')
+
+                prefiring_variations = []
+                for process, category in product(processes, categories):
+                    if '2017' not in process._estimation_method._era.__class__.__name__:
+                        continue
+                    for updownvar in ['Up', 'Down']:
+                        prefiring_variations.append(
+                            ReplaceWeight(
+                                "CMS_prefiring_13TeV",
+                                "prefireWeight",
+                                Weight(
+                                    "prefiringweight%s" % updownvar.lower(),
+                                    "prefireWeight"),
+                                updownvar))
+
+                for variation in prefiring_variations:
+                    for process_nick in mc_processes:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            # Z pt reweighting
             if 'Zpt' in self._shifts:
                 self._logger.info('\n\nZ pt reweighting')
-                zpt_variations = create_systematic_variations(name="CMS_htt_dyShape_13TeV", property_name="zPtReweightWeight", systematic_variation=SquareAndRemoveWeight)
+                zpt_variations = create_systematic_variations(
+                    name="CMS_htt_dyShape_13TeV",
+                    property_name="zPtReweightWeight",
+                    systematic_variation=SquareAndRemoveWeight,
+                )
+
                 for variation in zpt_variations:
                     for process_nick in ETauFES.intersection(self._zpt_sys_processes, channel_holder._processes.keys()):
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            # top pt reweighting
+            if 'Tpt' in self._shifts:
+                self._logger.info('\n\ntop pt reweighting')
+                tpt_variations = create_systematic_variations(
+                    name="CMS_htt_ttbarShape_13TeV",
+                    property_name="topPtReweightWeight",
+                    systematic_variation=SquareAndRemoveWeight,
+                )
+
+                for variation in tpt_variations:
+                    for process_nick in ETauFES.intersection(self._tpt_sys_processes, channel_holder._processes.keys()):
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
@@ -264,36 +364,53 @@ class ETauFES(Shapes):
                             # self._systematics._systematics[-1]._variation._pipeline
                             # self._systematics._systematics[-1]._process._estimation_method._directory
 
-            if 'FF' in self._shifts:
+            # jetfakes
+            if 'FF' in self._shifts and channel_name in ['mt', 'et', 'tt']:
                 self._logger.info('\n\n FF related uncertainties ...')
                 fake_factor_variations_et = []
 
-                for systematic_shift in [
-                        "ff_qcd{ch}_syst_13TeV{shift}",
-                        "ff_qcd_dm0_njet0{ch}_stat_13TeV{shift}",
-                        "ff_qcd_dm0_njet1{ch}_stat_13TeV{shift}",
-                        "ff_w_syst_13TeV{shift}",
-                        "ff_w_dm0_njet0{ch}_stat_13TeV{shift}",
-                        "ff_w_dm0_njet1{ch}_stat_13TeV{shift}",
-                        "ff_tt_syst_13TeV{shift}",
-                        "ff_tt_dm0_njet0_stat_13TeV{shift}",
-                        "ff_tt_dm0_njet1_stat_13TeV{shift}",
-                ]:
-                    for shift_direction in ["Up", "Down"]:
-                        fake_factor_variations_et.append(
-                            ReplaceWeight(
-                                "CMS_%s" % (systematic_shift.format(ch='_et', shift="")),
-                                "fake_factor",
-                                Weight(
-                                    "ff2_{syst}".format(
-                                        syst=systematic_shift.format(
-                                            ch="", shift="_%s" % shift_direction.lower()
-                                        ).replace("_13TeV", "")),
-                                    "fake_factor"
-                                ),
-                                shift_direction
-                            )
-                        )
+                if channel_name in ['mt', 'et']:
+                    for systematic_shift in [
+                            "ff_qcd{ch}_syst_13TeV{shift}",
+                            "ff_qcd_dm0_njet0{ch}_stat_13TeV{shift}",
+                            "ff_qcd_dm0_njet1{ch}_stat_13TeV{shift}",
+                            "ff_w_syst_13TeV{shift}",
+                            "ff_w_dm0_njet0{ch}_stat_13TeV{shift}",
+                            "ff_w_dm0_njet1{ch}_stat_13TeV{shift}",
+                            "ff_tt_syst_13TeV{shift}",
+                            "ff_tt_dm0_njet0_stat_13TeV{shift}",
+                            "ff_tt_dm0_njet1_stat_13TeV{shift}",
+                    ]:
+                        for shift_direction in ["Up", "Down"]:
+                            fake_factor_variations_et.append(
+                                ReplaceWeight(
+                                    "CMS_%s" % (systematic_shift.format(ch='_' + channel_name, shift="").replace("_dm0", "")),
+                                    "fake_factor",
+                                    Weight(
+                                        "ff2_{syst}".format(
+                                            syst=systematic_shift.format(ch="", shift="_%s" % shift_direction.lower()).replace("_13TeV", "")),
+                                        "fake_factor"),
+                                    shift_direction))
+
+                elif channel_name == 'tt':
+                    for systematic_shift in [
+                            "ff_qcd{ch}_syst_13TeV{shift}",
+                            "ff_qcd_dm0_njet0{ch}_stat_13TeV{shift}",
+                            "ff_qcd_dm0_njet1{ch}_stat_13TeV{shift}",
+                            "ff_w{ch}_syst_13TeV{shift}", "ff_tt{ch}_syst_13TeV{shift}",
+                            "ff_w_frac{ch}_syst_13TeV{shift}",
+                            "ff_tt_frac{ch}_syst_13TeV{shift}"
+                    ]:
+                        for shift_direction in ["Up", "Down"]:
+                            fake_factor_variations_et.append(
+                                ReplaceWeight(
+                                    "CMS_%s" % (systematic_shift.format(ch='_' + channel_name, shift="").replace("_dm0", "")),
+                                    "fake_factor",
+                                    Weight(
+                                        "(0.5*ff1_{syst}*(byTightIsolationMVArun2017v2DBoldDMwLT2017_1<0.5)+0.5*ff2_{syst}*(byTightIsolationMVArun2017v2DBoldDMwLT2017_2<0.5))".format(
+                                            syst=systematic_shift.format(ch="", shift="_%s" % shift_direction.lower()).replace("_13TeV", "")),
+                                        "fake_factor"),
+                                    shift_direction))
 
                 for k in [k for k in channel_holder._processes.keys() if 'jetFakes' in k]:
                     for variation in fake_factor_variations_et:
@@ -302,6 +419,89 @@ class ETauFES(Shapes):
                             process=channel_holder._processes[k],
                             channel=channel_holder._channel_obj,
                             era=self.era)
+
+            # QCD for em
+            if 'QCDem' in self._shifts and channel_name == 'em':  # TODO: generalize?
+                qcd_variations = []
+                for shift in ['Up', 'Down']:
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run2017", "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run2017", "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run2017", "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+
+                for year_correlation in ['', '_Run2017']:
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s", "qcd_weight", Weight("em_qcd_extrap_up_Weight*em_qcd_extrap_uncert_Weight", "qcd_weight"), updownvar))
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s", "qcd_weight", Weight("em_qcd_osss_binned_Weight", "qcd_weight"), "Down"))
+
+                for variation in qcd_variations:
+                    proc_intersection = ETauFES.intersection(self._qcdem_sys_processes, channel_holder._processes.keys())
+                    self._logger.debug('\n QCDem::variation name: %s\nintersection self._qcdem_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era)
+
+            # Gluon-fusion WG1 uncertainty scheme, for sm signals (Uncertainty: Theory uncertainties)
+            if 'WG1' in self._shifts:
+                ggh_variations = []
+                THU_unc = [
+                    "THU_ggH_Mig01", "THU_ggH_Mig12", "THU_ggH_Mu", "THU_ggH_PT120",
+                    "THU_ggH_PT60", "THU_ggH_Res", "THU_ggH_VBF2j", "THU_ggH_VBF3j",
+                    "THU_ggH_qmtop"
+                ]
+                for unc in THU_unc:
+                    ggh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("({})".format(unc), "{}_weight".format(unc)), "Up"))
+                    ggh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("(1.0/{})".format(unc), "{}_weight".format(unc)), "Down"))
+
+                for process_nick, variation in product(sm_ggH_processes, ggh_variations):
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            # TODO: decor. emb and mc
+            # Lepton trigger efficiency; the same values for (MC & EMB) and (mt & et)
+            if 'TrgEff' in self._shifts and channel_name in ["mt", "et"]:
+                self._logger.info('\n\n Lepton trigger efficiency uncertainties (same for [MC & EMB], [mt & et])')
+                lep_trigger_eff_variations = []
+                # MC
+                lep_trigger_eff_variations.append(
+                    AddWeight(
+                        "CMS_eff_trigger_%s_13TeV" % (channel_name),
+                        "trg_%s_eff_weight" % channel_name,
+                        Weight("(1.0*(pt_1<=25)+1.02*(pt_1>25))", "trg_%s_eff_weight" % channel_name),
+                        "Up"))
+                lep_trigger_eff_variations.append(
+                    AddWeight(
+                        "CMS_eff_trigger_%s_13TeV" % (channel_name),
+                        "trg_%s_eff_weight" % channel_name,
+                        Weight("(1.0*(pt_1<=25)+0.98*(pt_1>25))", "trg_%s_eff_weight" % channel_name),
+                        "Down"))
+                lep_trigger_eff_variations.append(
+                    AddWeight(
+                        "CMS_eff_xtrigger_%s_13TeV" % (channel_name),
+                        "xtrg_%s_eff_weight" % channel_name,
+                        Weight("(1.054*(pt_1<=25)+1.0*(pt_1>25))", "xtrg_%s_eff_weight" % channel_name),
+                        "Up"))
+                lep_trigger_eff_variations.append(
+                    AddWeight(
+                        "CMS_eff_xtrigger_%s_13TeV" % (channel_name),
+                        "xtrg_%s_eff_weight" % channel_name,
+                        Weight("(0.946*(pt_1<=25)+1.0*(pt_1>25))", "xtrg_%s_eff_weight" % channel_name),
+                        "Down"))
+
+                for variation in lep_trigger_eff_variations:
+                    self._logger.debug('\n\n TrgEff::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in mc_processes:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
 
 
 if __name__ == '__main__':
