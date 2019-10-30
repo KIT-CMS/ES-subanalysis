@@ -557,6 +557,22 @@ class ETauFES(Shapes):
                         era=self.era
                     )
 
+            # Ele energy scale (EMB-specific),  it is et & em specific
+            if 'EES' in self._shifts and channel_name in ["et", "em"]:
+                self._logger.info('\n\n EES reweighting')
+                ele_es_emb_variations = create_systematic_variations("CMS_scale_emb_e", "eleEs", DifferentPipeline)
+
+                # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
+                proc_intersection = list(set(self._ees_sys_processes) & set(channel_holder._processes.keys()))
+                # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                for process_nick in processes:
+                    self._systematics.add_systematic_variation(
+                        variation=ele_es_emb_variations,
+                        process=channel_holder._processes[process_nick],
+                        channel=channel_holder._channel_obj,
+                        era=self.era
+                    )
+
 
 
 if __name__ == '__main__':
