@@ -542,6 +542,21 @@ class ETauFES(Shapes):
                             era=self.era
                         )
 
+            # MET energy scale. Note: only those variations for non-resonant processes are used in the stat. inference
+            if 'METES' in self._shifts:
+                self._logger.info('\n\n METES reweighting')
+                met_unclustered_variations = create_systematic_variations("CMS_scale_met_unclustered", "metUnclusteredEn", DifferentPipeline)
+
+                proc_intersection = list(set(self._met_sys_processes) & set(channel_holder._processes.keys()))
+                self._logger.debug('\n\n METES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                for process_nick in proc_intersection:
+                    self._systematics.add_systematic_variation(
+                        variation=met_unclustered_variations,
+                        process=channel_holder._processes[process_nick],
+                        channel=channel_holder._channel_obj,
+                        era=self.era
+                    )
+
 
 
 if __name__ == '__main__':
