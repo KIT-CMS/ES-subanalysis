@@ -573,6 +573,25 @@ class ETauFES(Shapes):
                         era=self.era
                     )
 
+            # ZL fakes energy scale
+            if 'ZES' in self._shifts and channel_name in ["et", "em"]:
+                self._logger.info('\n\n ZES reweighting')
+                fakelep_dict = {"et" : "Ele", "mt" : "Mu"}
+
+                lep_fake_es_variations = create_systematic_variations("CMS_ZLShape_%s_1prong_Run2017" % channel_name, "tau%sFakeEsOneProng" % fakelep_dict[channel_name], DifferentPipeline)
+                lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_%s_1prong1pizero_Run2017" % channel_name, "tau%sFakeEsOneProngPiZeros" % fakelep_dict[channel_name], DifferentPipeline)
+
+                for variation in lep_fake_es_variations:
+                    # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
+                    proc_intersection = list(set(self._zl_sys_processes) & set(channel_holder._processes.keys()))
+                    # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in processes:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
 
 
 if __name__ == '__main__':
