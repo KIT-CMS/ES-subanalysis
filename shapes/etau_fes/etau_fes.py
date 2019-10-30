@@ -558,20 +558,35 @@ class ETauFES(Shapes):
                     )
 
             # Ele energy scale (EMB-specific),  it is et & em specific
+            # Ele energy scale & smear uncertainties (MC-specific), it is et & em specific
             if 'EES' in self._shifts and channel_name in ["et", "em"]:
                 self._logger.info('\n\n EES reweighting')
                 ele_es_emb_variations = create_systematic_variations("CMS_scale_emb_e", "eleEs", DifferentPipeline)
+                ele_es_variations = create_systematic_variations("CMS_scale_mc_e", "eleScale", DifferentPipeline)
+                ele_es_variations += create_systematic_variations("CMS_reso_mc_e", "eleSmear", DifferentPipeline)
 
-                # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
                 proc_intersection = list(set(self._ees_sys_processes) & set(channel_holder._processes.keys()))
                 # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                for process_nick in processes:
+                for process_nick in [x for x in proc_intersection if 'EMB' in x]:
                     self._systematics.add_systematic_variation(
                         variation=ele_es_emb_variations,
                         process=channel_holder._processes[process_nick],
                         channel=channel_holder._channel_obj,
                         era=self.era
                     )
+
+                for variation in ele_es_variations:
+                    # TODO: check all proc are needed here
+                    # proc_intersection = list(set(self._ees_sys_processes) & set(channel_holder._processes.keys()))
+                    # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process in processes:
+                        self._systematics.add_systematic_variation(
+                            variation=ele_es_emb_variations,
+                            process=process,
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
 
             # ZL fakes energy scale
             if 'ZES' in self._shifts and channel_name in ["et", "em"]:
