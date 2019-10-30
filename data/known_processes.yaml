@@ -1,7 +1,13 @@
-tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
+tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL", "jetFakes", "jetFakesEMB"]
 fes_sys_processes: ['ZL', 'DYJetsToLL']
 emb_sys_processes: ['EMB']
 zpt_sys_processes: ['ZTT', 'ZL', 'ZJ']
+# zttptt_sys_processes: ['EMB']  #['bg?']  # ['ZTTpTTTauTauUp', 'ZTTpTTTauTauDown'] #?
+qcdem_sys_processes: ['QCD', 'QCDSStoOS', 'QCDSStoOSEMB', 'QCDEMB']
+# trg_sys_processes : ["ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes", "EMB"]
+met_sys_processes: ["TTL", "VVL"]
+ees_sys_processes: ["EMB"]
+zl_sys_processes: ["ZL"]
 
 _complexEstimationMethods: [
   WEstimationWithQCD ,
@@ -9,6 +15,7 @@ _complexEstimationMethods: [
   NewFakeEstimationLT ,
   NewFakeEstimationTT ,
   QCDEstimation_SStoOS_MTETEM ,
+  AddHistogramEstimationMethod ,
 ]
 
 _complexEstimationMethodsRequirements:
@@ -31,6 +38,11 @@ _complexEstimationMethodsRequirements:
     QCDEstimation_SStoOS_MTETEM: ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
   QCDSStoOSEMB:
     QCDEstimation_SStoOS_MTETEM: ["EMB", "ZL", "ZJ", "W", "TTJ", "TTL", "VVJ", "VVL"]
+
+  ZTTpTTTauTauDown:
+    AddHistogramEstimationMethod: ["EMB", "TTT"]
+  ZTTpTTTauTauUp:
+    AddHistogramEstimationMethod: ["EMB", "TTT"]
 
 _known_processes:
   # Backgrounds
@@ -57,6 +69,8 @@ _known_processes:
   QCDSStoOSEMB            : QCDEstimation_SStoOS_MTETEM
   WEMB                    : WEstimationWithQCD
   QCDEMB                  : QCDEstimationWithW
+  ZTTpTTTauTauDown        : AddHistogramEstimationMethod
+  ZTTpTTTauTauUp          : AddHistogramEstimationMethod
   TT                      : TTEstimation
   TTT                     : TTTEstimation
   TTL                     : TTLEstimation
