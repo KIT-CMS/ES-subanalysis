@@ -515,7 +515,7 @@ class ETauFES(Shapes):
                 for variation in jet_es_variations:
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
                     # proc_intersection = list(set(self._jes_sys_processes) & set(channel_holder._processes.keys()))
-                    self._logger.debug('\n\n JES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    # self._logger.debug('\n\n JES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in processes:
                         self._systematics.add_systematic_variation(
                             variation=variation,
@@ -523,6 +523,25 @@ class ETauFES(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
+
+            # B-tagging
+            if 'BTag' in self._shifts:
+                self._logger.info('\n\n BTag reweighting')
+                btag_eff_variations = create_systematic_variations("CMS_htt_eff_b_Run2017", "btagEff", DifferentPipeline)
+                mistag_eff_variations = create_systematic_variations("CMS_htt_mistag_b_Run2017", "btagMistag", DifferentPipeline)
+
+                for variation in btag_eff_variations + mistag_eff_variations:
+                    # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
+                    # proc_intersection = list(set(self._jes_sys_processes) & set(channel_holder._processes.keys()))
+                    # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in processes:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
 
 
 if __name__ == '__main__':
