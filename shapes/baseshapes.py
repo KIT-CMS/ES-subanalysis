@@ -868,6 +868,27 @@ class Shapes(object):
 
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ff_parameters_list))
 
+            elif 'ZTTpTTTauTau' in key:
+                ZTTpTTTauTau_parameters_list = copy.deepcopy(parameters_list)
+                ZTTpTTTauTau_parameters_list['name'] = 'AddHistogram'
+                ZTTpTTTauTau_parameters_list['add_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
+                if key.lower().endswith('up'):
+                    ZTTpTTTauTau_parameters_list['add_weights'] = [1.0, 0.1]
+                elif key.lower().endswith('down'):
+                    ZTTpTTTauTau_parameters_list['add_weights'] = [1.0, -0.1]
+                else:
+                    raise Exception("couldn't identify shift direction for key: %s" % key)
+
+                try:
+                    ZTTpTTTauTau_parameters_list['data_process'] = processes['data_obs']
+                except:
+                    try:
+                        ZTTpTTTauTau_parameters_list['data_process'] = processes['data']
+                    except:
+                        raise Exception("couldn't access processes['data'] or data_obs object")
+
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ZTTpTTTauTau_parameters_list))
+
             else:
                 # if key == 'ZL': print '-->getProcesses::', key, parameters_list
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
