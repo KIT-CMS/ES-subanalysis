@@ -285,7 +285,7 @@ class ETauFES(Shapes):
 
             # Z pt reweighting
             if 'Zpt' in self._shifts:
-                self._logger.info('\n\nZ pt reweighting')
+                self._logger.info('\n\n Z pt reweighting')
                 zpt_variations = create_systematic_variations(
                     name="CMS_htt_dyShape_13TeV",
                     property_name="zPtReweightWeight",
@@ -496,6 +496,27 @@ class ETauFES(Shapes):
                 for variation in lep_trigger_eff_variations:
                     self._logger.debug('\n\n TrgEff::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in mc_processes:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            # Splitted JES shapes
+            if 'JES' in self._shifts:
+                self._logger.info('\n\n JES reweighting')
+                jet_es_variations = create_systematic_variations(name="CMS_scale_j_eta0to3_Run2017", property_name="jecUncEta0to3", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_eta0to5_Run2017", property_name="jecUncEta0to5", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_eta3to5_Run2017", property_name="jecUncEta3to5", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_RelativeBal_Run2017", property_name="jecUncRelativeBal", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_RelativeSample_Run2017", property_name="jecUncRelativeSample", systematic_variation=DifferentPipeline)
+
+                for variation in jet_es_variations:
+                    # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
+                    # proc_intersection = list(set(self._jes_sys_processes) & set(channel_holder._processes.keys()))
+                    self._logger.debug('\n\n JES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in processes:
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
