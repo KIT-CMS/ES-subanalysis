@@ -149,7 +149,7 @@ shifts: [
   TES,
   # EMB,
   FES_shifts,
-  # Zpt,
+  Zpt,
 ]
 
 ## Weights
