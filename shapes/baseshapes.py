@@ -107,6 +107,7 @@ class Shapes(object):
                  indent=0,
                  update_process_per_category=None,
                  replace_weights={},
+                 *args, **kwargs
                  ):
         self._logger = logging.getLogger(__name__)
 
@@ -242,10 +243,17 @@ class Shapes(object):
 
         self._nominal_folder = nominal_folder
         self._etau_es_shifts = etau_es_shifts
-        self._tes_sys_processes = tes_sys_processes
-        self._fes_sys_processes = fes_sys_processes
-        self._emb_sys_processes = emb_sys_processes
-        self._zpt_sys_processes = zpt_sys_processes
+
+        sys_processes = [
+            'tes_sys_processes', 'fes_sys_processes', 'emb_sys_processes',
+            'zpt_sys_processes', 'qcdem_sys_processes', 'met_sys_processes',
+            'ees_sys_processes', 'zl_sys_processes', 'tpt_sys_processes',
+        ]
+        for sys_process in sys_processes:
+            setattr(self,
+                '_' + sys_process,
+                kwargs[sys_process] if sys_process in kwargs.keys() else None)
+
         self._shifts = shifts
 
         if not self._no_grid_categories or self._use_grid_categories:
@@ -450,9 +458,11 @@ class Shapes(object):
         parser.add_argument("--output-file-name", type=str, help="Output file name for file with final shapes that enter datacards. If none is given context_analysis is used as a root for this name")
         parser.add_argument("--output-file-dir", type=str, help="Output file directory")
         parser.add_argument("--skip-systematic-variations", type=str, help="Do not produce the systematic variations.")
-        parser.add_argument("--tes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
-        parser.add_argument("--fes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
-        parser.add_argument("--emb-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
+
+        # parser.add_argument("--tes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
+        # parser.add_argument("--fes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
+        # parser.add_argument("--emb-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
+
         parser.add_argument("--shifts", nargs='+', type=str, help="Pipelines, uncertainties variations, shifts : processed is the intersection of this list with list from _known_estimation_methods")
         parser.add_argument("--eta-1-region", nargs='+', type=str, help="Needed for categorisation. Choices: eta_1_barel, eta_1_endcap, eta_1_endcap_real")
         parser.add_argument("--decay-mode", nargs='+', type=str, help="Needed for categorisation. Choices: all, dm0, dm1, dm10")
@@ -489,10 +499,17 @@ class Shapes(object):
         defaultArguments['output_file_dir'] = ''
         defaultArguments['skip_systematic_variations'] = False
         defaultArguments['context_analysis'] = 'etFes'
-        defaultArguments['tes_sys_processes'] = ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
-        defaultArguments['fes_sys_processes'] = ['ZL', 'DYJetsToLL', 'EMB']
-        defaultArguments['emb_sys_processes'] = ['EMB']
-        defaultArguments['zpt_sys_processes'] = ['ZTT', 'ZL', 'ZJ']
+
+        # defaultArguments['tes_sys_processes'] = ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
+        # defaultArguments['fes_sys_processes'] = ['ZL', 'DYJetsToLL', 'EMB']
+        # defaultArguments['emb_sys_processes'] = ['EMB']
+        # defaultArguments['zpt_sys_processes'] = ['ZTT', 'ZL', 'ZJ']
+        # defaultArguments['qcdem_sys_processes'] = ['QCD', 'QCDSStoOS', 'QCDSStoOSEMB', 'QCDEMB']
+        # defaultArguments['met_sys_processes'] = ["TTL", "VVL"]
+        # defaultArguments['ees_sys_processes'] = ["EMB"]
+        # defaultArguments['zl_sys_processes'] = ["ZL"]
+        # defaultArguments['tpt_sys_processes'] = ["TTT", "TTL", "TTJ", "TT"]
+
         defaultArguments['shifts'] = ['nominal', 'TES', 'EMB', 'FES_shifts', 'TES_shifts']
         defaultArguments['decay_mode'] = ['all', 'dm0', 'dm1', 'dm10']
         defaultArguments['jets_multiplicity'] = ['njetN', 'njet0']
@@ -617,13 +634,8 @@ class Shapes(object):
         common_config = {}
         with open('data/known_processes.yaml', 'r') as f:
             file_known_processes = yaml.load(f)
-            common_config['_known_processes'] = file_known_processes['_known_processes']
-            common_config['_complexEstimationMethods'] = file_known_processes['_complexEstimationMethods']
-            common_config['_complexEstimationMethodsRequirements'] = file_known_processes['_complexEstimationMethodsRequirements']
-            common_config['tes_sys_processes'] = file_known_processes['tes_sys_processes']
-            common_config['fes_sys_processes'] = file_known_processes['fes_sys_processes']
-            common_config['emb_sys_processes'] = file_known_processes['emb_sys_processes']
-            common_config['zpt_sys_processes'] = file_known_processes['zpt_sys_processes']
+            for k in file_known_processes.keys():
+                common_config[k] = file_known_processes[k]
 
         with open('data/known_estimation_methods.yaml', 'r') as f:
             file_known_estimation_methods = yaml.load(f)
@@ -761,14 +773,13 @@ class Shapes(object):
         # print "ETauFES::Standalone importing"
         if channels_key is None:
             channels_key = self._channels_key
-
         imported_module = self.getModule()
         for channel_name in channels_key:
             # print "test:", self._known_estimation_methods[era][context_analysis]#[channel_name]#['methods']
             for combine_name, method in self.getMethodsDict(era=era, context=context_analysis, channel_name=channel_name).iteritems():
                 if method in self._estimation_methods:
                     self._logger.warning('Warning: Estimation method %s already defined - skipped redefinition' % method)
-                # print 'module:', self._estimation_methods
+                # print 'module:', self._estimation_methods, method
                 self._estimation_methods[method] = getattr(importlib.import_module(imported_module), method)
 
     # TODO: needs to belong to ChannelHolder
@@ -1069,10 +1080,15 @@ class Shapes(object):
                 self._logger.warning("Nominal shapes will not be produced")
                 # import pdb; pdb.set_trace()
                 self._systematics._systematics = [i for i in self._systematics._systematics if i._variation._name != 'Nominal']
+            #     for i in self._systematics._systematics:
+            #         if i._variation._name == 'Nominal':
+            #             self._systematics._systematics.remove(i)
+            # import pdb; pdb.set_trace()
             shapes_to_prod = '\n'
             for i in self._systematics._systematics:
                 shapes_to_prod += " ".join(['\t', i._variation._name, i._process._name, i._category._name]) + '\n'
             self._logger.info("Starting to produce following shapes: " + shapes_to_prod)
+            # print 'name:', self._systematics._systematics[0]._variation._name, self._systematics._systematics[0]._process._name, self._systematics._systematics[0]._category._name
             self._systematics.produce()
         else:
             self._logger.info("Dry run, stopping")
