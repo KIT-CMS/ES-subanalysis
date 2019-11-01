@@ -90,10 +90,10 @@ def produce_shapes_variables(config):
             variables=shapes._variables_names,
             debug=shapes._debug,
         )
+        print 'shapes:', shapes._output_file
+        print 'converted_shapes_file:', converted_shapes_file
     else:
         print 'dry run - skip converting'
-    print 'shapes:', shapes._output_file
-    print 'converted_shapes_file:', converted_shapes_file
     # print '\n # 9 - implement the nominal ploting if you want'
 
     print 'done'
