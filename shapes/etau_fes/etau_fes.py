@@ -488,13 +488,13 @@ class ETauFES(Shapes):
                         "Up"))
                 lep_trigger_eff_variations.append(
                     AddWeight(
-                        "CMS_eff_xtrigger_%s_Run%s" % channel_holder._year % (channel_name),
+                        "CMS_eff_xtrigger_%s_Run%s" % (channel_name, channel_holder._year),
                         "xtrg_%s_eff_weight" % channel_name,
                         Weight("(0.946*(pt_1<=25)+1.0*(pt_1>25))", "xtrg_%s_eff_weight" % channel_name),
                         "Down"))
 
                 for variation in lep_trigger_eff_variations:
-                    self._logger.debug('\n\n TrgEff::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    # self._logger.debug('\n\n TrgEff::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in mc_processes:
                         self._systematics.add_systematic_variation(
                             variation=variation,
