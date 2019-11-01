@@ -163,9 +163,9 @@ class ETauFES(Shapes):
             # Tau energy scale (general, MC-specific & EMB-specific), it is mt, et & tt specific
             if 'TES' in self._shifts and channel_name in ['mt', 'et', 'tt']:
                 self._logger.info('\n\nTES...')
-                tau_es_3prong_variations = create_systematic_variations(name="CMS_scale_t_3prong_13TeV", property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
-                tau_es_1prong_variations = create_systematic_variations(name="CMS_scale_t_1prong_13TeV", property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
-                tau_es_1prong1pizero_variations = create_systematic_variations(name="CMS_scale_t_1prong1pizero_13TeV", property_name="tauEsOneProngOnePiZero", systematic_variation=DifferentPipeline)
+                tau_es_3prong_variations = create_systematic_variations(name="CMS_scale_t_3prong_Run%s" % channel_holder._year, property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
+                tau_es_1prong_variations = create_systematic_variations(name="CMS_scale_t_1prong_Run%s" % channel_holder._year, property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
+                tau_es_1prong1pizero_variations = create_systematic_variations(name="CMS_scale_t_1prong1pizero_Run%s" % channel_holder._year, property_name="tauEsOneProngOnePiZero", systematic_variation=DifferentPipeline)
 
                 for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
@@ -188,9 +188,9 @@ class ETauFES(Shapes):
                 #     '_emb': self._tes_sys_processes_mc_uncor
                 # }
                 # for key, decorr_proc in decorr.iteritems():
-                #     tau_es_3prong_variations = create_systematic_variations(name="CMS_scale%s_t_3prong_13TeV" % key, property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
-                #     tau_es_1prong_variations = create_systematic_variations(name="CMS_scale%s_t_1prong_13TeV" % key, property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
-                #     tau_es_1prong1pizero_variations = create_systematic_variations(name="CMS_scale%s_t_1prong1pizero_13TeV" % key, property_name="tauEsOneProngOnePiZero", systematic_variation=DifferentPipeline)
+                #     tau_es_3prong_variations = create_systematic_variations(name="CMS_scale%s_t_3prong_Run%s" % (key, channel_holder._year), property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
+                #     tau_es_1prong_variations = create_systematic_variations(name="CMS_scale%s_t_1prong_Run%s" % (key, channel_holder._year), property_name="tauEsOneProng", systematic_variation=DifferentPipeline)
+                #     tau_es_1prong1pizero_variations = create_systematic_variations(name="CMS_scale%s_t_1prong1pizero_Run%s" % (key, channel_holder._year), property_name="tauEsOneProngOnePiZero", systematic_variation=DifferentPipeline)
 
                 #     for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
                 #         # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
@@ -210,22 +210,22 @@ class ETauFES(Shapes):
                 decayMode_variations = []
                 decayMode_variations.append(
                     ReplaceWeight(
-                        "CMS_3ProngEff_13TeV", "decayMode_SF",
+                        "CMS_3ProngEff_Run%s" % channel_holder._year, "decayMode_SF",
                         Weight("embeddedDecayModeWeight_effUp_pi0Nom", "decayMode_SF"),
                         "Up"))
                 decayMode_variations.append(
                     ReplaceWeight(
-                        "CMS_3ProngEff_13TeV", "decayMode_SF",
+                        "CMS_3ProngEff_Run%s" % channel_holder._year, "decayMode_SF",
                         Weight("embeddedDecayModeWeight_effDown_pi0Nom", "decayMode_SF"),
                         "Down"))
                 decayMode_variations.append(
                     ReplaceWeight(
-                        "CMS_1ProngPi0Eff_13TeV", "decayMode_SF",
+                        "CMS_1ProngPi0Eff_Run%s" % channel_holder._year, "decayMode_SF",
                         Weight("embeddedDecayModeWeight_effNom_pi0Up", "decayMode_SF"),
                         "Up"))
                 decayMode_variations.append(
                     ReplaceWeight(
-                        "CMS_1ProngPi0Eff_13TeV", "decayMode_SF",
+                        "CMS_1ProngPi0Eff_Run%s" % channel_holder._year, "decayMode_SF",
                         Weight("embeddedDecayModeWeight_effNom_pi0Down", "decayMode_SF"),
                         "Down"))
 
@@ -253,7 +253,7 @@ class ETauFES(Shapes):
                             process=channel_holder._processes['ZTTpTTTauTau%s' % shift],
                             analysis=self._context_analysis,
                             era=self.era,
-                            variation=Relabel("CMS_htt_emb_ttbar_13TeV", shift),
+                            variation=Relabel("CMS_htt_emb_ttbar_Run%s" % channel_holder._year, shift),
                             mass="125"))
 
             # TODO: check if in the loop there is only 1 year per loop iter
@@ -267,7 +267,7 @@ class ETauFES(Shapes):
                     for updownvar in ['Up', 'Down']:
                         prefiring_variations.append(
                             ReplaceWeight(
-                                "CMS_prefiring_13TeV",
+                                "CMS_prefiring_Run%s" % channel_holder._year,
                                 "prefireWeight",
                                 Weight(
                                     "prefiringweight%s" % updownvar.lower(),
@@ -287,7 +287,7 @@ class ETauFES(Shapes):
             if 'Zpt' in self._shifts:
                 self._logger.info('\n\n Z pt reweighting')
                 zpt_variations = create_systematic_variations(
-                    name="CMS_htt_dyShape_13TeV",
+                    name="CMS_htt_dyShape_Run%s" % channel_holder._year,
                     property_name="zPtReweightWeight",
                     systematic_variation=SquareAndRemoveWeight,
                 )
@@ -305,7 +305,7 @@ class ETauFES(Shapes):
             if 'Tpt' in self._shifts:
                 self._logger.info('\n\ntop pt reweighting')
                 tpt_variations = create_systematic_variations(
-                    name="CMS_htt_ttbarShape_13TeV",
+                    name="CMS_htt_ttbarShape_Run%s" % channel_holder._year,
                     property_name="topPtReweightWeight",
                     systematic_variation=SquareAndRemoveWeight,
                 )
@@ -329,7 +329,7 @@ class ETauFES(Shapes):
                     # TODO: here the pipeline WILL depend on the category per DM
                     for pipeline in ["eleTauEsInclusiveShift_", "eleTauEsOneProngShift_", "eleTauEsOneProngPiZerosShift_", "eleTauEsThreeProngShift_"]:  # TODO: add inclusive
                         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                        variation = DifferentPipeline(name='CMS_fes_' + pipeline + '13TeV_', pipeline=pipeline, direction=shift_str)
+                        variation = DifferentPipeline(name='CMS_fes_' + pipeline + 'Run' + channel_holder._year + '_', pipeline=pipeline, direction=shift_str)
                         proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
                         self._logger.debug('\nvariation name: %s\nintersection self._fes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                         for process_nick in proc_intersection:
@@ -371,44 +371,44 @@ class ETauFES(Shapes):
 
                 if channel_name in ['mt', 'et']:
                     for systematic_shift in [
-                            "ff_qcd{ch}_syst_13TeV{shift}",
-                            "ff_qcd_dm0_njet0{ch}_stat_13TeV{shift}",
-                            "ff_qcd_dm0_njet1{ch}_stat_13TeV{shift}",
-                            "ff_w_syst_13TeV{shift}",
-                            "ff_w_dm0_njet0{ch}_stat_13TeV{shift}",
-                            "ff_w_dm0_njet1{ch}_stat_13TeV{shift}",
-                            "ff_tt_syst_13TeV{shift}",
-                            "ff_tt_dm0_njet0_stat_13TeV{shift}",
-                            "ff_tt_dm0_njet1_stat_13TeV{shift}",
+                            "ff_qcd{ch}_syst_Run{year}{shift}",
+                            "ff_qcd_dm0_njet0{ch}_stat_Run{year}{shift}",
+                            "ff_qcd_dm0_njet1{ch}_stat_Run{year}{shift}",
+                            "ff_w_syst_Run{year}{shift}",
+                            "ff_w_dm0_njet0{ch}_stat_Run{year}{shift}",
+                            "ff_w_dm0_njet1{ch}_stat_Run{year}{shift}",
+                            "ff_tt_syst_Run{year}{shift}",
+                            "ff_tt_dm0_njet0_stat_Run{year}{shift}",
+                            "ff_tt_dm0_njet1_stat_Run{year}{shift}",
                     ]:
                         for shift_direction in ["Up", "Down"]:
                             fake_factor_variations_et.append(
                                 ReplaceWeight(
-                                    "CMS_%s" % (systematic_shift.format(ch='_' + channel_name, shift="").replace("_dm0", "")),
+                                    "CMS_%s" % (systematic_shift.format(ch='_' + channel_name, shift="", year=channel_holder._year).replace("_dm0", "")),
                                     "fake_factor",
                                     Weight(
                                         "ff2_{syst}".format(
-                                            syst=systematic_shift.format(ch="", shift="_%s" % shift_direction.lower()).replace("_13TeV", "")),
+                                            syst=systematic_shift.format(ch="", shift="_%s" % shift_direction.lower()).replace("_Run%s" % channel_holder._year, "")),
                                         "fake_factor"),
                                     shift_direction))
 
                 elif channel_name == 'tt':
                     for systematic_shift in [
-                            "ff_qcd{ch}_syst_13TeV{shift}",
-                            "ff_qcd_dm0_njet0{ch}_stat_13TeV{shift}",
-                            "ff_qcd_dm0_njet1{ch}_stat_13TeV{shift}",
-                            "ff_w{ch}_syst_13TeV{shift}", "ff_tt{ch}_syst_13TeV{shift}",
-                            "ff_w_frac{ch}_syst_13TeV{shift}",
-                            "ff_tt_frac{ch}_syst_13TeV{shift}"
+                            "ff_qcd{ch}_syst_Run{year}{shift}",
+                            "ff_qcd_dm0_njet0{ch}_stat_Run{year}{shift}",
+                            "ff_qcd_dm0_njet1{ch}_stat_Run{year}{shift}",
+                            "ff_w{ch}_syst_Run{year}{shift}", "ff_tt{ch}_syst_Run{year}{shift}",
+                            "ff_w_frac{ch}_syst_Run{year}{shift}",
+                            "ff_tt_frac{ch}_syst_Run{year}{shift}"
                     ]:
                         for shift_direction in ["Up", "Down"]:
                             fake_factor_variations_et.append(
                                 ReplaceWeight(
-                                    "CMS_%s" % (systematic_shift.format(ch='_' + channel_name, shift="").replace("_dm0", "")),
+                                    "CMS_%s" % (systematic_shift.format(ch='_' + channel_name, shift="", year=channel_holder._year).replace("_dm0", "")),
                                     "fake_factor",
                                     Weight(
                                         "(0.5*ff1_{syst}*(byTightIsolationMVArun2017v2DBoldDMwLT2017_1<0.5)+0.5*ff2_{syst}*(byTightIsolationMVArun2017v2DBoldDMwLT2017_2<0.5))".format(
-                                            syst=systematic_shift.format(ch="", shift="_%s" % shift_direction.lower()).replace("_13TeV", "")),
+                                            syst=systematic_shift.format(ch="", shift="_%s" % shift_direction.lower()).replace("_Run%s" % channel_holder._year, "")),
                                         "fake_factor"),
                                     shift_direction))
 
@@ -470,25 +470,25 @@ class ETauFES(Shapes):
                 # MC
                 lep_trigger_eff_variations.append(
                     AddWeight(
-                        "CMS_eff_trigger_%s_13TeV" % (channel_name),
+                        "CMS_eff_trigger_%s_Run%s" % (channel_name, channel_holder._year),
                         "trg_%s_eff_weight" % channel_name,
                         Weight("(1.0*(pt_1<=25)+1.02*(pt_1>25))", "trg_%s_eff_weight" % channel_name),
                         "Up"))
                 lep_trigger_eff_variations.append(
                     AddWeight(
-                        "CMS_eff_trigger_%s_13TeV" % (channel_name),
+                        "CMS_eff_trigger_%s_Run%s" % (channel_name, channel_holder._year),
                         "trg_%s_eff_weight" % channel_name,
                         Weight("(1.0*(pt_1<=25)+0.98*(pt_1>25))", "trg_%s_eff_weight" % channel_name),
                         "Down"))
                 lep_trigger_eff_variations.append(
                     AddWeight(
-                        "CMS_eff_xtrigger_%s_13TeV" % (channel_name),
+                        "CMS_eff_xtrigger_%s_Run%s" % (channel_name, channel_holder._year),
                         "xtrg_%s_eff_weight" % channel_name,
                         Weight("(1.054*(pt_1<=25)+1.0*(pt_1>25))", "xtrg_%s_eff_weight" % channel_name),
                         "Up"))
                 lep_trigger_eff_variations.append(
                     AddWeight(
-                        "CMS_eff_xtrigger_%s_13TeV" % (channel_name),
+                        "CMS_eff_xtrigger_%s_Run%s" % channel_holder._year % (channel_name),
                         "xtrg_%s_eff_weight" % channel_name,
                         Weight("(0.946*(pt_1<=25)+1.0*(pt_1>25))", "xtrg_%s_eff_weight" % channel_name),
                         "Down"))
@@ -586,7 +586,6 @@ class ETauFES(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
-
 
             # ZL fakes energy scale
             if 'ZES' in self._shifts and channel_name in ["et", "em"]:

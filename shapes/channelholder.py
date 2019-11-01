@@ -74,7 +74,7 @@ class ChannelHolder(object):
             self._year = ''.join(c for c in self._channel_obj.__class__.__name__ if c.isdigit())
         except:
             self._logger.warning('ChannelHolder initialized, but channel_obj might be not valid: %s' % str(channel_obj))
-        if year != self._year:
+        if year != self._year and year is not None:
             self._logger.warning('ChannelHolder extracted %s as a reference year but overriten by passed value %s' % (str(self._year), str(year)))
             self._year = year
 
