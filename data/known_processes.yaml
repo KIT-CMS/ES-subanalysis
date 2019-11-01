@@ -8,6 +8,7 @@ qcdem_sys_processes: ['QCD', 'QCDSStoOS', 'QCDSStoOSEMB', 'QCDEMB']
 met_sys_processes: ["TTL", "VVL"]
 ees_sys_processes: ["EMB"]
 zl_sys_processes: ["ZL"]
+tpt_sys_processes: ["TTT", "TTL", "TTJ", "TT"]
 
 _complexEstimationMethods: [
   WEstimationWithQCD ,
