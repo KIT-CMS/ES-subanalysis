@@ -146,10 +146,25 @@ invert_cuts: [] # Cuts to be inverted. Applied prior the force-cuts and don't af
 skip_systematic_variations: False
 shifts: [
   nominal,
-  TES,
+
   # EMB,
   FES_shifts,
   Zpt,
+  prefiring,
+  Tpt,
+  TrgEff,
+  # QCDem,
+  # WG1,
+  # FF,
+
+  TES,
+  # BTag,
+  # METES,
+  # EES,
+  # ZES,
+  #
+  # JES,
+  # 'ZTTpTT'  todo
 ]
 
 ## Weights
