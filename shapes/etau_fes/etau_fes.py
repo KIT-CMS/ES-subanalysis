@@ -257,22 +257,19 @@ class ETauFES(Shapes):
                             mass="125"))
 
             # TODO: check if in the loop there is only 1 year per loop iter
-            if 'prefiring' in self._shifts:
+            if 'prefiring' in self._shifts and channel_holder._year != '2018':
                 self._logger.info('\n\n prefiring shifts...')
 
                 prefiring_variations = []
-                for process, category in product(processes, categories):
-                    if '2017' not in process._estimation_method._era.__class__.__name__:
-                        continue
-                    for updownvar in ['Up', 'Down']:
-                        prefiring_variations.append(
-                            ReplaceWeight(
-                                "CMS_prefiring_Run%s" % channel_holder._year,
-                                "prefireWeight",
-                                Weight(
-                                    "prefiringweight%s" % updownvar.lower(),
-                                    "prefireWeight"),
-                                updownvar))
+                for updownvar in ['Up', 'Down']:
+                    prefiring_variations.append(
+                        ReplaceWeight(
+                            "CMS_prefiring_Run%s" % channel_holder._year,
+                            "prefireWeight",
+                            Weight(
+                                "prefiringweight%s" % updownvar.lower(),
+                                "prefireWeight"),
+                            updownvar))
 
                 for variation in prefiring_variations:
                     for process_nick in mc_processes:
