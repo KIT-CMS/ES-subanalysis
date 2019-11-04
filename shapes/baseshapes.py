@@ -1089,6 +1089,10 @@ class Shapes(object):
                 shapes_to_prod += " ".join(['\t', i._variation._name, i._process._name, i._category._name]) + '\n'
             self._logger.info("Starting to produce following shapes: " + shapes_to_prod)
             # print 'name:', self._systematics._systematics[0]._variation._name, self._systematics._systematics[0]._process._name, self._systematics._systematics[0]._category._name
+            if len(self._systematics._systematics) == 0:
+                self._logger.critical("Nothing to produce! Switching to dry mode.")
+                self._dry = True
+                return
             self._systematics.produce()
         else:
             self._logger.info("Dry run, stopping")
