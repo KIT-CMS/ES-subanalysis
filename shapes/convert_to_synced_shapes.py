@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
- python convert_to_synced_shapes.py --input etFes_2017_all_shapes.root --output converted_shapes
+ python convert_to_synced_shapes.py \
+    --input etFes_2017_all_shapes.root \
+    --output converted_shapes
+
  python shapes/convert_to_synced_shapes.py \
     --input   /ceph/ohlushch/shapes/FES/ET/v3_noele27/shapes/2017_etFes_Legacy_FES_noupdate_QCDSStoOS_woFR.root \
     --output /ceph/ohlushch/shapes/FES/ET/v3_noele27/sconverted_shapes \
@@ -22,11 +25,19 @@ logger = logging.getLogger("")
 intersection = lambda x, y: list(set(x) & set(y))
 
 fes_shifts_indicators = {
-    'TauEsInclusiveShift_13TeV_': 'alldm',
-    'TauEsOneProngShift_13TeV_': 'dm0',
-    'TauEsOneProngPiZerosShift_13TeV_': 'dm1',
-    'TauEsThreeProngShift_13TeV_': 'dm10',
+    'TauEsInclusiveShift': 'alldm',
+    'TauEsOneProngShift': 'dm0',
+    'TauEsOneProngPiZerosShift': 'dm1',
+    'TauEsThreeProngShift': 'dm10',
 }
+
+
+# fes_shifts_indicators = {
+#     'TauEsInclusiveShift_13TeV_': 'alldm',
+#     'TauEsOneProngShift_13TeV_': 'dm0',
+#     'TauEsOneProngPiZerosShift_13TeV_': 'dm1',
+#     'TauEsThreeProngShift_13TeV_': 'dm10',
+# }
 
 
 def setup_logging(output_file, level=logging.DEBUG):
@@ -202,10 +213,19 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                     # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
                     continue
                 elif '_fes_' in name_output:
+                    if 'Run2016' in name_output:
+                        year = 'Run2016_'
+                    elif 'Run2017' in name_output:
+                        year = 'Run2017_'
+                    elif 'Run2018' in name_output:
+                        year = 'Run2018_'
+                    else:
+                        year = '13TeV_'
+
                     new_name = name_output
                     for f in fes_shifts_indicators:
                         if f in new_name:
-                            new_name = '_'.join([new_name.split('_')[0], new_name.split(f)[-1]])
+                            new_name = '_'.join([new_name.split('_')[0], new_name.split('_'.join([f, year]))[-1]])
                             break
                     logger.debug('Replacing when converting: %s -> %s' % (name_output, new_name))
                     name_output = new_name
