@@ -96,11 +96,6 @@ class Shapes(object):
                  nominal_folder='nominal',
                  etau_es_shifts=None,
                  mtau_es_shifts=None,
-                 tes_sys_processes=None,
-                 tes_shifts_sys_processes=None,
-                 fes_sys_processes=None,
-                 emb_sys_processes=None,
-                 zpt_sys_processes=None,
                  shifts=None,
                  grid_categories={},
                  parser_grid_categories={},
@@ -126,6 +121,16 @@ class Shapes(object):
         else:
             self._directory = directory
         assert isinstance(self._directory, six.string_types), "Shapes::directory not set"
+
+        if isinstance(etau_es_shifts, dict):
+            try:
+                self._etau_es_shifts = etau_es_shifts[era]
+            except:
+                self._logger('etau_es_shifts is a dict but era "%s" is not a key:' % era)
+                pp.pprint(etau_es_shifts)
+                raise Exception
+        else:
+            self._etau_es_shifts = etau_es_shifts
 
         self._datasets = datasets
         assert isinstance(self._datasets, six.string_types), "Shapes::datasets not set"
@@ -244,7 +249,6 @@ class Shapes(object):
         self._known_cuts = _known_cuts
 
         self._nominal_folder = nominal_folder
-        self._etau_es_shifts = etau_es_shifts
 
         sys_processes = [
             'tes_sys_processes', 'fes_sys_processes', 'emb_sys_processes',
