@@ -204,8 +204,7 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
             for name in hist_map[channel][category]:
                 logger.debug('name: %s ...' % name)
                 name_output = hist_map[channel][category][name]
-                name_output = 'QCD' if name_output.startswith('QCD') else name_output
-                name_output = 'W' if name_output.startswith('W') else name_output
+                name_output = name_output.replace('QCDSStoOS', 'QCD')
 
                 # Check the expected mapping of pipelines and categories
                 if '_fes_' in name_output and not any(lambda f, v: v in category and f in name_output for f, v in fes_shifts_indicators.iteritems()):
@@ -230,9 +229,8 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                     logger.debug('Replacing when converting: %s -> %s' % (name_output, new_name))
                     name_output = new_name
                 else:
-                    logger.debug('Replacing when converting: %s -> %s' % (name_output, name_output.replace(category, '')))
+                    logger.debug('Replacing when converting: %s -> %s' % (hist_map[channel][category][name], name_output.replace(category, '')))
                     name_output = name_output.replace(category, '')
-
                 if name_output in check_if_missing:
                     check_if_missing.remove(name_output)
 
@@ -240,12 +238,12 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                 if 'ZL' == name_output:
                     name_output += '_0'
 
-                if 'ZL_' in name_output:
+                if 'ZL_' in name_output and not name_output.endswith('Up') and not name_output.endswith('Down'):
                     old_name_output = name_output
                     name_output = name_output.replace('_neg', '_-')
                     for i in range(0, 10):
                         if 'p' not in name_output and '.' not in name_output and name_output != 'ZL_0':
-                            logger.critical('\t name %s adding p0' % (name_output))
+                            logger.warning('\t name %s adding p0' % (name_output))
                             name_output += 'p0'
                         name_output = name_output.replace(str(i) + 'p', str(i) + '.')
                     logger.debug('Replacing when converting: %s -> %s' % (old_name_output, name_output))
