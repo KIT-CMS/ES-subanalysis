@@ -607,9 +607,8 @@ class ETauFES(Shapes):
                 ele_es_variations = create_systematic_variations("CMS_scale_mc_e", "eleScale", DifferentPipeline)
                 ele_es_variations += create_systematic_variations("CMS_reso_mc_e", "eleSmear", DifferentPipeline)
 
-                proc_intersection = list(set(self._ees_sys_processes) & set(channel_holder._processes.keys()))
                 # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                for process_nick in [x for x in proc_intersection if 'EMB' in x]:
+                for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' in x and 'QCDSStoOS' not in x]:
                     self._systematics.add_systematic_variation(
                         variation=ele_es_emb_variations,
                         process=channel_holder._processes[process_nick],
@@ -621,10 +620,10 @@ class ETauFES(Shapes):
                     # TODO: check all proc are needed here
                     # proc_intersection = list(set(self._ees_sys_processes) & set(channel_holder._processes.keys()))
                     # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                    for process in processes:
+                    for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x]:
                         self._systematics.add_systematic_variation(
-                            variation=ele_es_emb_variations,
-                            process=process,
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
