@@ -1,6 +1,7 @@
 import sys
 import importlib
 import logging
+from collections import OrderedDict
 
 from shapes import Shapes
 
@@ -12,7 +13,7 @@ from shapes.channelholder import ChannelHolder
 from shape_producer.cutstring import Cut, Weight  # move to ChannelsHolder
 from shape_producer.systematics import Systematic
 from shape_producer.systematic_variations import Nominal, DifferentPipeline, create_systematic_variations, \
-    ReplaceWeight, SquareAndRemoveWeight, AddWeight, Relabel
+    ReplaceWeight, SquareAndRemoveWeight, AddWeight, Relabel, ReplaceExpressions
 
 
 class ETauFES(Shapes):
@@ -360,6 +361,50 @@ class ETauFES(Shapes):
                             # self._systematics._systematics[-1]._variation._name, self._systematics._systematics[-1]._category._name
                             # self._systematics._systematics[-1]._variation._pipeline
                             # self._systematics._systematics[-1]._process._estimation_method._directory
+
+            if 'FES_shapes_shifts' in self._shifts:
+                self._logger.info('\t.. FES_shapes_shifts')
+                root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
+                mult_factor = lambda x: float((100. + x) / 100.)
+
+                # for pipeline in ["eleTauEsInclusiveShift_", "eleTauEsOneProngShift_", "eleTauEsOneProngPiZerosShift_", "eleTauEsThreeProngShift_"]:  # TODO: add inclusive
+                for es in self._etau_es_shifts:
+                    shift_str = root_str(es)
+                    shift_m = mult_factor(es)
+
+                    variation = ReplaceExpressions(
+                        name='CMS_fes_' + 'eleTauEsInclusiveShift_' + 'Run' + channel_holder._year + '_' + shift_str,
+                        direction='',
+                        replace_dict=OrderedDict([
+                            ('pt_2', '({tau_lv}).Pt()'.format(tau_lv='leadingTauLV*' + format(shift_m, '3.5f'))),
+                        ])
+                    )
+                    # logging.warning("~~~~~~~~~~~~~~~~~~~~~~~~~~~variation:")
+                    # print variation.shifted_root_objects
+                    print self._fes_sys_processes
+                    print channel_holder._processes.keys()
+                    proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
+
+                    self._logger.debug(
+                        ' '.join(
+                            ['\n variation name:', variation.name, '\n intersection self._tes_shifts_sys_processes:'] +
+                            proc_intersection
+                        )
+                    )
+
+                    for process_nick in proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+                        # Upplying cuts that are only for fes shifts
+                        for shift_systematic in self._systematics._systematics[-len(categories):]:
+                            for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
+                                shift_systematic.category.cuts.add(Cut(cut_expression, cut_key))
+                            shift_systematic._process._estimation_method._directory = self._fes_friend_directory[0]
 
             # jetfakes
             if 'FF' in self._shifts and channel_name in ['mt', 'et', 'tt']:
