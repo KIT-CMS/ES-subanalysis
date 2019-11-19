@@ -1094,9 +1094,10 @@ class Shapes(object):
             # import pdb; pdb.set_trace()
             shapes_to_prod = '\n'
             for i in self._systematics._systematics:
-                shapes_to_prod += " ".join(['\t', i._variation._name, i._process._name, i._category._name]) + '\n'
+                shapes_to_prod += " ".join(['\t', i._variation.name, i._process._name, i._category._name]) + '\n'
             self._logger.info("Starting to produce following shapes: " + shapes_to_prod)
             # print 'name:', self._systematics._systematics[0]._variation._name, self._systematics._systematics[0]._process._name, self._systematics._systematics[0]._category._name
+            # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
             if len(self._systematics._systematics) == 0:
                 self._logger.critical("Nothing to produce! Switching to dry mode.")
                 self._dry = True

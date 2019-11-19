@@ -43,9 +43,9 @@ user_specific:
     #TODO: check on how to use $ARTUS_OUTPUTS_2017 and shifts with common friends
     ohlushch:
       bms:
-        '2016': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2016/merged_nominal
-        '2017': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2017/merged_nominal #"$ARTUS_OUTPUTS_2017"
-        '2018': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/merged_nominal
+        '2016': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2016/merged_nominal_updated2
+        '2017': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2017/merged_nominal_updated2 #"$ARTUS_OUTPUTS_2017"
+        '2018': /ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/merged_nominal_updated2
 
   et_friend_directory:
     byhost:
@@ -66,9 +66,10 @@ user_specific:
       default: []
       bms:
         # '2017': ["/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v2/FESshifts_2017/merged_shifts"]  # "/ceph/ohlushch/naf/FES/FES/FESshifts_2017/merged/"
-        '2016': ["/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2016/merged_shifts"]
-        '2017': ["/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2017/merged_shifts"]  # "/ceph/ohlushch/naf/FES/FES/FESshifts_2017/merged/"
-        '2018': ["/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/merged_shifts"]
+
+        '2016': ["/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2016/merged_shifts_updated"]
+        '2017': ["/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2017/merged_shifts_updated"]
+        '2018': ["/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/merged_shifts_updated"]
 
   # 2016
   etau_es_shifts:
