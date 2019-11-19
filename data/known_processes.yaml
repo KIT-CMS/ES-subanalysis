@@ -1,4 +1,7 @@
-tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL", "jetFakes", "jetFakesEMB"]
+tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL",
+                    "jetFakes", "jetFakesEMB",
+                    QCDSStoOS, QCDSStoOSEMB, QCDEMB]
+# tes_shifts_sys_processes: ['ZTT', "EWKT"]
 fes_sys_processes: ['ZL', 'DYJetsToLL']
 emb_sys_processes: ['EMB']
 zpt_sys_processes: ['ZTT', 'ZL', 'ZJ']

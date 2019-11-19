@@ -35,7 +35,8 @@ def produce_shapes_variables(config):
     shapes.setup_logging(
         output_file=shapes._output_file.replace('.root', '.log'),
         level=debug_level,
-        logger=shapes._logger
+        logger=shapes._logger,
+        danger=shapes._danger,
     )
     # # Disabling some printouts
     logging.getLogger('shape_producer').setLevel(log.INFO)

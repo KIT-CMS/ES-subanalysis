@@ -46,6 +46,7 @@ class Shapes(object):
                  channels=None,
                  debug=None,
                  dry=None,
+                 danger=False,
                  era=None,
                  et_friend_directory=None,
                  fake_factor_friend_directory=None,
@@ -142,6 +143,7 @@ class Shapes(object):
         self._channels_key = channels
         self._debug = debug
         self._dry = dry
+        self._danger = danger
         self._era_name = era
         # self._et_friend_directory = os.path.expandvars(et_friend_directory)
         # self._mt_friend_directory = os.path.expandvars(mt_friend_directory)
@@ -537,6 +539,8 @@ class Shapes(object):
 
         # Arguments with defaults that can NOT be changed in the config file
         parser.add_argument('--dry', action='store_true', default=False, help='dry run')
+        parser.add_argument('--danger', action='store_true', default=False, help='danger level, to raise on root errors')
+
         parser.add_argument('--debug', action='store_true', default=False, help='cherry-debug')
 
         args = parser.parse_args()
