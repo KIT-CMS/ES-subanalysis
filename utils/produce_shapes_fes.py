@@ -123,6 +123,12 @@ def main():
             config_file='data/mt_fes_legacy_config.yaml',
             debug=debug
         )
+    elif config['yaml_conf'] is not None:
+        config = analysis_shapes_et.prepareConfig(
+            analysis_shapes=analysis_shapes_mt,
+            config_file=config['yaml_conf'],
+            debug=debug
+        )
 
     produce_shapes_variables(config=config)
 

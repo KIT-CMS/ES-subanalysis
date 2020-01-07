@@ -443,6 +443,7 @@ class Shapes(object):
         parser.add_argument("--fes-friend-directory", type=str, help="Fes shifts.")
         parser.add_argument("--extra-chain", type=str, help="Extra pipelines")
         parser.add_argument("--context-analysis", type=str, help="Context analysis.")
+        parser.add_argument("--yaml-conf", type=str, help="Context analysis.")
         parser.add_argument("--variables-names", nargs='*', type=str, help="Variable names.")
         parser.add_argument("--invert-cuts", nargs='*', type=str, help="Invert cuts by their key names.")
         # parser.add_argument("--forve-cuts", action=type('', (argparse.Action, ), dict(__call__=lambda a, p, n, v, o: getattr(n, a.dest).update(dict([v.split('=')])))), default={})  # anonymously subclassing argparse.Action
@@ -505,6 +506,7 @@ class Shapes(object):
         defaultArguments['output_file_dir'] = ''
         defaultArguments['skip_systematic_variations'] = False
         defaultArguments['context_analysis'] = 'etFes'
+        defaultArguments['yaml_conf'] = 'data/et_fes_legacy2017_config.yaml'
 
         # defaultArguments['tes_sys_processes'] = ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL"]
         # defaultArguments['fes_sys_processes'] = ['ZL', 'DYJetsToLL', 'EMB']
