@@ -1065,21 +1065,26 @@ class Shapes(object):
         self._logger.debug(self._systematics)
         # import pdb; pdb.set_trace()
         # # !import code; code.interact(local=vars())
-        if not self._dry:
-            if 'nominal' not in self._shifts:
-                self._logger.warning("Nominal shapes will not be produced")
-                # import pdb; pdb.set_trace()
-                self._systematics._systematics = [i for i in self._systematics._systematics if i._variation._name != 'Nominal']
-            #     for i in self._systematics._systematics:
-            #         if i._variation._name == 'Nominal':
-            #             self._systematics._systematics.remove(i)
+
+
+        if 'nominal' not in self._shifts:
+            self._logger.warning("Nominal shapes will not be produced")
             # import pdb; pdb.set_trace()
-            shapes_to_prod = '\n'
-            for i in self._systematics._systematics:
-                shapes_to_prod += " ".join(['\t', i._variation.name, i._process._name, i._category._name]) + '\n'
+            self._systematics._systematics = [i for i in self._systematics._systematics if i._variation._name != 'Nominal']
+        shapes_to_prod = '\n'
+        shapes_to_prod_debug = '\n'
+        for i in self._systematics._systematics:
+            shapes_to_prod += "{:>60s} {:<10s}  {:<25s}\n".format(i._variation.name, i._process._name, i._category._name)
+            shapes_to_prod_debug += "{:>60s} {:<10s}  {:<25s}\n {:s}".format(i._variation.name, i._process._name, i._category._name, i._process._estimation_method.get_weights().__str__)
+
+        if self._log_level != 'debug':
             self._logger.info("Starting to produce following shapes: " + shapes_to_prod)
-            # print 'name:', self._systematics._systematics[0]._variation._name, self._systematics._systematics[0]._process._name, self._systematics._systematics[0]._category._name
-            # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+        else:
+            self._logger.info("Starting to produce following shapes [debug]: " + shapes_to_prod_debug)
+        # print 'name:', self._systematics._systematics[0]._variation._name, self._systematics._systematics[0]._process._name, self._systematics._systematics[0]._category._name
+        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+
+        if not self._dry:
             if len(self._systematics._systematics) == 0:
                 self._logger.critical("Nothing to produce! Switching to dry mode.")
                 self._dry = True
