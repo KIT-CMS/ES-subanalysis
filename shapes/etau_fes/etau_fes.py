@@ -683,13 +683,58 @@ class ETauFES(Shapes):
                             era=self.era
                         )
 
+            if 'EES_FES_shifts' in self._shifts and channel_name in ["et"]:
+                self._logger.info('\n\n EES_FES_shifts...')
+                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
+                root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
+                for es in self._etau_es_shifts:
+                    shift_str = root_str(es)
+                    # TODO: here the pipeline WILL depend on the category per DM
+                    for pipeline in [
+                        # "eleTauEsInclusiveShift_",
+                        "eleTauEsOneProngShift_",
+                        "eleTauEsOneProngPiZerosShift_",
+                        # "eleTauEsThreeProngShift_"
+                        ]:
+                        proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
+
+                        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                        ele_es_emb_variations = create_systematic_variations("CMS_fes_scale_emb_e_%s" % shift_str, "%s%s_eleEs" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
+                        ele_es_variations = create_systematic_variations("CMS_fes_scale_mc_e_%s" % shift_str, "%s%s_eleScale" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
+                        ele_es_variations += create_systematic_variations("CMS_fes_reso_mc_e_%s" % shift_str, "%s%s_eleSmear" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
+
+                        for process_nick in [x for x in proc_intersection if 'EMB' in x and 'QCDSStoOS' not in x]:
+                            self._systematics.add_systematic_variation(
+                                variation=ele_es_emb_variations,
+                                process=channel_holder._processes[process_nick],
+                                channel=channel_holder._channel_obj,
+                                era=self.era
+                            )
+                            # Upplying cuts that are only for fes shifts
+                            self.upplyFesCuts(pipeline=pipeline, depth=categories)
+
+                        for variation in ele_es_variations:
+                            for process_nick in [x for x in proc_intersection if 'EMB' not in x and 'data' not in x]:
+                                # print 'before', len(self._systematics._systematics)
+                                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                                self._systematics.add_systematic_variation(
+                                    variation=variation,
+                                    process=channel_holder._processes[process_nick],
+                                    channel=channel_holder._channel_obj,
+                                    era=self.era
+                                )
+                                # print 'after', len(self._systematics._systematics)
+                                # Upplying cuts that are only for fes shifts
+                                self.upplyFesCuts(pipeline=pipeline, depth=categories)
+
             # ZL fakes energy scale
             if 'ZES' in self._shifts and channel_name in ["et", "em"]:
                 self._logger.info('\n\n ZES reweighting')
                 fakelep_dict = {"et": "Ele", "mt": "Mu"}
 
-                lep_fake_es_variations = create_systematic_variations("CMS_ZLShape_%s_1prong_Run2017" % channel_name, "tau%sFakeEsOneProng" % fakelep_dict[channel_name], DifferentPipeline)
-                lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_%s_1prong1pizero_Run2017" % channel_name, "tau%sFakeEsOneProngPiZeros" % fakelep_dict[channel_name], DifferentPipeline)
+                lep_fake_es_variations = create_systematic_variations("CMS_ZLShape_%s_1prong_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProng" % fakelep_dict[channel_name], DifferentPipeline)
+                lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_%s_1prong1pizero_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProngPiZeros" % fakelep_dict[channel_name], DifferentPipeline)
 
                 for variation in lep_fake_es_variations:
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
@@ -702,6 +747,25 @@ class ETauFES(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
+
+    def upplyFesCuts(self, pipeline, depth):
+        '''
+        Upplying cuts that are only for fes shifts
+        '''
+        for shift_systematic in self._systematics._systematics[-len(depth):]:
+            for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
+                shift_systematic.category.cuts.add(Cut(cut_expression, cut_key))
+
+            shift_systematic._process._estimation_method._directory = self._fes_friend_directory[0]
+
+            # Removing shifts from unmatching by decay mode requirement/cuts categories
+            if ('InclusiveShift' in pipeline and len(ETauFES.intersection(shift_systematic.category.cuts.names, ['dm0', 'dm1', 'dm10'])) != 0) \
+            or ('OneProngShift' in pipeline and len(ETauFES.intersection(shift_systematic.category.cuts.names, ['alldm', 'dm1', 'dm10'])) != 0) \
+            or ('OneProngPiZerosShift' in pipeline and len(ETauFES.intersection(shift_systematic.category.cuts.names, ['alldm', 'dm0', 'dm10'])) != 0) \
+            or ('ThreeProngShift' in pipeline and len(ETauFES.intersection(shift_systematic.category.cuts.names, ['alldm', 'dm0', 'dm1'])) != 0):
+                self._logger.debug("Removing systematic shift %s from production because of unmatching dm in categorisation" % (shift_systematic.name))
+                self._systematics._systematics.remove(shift_systematic)
+
 
 
 if __name__ == '__main__':
