@@ -95,6 +95,7 @@ class ETauFES(Shapes):
             channel_holder._categorries = self.getCategorries(
                 channel_holder=channel_holder
             )
+
             self._logger.info('...getChannelSystematics')
             channel_holder._systematics = self.getChannelSystematics(  # NOTE: for a single channel
                 channel_holder=channel_holder
@@ -105,9 +106,54 @@ class ETauFES(Shapes):
             raise KeyError("getEvaluatedChannel: channel not setup. channel:" + channel +
                 "; context:" + self._context_analysis + '; eta: ' + self._era_name)
 
-    def getUpdateProcessPerCategory(self, process, category):
+    def getUpdateExtrapFactorProcessPerCategory(self, process, category):
         # values calculated for MVAv2, 'dilepton_veto': Null
         # TODO: have a config for this
+        # DT
+        DT = {
+            '2016': {
+                "et_inc_eta_2_njetN_alldm": 1.22,  # +-?0.05
+                "et_inc_eta_2_njetN_dm0": 1.244,  # 0.18
+                "et_inc_eta_2_njetN_dm1": 1.23,  # 0.08
+                "et_eta_2_barel_njetN_alldm": 1.24,  # 0.05
+                "et_eta_2_barel_njetN_dm0": 1.2, #1.23,  # 0.18
+                "et_eta_2_barel_njetN_dm1": 1.22,  # 0.08
+                "et_eta_2_endcap_njetN_alldm": 1.15,  # +-0.1
+                "et_eta_2_endcap_njetN_dm0": 1.28,  # +- 0.2
+                "et_eta_2_endcap_njetN_dm1": 1.26,  # +-0.15
+            },
+            '2017': {
+                "et_inc_eta_2_njetN_alldm": 1.05,  # 0.05
+                "et_inc_eta_2_njetN_dm0": 1.122,  # 0.15
+                "et_inc_eta_2_njetN_dm1": 1.075,  # 0.05
+                "et_eta_2_barel_njetN_alldm": 1.069,  # 0.05
+                "et_eta_2_barel_njetN_dm0": 1.19,  # 0.15
+                "et_eta_2_barel_njetN_dm1": 1.07,  # 0.08
+                "et_eta_2_endcap_njetN_alldm": 1.001,  # 1.15
+                "et_eta_2_endcap_njetN_dm0": 1.018,  # 0.2
+                "et_eta_2_endcap_njetN_dm1": 1.08,  # 0.15
+            },
+            '2018': {
+                "et_inc_eta_2_njetN_alldm": 1.17,  # 0.05
+                "et_inc_eta_2_njetN_dm0": 1.101,  # 0.1
+                "et_inc_eta_2_njetN_dm1": 1.2,  # 0.5
+                "et_eta_2_barel_njetN_alldm": 1.19,  # 0.04
+                "et_eta_2_barel_njetN_dm0": 1.09,  # 0.1
+                "et_eta_2_barel_njetN_dm1": 1.24,  # 0.05
+                "et_eta_2_endcap_njetN_alldm": 1.12,  # 0.08
+                "et_eta_2_endcap_njetN_dm0": 1.115,  # 0.2
+                "et_eta_2_endcap_njetN_dm1": 1.04,  # 0.1
+            },
+        }
+        if process.name == "QCDSStoOS":
+            if '2016' in process._estimation_method._era.__class__.__name__ and 'et' in category.name:
+                process._estimation_method._extrapolation_factor = DT['2016'][category.name]
+            elif '2017' in process._estimation_method._era.__class__.__name__ and 'et' in category.name:
+                process._estimation_method._extrapolation_factor = DT['2017'][category.name]
+            else:
+                process._estimation_method._extrapolation_factor = DT['2018'][category.name]
+
+        # MVA
         if '2017' in process._estimation_method._era.__class__.__name__ and 'et' in category.name:
             if process.name == "QCDSStoOS":
                 # import pdb; pdb.set_trace()
@@ -126,6 +172,7 @@ class ETauFES(Shapes):
                         process._estimation_method._extrapolation_factor = 0.997
                     else:
                         process._estimation_method._extrapolation_factor = 0.965
+
         return process
 
     # TODO: split to call corresponding functions instead of passing list of strings
@@ -148,7 +195,7 @@ class ETauFES(Shapes):
                 self._systematics.add(
                     Systematic(
                         category=category,
-                        process=self.getUpdateProcessPerCategory(process, category) if self._update_process_per_category else process,
+                        process=self.getUpdateExtrapFactorProcessPerCategory(process, category) if self._update_process_per_category else process,
                         analysis=self._context_analysis,  # "smhtt",  # TODO : check if this is used anywhere, modify the configs sm->smhtt
                         era=self.era,
                         variation=Nominal(),
@@ -325,9 +372,17 @@ class ETauFES(Shapes):
                 for es in self._etau_es_shifts:
                     shift_str = root_str(es)
                     # TODO: here the pipeline WILL depend on the category per DM
-                    for pipeline in ["eleTauEsInclusiveShift_", "eleTauEsOneProngShift_", "eleTauEsOneProngPiZerosShift_", "eleTauEsThreeProngShift_"]:  # TODO: add inclusive
+                    for pipeline in [
+                        # "eleTauEsInclusiveShift_",
+                        "eleTauEsOneProngShift_",
+                        "eleTauEsOneProngPiZerosShift_",
+                        # "eleTauEsThreeProngShift_"
+                        ]:
                         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                        variation = DifferentPipeline(name='CMS_fes_' + pipeline + 'Run' + channel_holder._year + '_', pipeline=pipeline, direction=shift_str)
+                        variation = DifferentPipeline(
+                            name='CMS_fes_' + pipeline + 'Run' + channel_holder._year + '_',
+                            pipeline=pipeline,
+                            direction=shift_str)
                         proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
                         self._logger.debug('\nvariation name: %s\nintersection self._fes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                         for process_nick in proc_intersection:
