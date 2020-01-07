@@ -7,7 +7,7 @@ import logging
 from rootpy import log
 # log.setLevel(log.INFO)
 from rootpy.logger.magic import DANGER
-DANGER.enabled = True  # set True to raise exceptions
+# DANGER.enabled = True  # set True to raise exceptions
 
 from shapes import styled
 from shapes.etau_fes import ETauFES as analysis_shapes_et
@@ -31,18 +31,25 @@ def produce_shapes_variables(config):
     #     add_stream_handler=False,
     # )
 
-    debug_level = 'debug' if shapes._log_level is None else shapes._log_level
+    if shapes._debug:
+        shapes._log_level = 'debug'
+
     shapes.setup_logging(
         output_file=shapes._output_file.replace('.root', '.log'),
-        level=debug_level,
+        level=shapes._log_level,
         logger=shapes._logger,
         danger=shapes._danger,
     )
     # # Disabling some printouts
-    logging.getLogger('shape_producer').setLevel(log.INFO)
+    # TODO - add this only to the case with higher verbosity
+    if shapes._log_level == 'debug':
+        logging.getLogger('shape_producer').setLevel(log.DEBUG)
+    else:
+        logging.getLogger('shape_producer').setLevel(log.INFO)
     # # logging.getLogger('shape_producer.systematics').setLevel(log.INFO)
     # # logging.getLogger('shape_producer.histogram').setLevel(log.INFO)
-    if debug_level == 'debug':
+
+    if shapes._log_level == 'debug':
         logging.getLogger('shape_producer.histogram').setLevel(log.DEBUG)
         # logging.getLogger('shape_producer.systematics').setLevel(log.DEBUG)
         # logging.getLogger('shape_producer.systematic_variations').setLevel(log.DEBUG)
