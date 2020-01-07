@@ -54,20 +54,6 @@ class Shapes(object):
                  fes_extra_cuts={},
                  et_minplotlev_cuts={},
                  force_cuts={},
-                 no_fes_extra_cuts=None,
-                 no_et_minplotlev_cuts=None,
-                 no_mt_minplotlev_cuts=None,
-                 no_force_cuts=None,
-                 no_extra_cuts=None,
-                 no_grid_categories=None,
-                 no_single_categories=None,
-                 use_fes_extra_cuts=None,
-                 use_et_minplotlev_cuts=None,
-                 use_mt_minplotlev_cuts=None,
-                 use_force_cuts=None,
-                 use_extra_cuts=None,
-                 use_grid_categories=None,
-                 use_single_categories=None,
                  invert_cuts=None,
                  extra_chain=None,
                  gof_channel=None,
@@ -188,22 +174,16 @@ class Shapes(object):
         self._replace_weights = replace_weights
 
         # Cuts manipulations
-        self._no_fes_extra_cuts = no_fes_extra_cuts
-        self._no_et_minplotlev_cuts = no_et_minplotlev_cuts
-        self._no_mt_minplotlev_cuts = no_mt_minplotlev_cuts
-        self._no_force_cuts = no_force_cuts
-        self._no_extra_cuts = no_extra_cuts
-        self._no_grid_categories = no_grid_categories
-        self._no_single_categories = no_single_categories
-        self._use_fes_extra_cuts = use_fes_extra_cuts
-        self._use_et_minplotlev_cuts = use_et_minplotlev_cuts
-        self._use_mt_minplotlev_cuts = use_mt_minplotlev_cuts
-        self._use_force_cuts = use_force_cuts
-        self._use_extra_cuts = use_extra_cuts
-        self._use_grid_categories = use_grid_categories
-        self._use_single_categories = use_single_categories
-
-        for base in ['fes_extra_cuts', 'et_minplotlev_cuts', 'mt_minplotlev_cuts', 'force_cuts', 'extra_cuts', 'grid_categories', 'single_categories']:
+        cuts_manipulations = [
+            'fes_extra_cuts', 'force_cuts', 'extra_cuts',
+            'et_minplotlev_cuts', 'mt_minplotlev_cuts',
+            'grid_categories', 'single_categories',
+        ]
+        for base in cuts_manipulations:
+            for p in ['use_', 'no_']:
+                setattr(self,
+                    '_' + p + base,
+                    kwargs[p + base] if p + base in kwargs.keys() else None)
             use = getattr(self, '_use_' + base)
             nouse = getattr(self, '_no_' + base)
             assert nouse != use, "Cant use %s and %s together" % ('use_' + base, 'no_' + base)
