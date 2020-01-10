@@ -1,0 +1,357 @@
+backend: classic
+channels: [et]
+num_threads: 1
+datasets: datasets/datasets.json
+
+binning: data/binning.yaml
+binning_key: gof
+
+# 1 GeV binning
+# binning: data/binning_fes.yaml
+# binning_key: etau_fes
+
+
+era: '2017'
+tag: etauFES
+context_analysis: etFes
+methods_collection_key: "Legacy_FES_with_QCDSStoOS" # Legacy_FES_with_EMB_QCDSStoOS ; in 2017: Original_FES_with_FF
+
+output_file: Null  # keep it empty for auto-naming
+output_file_name: Null  # keep it empty for auto-naming: era + context_analysis + methods_collection_key
+
+user_specific:
+  output_file_dir:
+    byhost:
+      default: Null
+    glusheno:
+      naf: Null
+    ohlushch:
+      bms: /ceph/ohlushch/shapes/FES/ET/deeptau/v1_1GeVbinning/shapes/
+
+  ## Path to inputs with nominal pipeline and systematics
+  ## Note: shared samples should Not be used in the FES subanalysis since those contain the old FES corrections
+  directory:
+    byhost:
+      default: Null
+      naf:
+        Null
+      bms:
+        Null
+    glusheno:
+      naf: Null
+    #TODO: check on how to use $ARTUS_OUTPUTS_2017 and shifts with common friends
+    ohlushch:
+      bms:
+        # deeptau v2
+        # '2016': /storage/8/ohlushch/ETauFakeES_deeptau_v2/2016/merged_nominal
+        '2016': /ceph/ohlushch/ETauFakeES_deeptau_v2/2016/merged_nominal
+
+        '2017': /storage/8/ohlushch/ETauFakeES_deeptau_v2/2017/merged_nominal
+        '2018': /storage/8/ohlushch/ETauFakeES_deeptau_v2/2018/merged_nominal
+        # deeptau v1 - accepted
+        # '2016': /ceph/ohlushch/ETauFakeES_deeptau_v0/2016/merged_noshifts/2016
+        # '2017': /ceph/ohlushch/ETauFakeES_deeptau_v0/2017/merged_noshifts/2017
+        # '2018': /ceph/ohlushch/ETauFakeES_deeptau_v0/2018/merged_noshifts/2018
+
+  et_friend_directory:
+    byhost:
+      default: []
+  mt_friend_directory:
+    byhost:
+      default: []
+  tt_friend_directory:
+    byhost:
+      default: []
+  fake_factor_friend_directory:
+    byhost:
+      default: ["$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"]
+
+  ## FES shifts pipelines should be stored separatelys
+  fes_friend_directory:
+    byhost:
+      default: []
+      bms:
+        # deeptau v2
+        '2016': ["/storage/8/ohlushch/ETauFakeES_deeptau_v2/2016/merged_shifts"]
+        '2017': ["/storage/8/ohlushch/ETauFakeES_deeptau_v2/2017/merged_shifts"]
+        '2018': ["/storage/8/ohlushch/ETauFakeES_deeptau_v2/2018/merged_shifts"]
+        # deeptau v1 - accepted
+        # '2016': ["/ceph/ohlushch/ETauFakeES_deeptau_v0/2016/merged_shifts_extended"]
+        # '2017': ["/ceph/ohlushch/ETauFakeES_deeptau_v0/2017/merged_shifts_extended"]
+        # '2018': ["/ceph/ohlushch/ETauFakeES_deeptau_v0/2018/merged_shifts_extended"]
+        #
+        # '2016': ["/ceph/ohlushch/ETauFakeES_deeptau_v0/2016/merged_shifts/2016"]
+        # '2017': ["/ceph/ohlushch/ETauFakeES_deeptau_v0/2017/merged_shifts/2017"]
+        # '2018': ["/ceph/ohlushch/ETauFakeES_deeptau_v0/2018/merged_shifts/2018"]
+
+    # 'inputs': [   '/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/merged_shifts_updated_temp_pos2',
+    #               '/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/merged_shifts_updated_temp_pos1',
+    #               '/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/merged_shifts_updated_temp_neg',
+    #               '/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/etaufake_gr1/merged',
+    #               '/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/etaufake_gr3/merged',
+    #               '/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/etaufake_gr2/merged',
+    #               '/ceph/ohlushch/naf/FES/ETauFakeES_Legacy_v3/FESshifts_2018/etaufake_gr0/merged'],
+  # 2016
+  etau_es_shifts:
+    byhost:
+      default: [
+            -4.0, -3.0, -2.0, -1.75, -1.5, -1.25, -1.0, -0.75, -0.5, -0.25,
+            0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5,
+            2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 5.0, 6.0, 7.0, 8.0,
+            9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0,
+          ]
+      bms:
+        # deeptau v2 : v7_1GeVbinning
+          '2016': [
+            -4.0, -3.0, -2.0, -1.0,
+            1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
+            9.0, 10.0
+          ]
+
+          '2017': [
+            -4.0, -3.0, -2.0, -1.0,
+            1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
+            9.0, 10.0
+            ]
+
+          '2018': [
+            -4.0, -3.0, -2.0, -1.0,
+            1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
+            9.0, 10.0
+          ]
+
+        # deeptau v1 - accepted: v1_1GeVbinning, v2_1GeVbinning, v3_1GeVbinning, v5_1GeVbinning, v6_1GeVbinning
+          # '2016': [
+          #   -0.5, -1.5, -2.5, -3.5, -4.5,  0.5,  1.5, -1.0, -2.0, -3.0, -4.0, 0.0,  1.0,  10.0, 2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0,
+          #   # v1: -1.0, -2.0, -3.0, -4.0, 0.0,  1.0,  10.0, 2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0,
+          #   # 4.25, 4.5, 4.75,
+          #   # 5.25, 5.5, 5.75,
+          #   # 6.25, 6.5, 6.75,
+          #   # 7.25, 7.5, 7.75,
+
+          #   # -4.0, -3.0, -2.0, -1.75, -1.5, -1.25, -1.0, -0.75, -0.5, -0.25,
+          #   # 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5,
+          #   # 2.75, 3.0, 3.25, 3.5, 3.75, 4.0, 5.0, 6.0, 7.0, 8.0,
+          #   # 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0,
+          #   ]
+
+          # '2017': [
+          #   -0.5, -1.5, -2.5, -3.5, -4.5,  0.5,  1.5, -1.0, -2.0, -3.0, -4.0, 0.0,  1.0,  10.0, 2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0,
+          #   # v1: -1.0, -2.0, -3.0, -4.0, 0.0,  1.0,  10.0, 2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0,
+          #   ]
+
+          # '2018': [
+          #   -0.5, -1.5, -2.5, -3.5, -4.5,  0.5,  1.5, -1.0, -2.0, -3.0, -4.0, 0.0,  1.0,  10.0, 2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0,
+          #   # v1: -1.0, -2.0, -3.0, -4.0, 0.0,  1.0,  10.0, 2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0,
+          # ]
+
+# et_friend_directory: ''
+# mt_friend_directory: ''
+# tt_friend_directory: ''
+# fake_factor_friend_directory: "$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"
+# fes_friend_directory: "/ceph/ohlushch/naf/FES/FES/FESshifts_2017/merged/"
+
+variables_names: [
+  # m_1, m_2,
+  # mt_1, mt_2,
+  # pt_1, pt_2,
+  # eta_1, eta_2,
+  # jpt_1, jpt_2,
+  # jeta_1, jeta_2,
+  # decayMode_1, decayMode_2,
+  # iso_1, iso_2,
+  # d0_1, d0_2,
+  # dZ_1, dZ_2
+  m_vis,
+  # njets,
+  # mt_tot,
+  # # ptvis,
+  # # npv,
+  # njets,
+  # nbtag,
+  # met,
+  # mjj,
+  # dijetpt,
+  # pZetaMissVis,
+  # rho,
+]
+
+# Update extrapolation factors for QCD if available
+update_process_per_category: False
+
+## Cuts
+no_extra_cuts: False  # disabling all below mentioned cuts
+
+# Cuts applied to FES pipelines
+no_fes_extra_cuts: False
+fes_extra_cuts: {}
+
+# Minimal plot level cuts
+# applied to all pipelines! ; might be not callable with smHtt samples
+no_mt_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
+no_et_minplotlev_cuts: False  # do not re-apply minplotlevel cuts
+et_minplotlev_cuts:
+  'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
+  'extraelec_veto': 'extraelec_veto < 0.5'
+  'extramuon_veto': 'extramuon_veto < 0.5'
+
+# Global cuts
+# applied to all pipelines! Here a global difference between master shapes and FES selection should be made
+no_force_cuts: False  # forcing
+force_cuts:
+  'pt_2': 'pt_2>23' # 17/18->23; 16->30
+  'dilepton_veto': Null  # removes the cut; to enhance Z->ee; it need at artus minimalplotlevfilter nDiElectronVetoPairsOS cut to be disabled
+  #
+  # Was used before
+  # TEMP
+  "mt_1" : "mt_1<70"  # less W+J
+  "byTightDeepTau2017v2p1VSe_2": "byTightDeepTau2017v2p1VSe_2>0.5" # only for use with v0, but in principle doesn't hurt
+  # Cuts to overwrite by year:
+  '2016':
+    'pt_2': 'pt_2>30' # 17/18->23; 16->30
+
+  # "tau_iso": 'byLooseIsolationMVArun2017v2DBoldDMwLT2017_2 > 0.5' # to enhance Z->ee, I think it wasn't used in the last iteration, for it the new FF have to be recalculated...
+  #
+  # Completely obsolete:
+  # 'trg_selection': "(trg_singleelectron_27 == 1) || (trg_singleelectron_32 == 1) || (trg_singleelectron_35) || (trg_crossele_ele24tau30 == 1) || (isEmbedded && pt_1>20 && pt_1<24)"  # used at 2017
+
+
+# Invert cuts if present
+# applied to all pipelines!
+invert_cuts: [] # Cuts to be inverted. Applied prior the force-cuts and don't affect them.
+
+## Processed is the intersection with list from _known_estimation_methods
+skip_systematic_variations: False
+shifts: [
+  nominal,
+
+  # EMB,
+  FES_shifts,
+  Zpt,
+  prefiring,
+  Tpt,
+  TrgEff,
+  # QCDem,
+  # WG1,
+  # FF,
+
+  TES,
+  # BTag,
+  # METES,
+  EES,
+  # ZES,
+  #
+  # JES,
+  # 'ZTTpTT'  todo
+]
+
+## Weights
+# --replace-weights="{'leptonTauFakeRateWeight':'muTauFakeRateWeight'}"
+replace_weights: {
+    # 'leptonTauFakeRateWeight': "muTauFakeRateWeight"
+}
+
+
+use_update_weights_categoies: False
+# done by matching with python 'in'
+update_weights_categoies:
+  2016:
+    eta_2_barel_njetN_dm0:
+        eleTauFakeRateWeight: 0.881
+    eta_2_barel_njetN_dm1:
+      eleTauFakeRateWeight: 1.295
+
+    eta_2_endcap_njetN_dm0:
+      eleTauFakeRateWeight: 0.902
+    eta_2_endcap_njetN_dm1:
+      eleTauFakeRateWeight: 0.749
+
+    inc_eta_2_njetN_dm0:
+      eleTauFakeRateWeight: 0.847
+    inc_eta_2_njetN_dm1:
+      eleTauFakeRateWeight: 1.188
+
+  2017:
+    eta_2_barel_njetN_dm0:
+      eleTauFakeRateWeight: 1.116
+    eta_2_barel_njetN_dm1:
+      eleTauFakeRateWeight: 1.215
+
+    eta_2_endcap_njetN_dm0:
+      eleTauFakeRateWeight: 0.989
+    eta_2_endcap_njetN_dm1:
+      eleTauFakeRateWeight: 0.752
+
+    inc_eta_2_njetN_dm0:
+      eleTauFakeRateWeight: 1.075
+    inc_eta_2_njetN_dm1:
+      eleTauFakeRateWeight: 1.124
+
+  2018:
+    eta_2_barel_njetN_dm0:
+      eleTauFakeRateWeight: 1.412
+    eta_2_barel_njetN_dm1:
+      eleTauFakeRateWeight: 1.437
+
+    eta_2_endcap_njetN_dm0:
+      eleTauFakeRateWeight: 0.815
+    eta_2_endcap_njetN_dm1:
+      eleTauFakeRateWeight: 0.62
+
+    inc_eta_2_njetN_dm0:
+      eleTauFakeRateWeight: 1.182
+    inc_eta_2_njetN_dm1:
+      eleTauFakeRateWeight: 1.238
+
+## Categories
+use_grid_categories: True
+grid_categories:
+
+  eta_2_region: [
+    'inc_eta_2',
+    'eta_2_barel',
+    'eta_2_endcap',
+    # 'eta_2_barel_real',
+    # 'eta_2_gap',
+    # 'eta_2_endcap_real',
+  ]
+
+  decay_mode: [
+    # 'alldm',
+    'dm0',
+    'dm1',
+    # 'dm10', # for FES is not interesting
+  ]
+
+  jets_multiplicity: [
+    'njetN',
+    # 'njet0', # worse fits
+  ]
+
+use_single_categories: False # by dault not producing these shapes
+single_categories:
+
+  # inclusive: {}  # signal region
+
+  inclusive_withminplotlev:
+    'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
+    'extraelec_veto': 'extraelec_veto < 0.5'
+    'extramuon_veto': 'extramuon_veto < 0.5'
+
+  # mt1_lt70:
+  #   'm_t': 'mt_1<70'  # signal region
+
+  # mt1_gt70:
+  #   'm_t': 'mt_1>70'
+
+  # extra_elec_invert:
+  #   'extraelec_veto': 'extraelec_veto > 0.5'
+
+  # nDiElectronVetoPairsOS_invert:
+  #   'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS > 0.5'
+
+  # dilepton_veto_invert:
+  #   'dilepton_veto': 'dilepton_veto>0.5'
+
+
+
