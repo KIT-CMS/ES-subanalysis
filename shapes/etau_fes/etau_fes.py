@@ -183,10 +183,15 @@ class ETauFES(Shapes):
         for channel_name, channel_holder in self._channels.iteritems():
             processes = channel_holder._processes.values()
             categories = channel_holder._categorries
+            # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 
             # active processes in groups
             mc_processes = [key for key in channel_holder._processes.keys() if 'data' not in key and 'EMB' not in key]
             sm_ggH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["ggH125", "ggH_GG2H", "ggHToWW"])]
+            # sm_qqH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["qqH125", "qqH_GG2H", "qqHToWW"])]
+            # sm_VH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["WH125", "ZH125", "ttH125"])]
+            # mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
+            # mssm_bbH_signals = {"bbA", "bbH", "bbh"};
 
             # print '\n nominal...'
             self._logger.info('\n\nNominal...')
@@ -309,6 +314,11 @@ class ETauFES(Shapes):
                 self._logger.info('\n\n prefiring shifts...')
 
                 prefiring_variations = []
+                # for process, category in product(processes, categories):
+                #     if '2017' not in process._estimation_method._era.__class__.__name__:
+                #     continue
+                # print "categories:", categories, categories[0].name
+                # print "processes:", processes, [p.name for p in processes]
                 for updownvar in ['Up', 'Down']:
                     prefiring_variations.append(
                         ReplaceWeight(
@@ -319,6 +329,13 @@ class ETauFES(Shapes):
                                 "prefireWeight"),
                             updownvar))
 
+                # # import pdb; pdb.set_trace()
+                # print "bef:", len(self._systematics._systematics)
+                # for variation in prefiring_variations:
+                #     for process_nick in mc_processes:
+                #         print process_nick, variation
+
+                # print "aft:"
                 for variation in prefiring_variations:
                     for process_nick in mc_processes:
                         self._systematics.add_systematic_variation(
@@ -327,6 +344,8 @@ class ETauFES(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
+                # print "aft:", len(self._systematics._systematics)
+                # exit(0)
 
             # Z pt reweighting
             if 'Zpt' in self._shifts:
@@ -658,12 +677,12 @@ class ETauFES(Shapes):
             # Ele energy scale & smear uncertainties (MC-specific), it is et & em specific
             if 'EES' in self._shifts and channel_name in ["et", "em"]:
                 self._logger.info('\n\n EES reweighting')
-                ele_es_emb_variations = create_systematic_variations("CMS_scale_emb_e", "eleEs", DifferentPipeline)
-                ele_es_variations = create_systematic_variations("CMS_scale_mc_e", "eleScale", DifferentPipeline)
-                ele_es_variations += create_systematic_variations("CMS_reso_mc_e", "eleSmear", DifferentPipeline)
+                ele_es_emb_variations = create_systematic_variations("CMS_scale_emb_e", "eleEs", DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
+                ele_es_variations = create_systematic_variations("CMS_scale_mc_e", "eleScale", DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
+                ele_es_variations += create_systematic_variations("CMS_reso_mc_e", "eleSmear", DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
 
-                # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                 for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' in x and 'QCDSStoOS' not in x]:
+                    # print 'process_nick emb:', process_nick, ele_es_emb_variations
                     self._systematics.add_systematic_variation(
                         variation=ele_es_emb_variations,
                         process=channel_holder._processes[process_nick],
@@ -675,7 +694,9 @@ class ETauFES(Shapes):
                     # TODO: check all proc are needed here
                     # proc_intersection = list(set(self._ees_sys_processes) & set(channel_holder._processes.keys()))
                     # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    # for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x and 'QCDSStoOS' not in x]:
                     for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x]:
+                        # print 'process_nick:', process_nick, variation
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
@@ -747,6 +768,28 @@ class ETauFES(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
+
+            # TODO:
+            # # Recoil correction unc, for resonant processes
+            # if 'recoil' in self._shifts and channel_name in ["et", "em"]:
+            #     self._logger.info('\n\n recoil reweighting')
+
+            #     recoil_variations = create_systematic_variations("CMS_htt_boson_reso_met_Run2017", "metRecoilResolution", DifferentPipeline)
+            #     recoil_variations += create_systematic_variations("CMS_htt_boson_scale_met_Run2017", "metRecoilResponse", DifferentPipeline)
+
+            #     # sm_ggH_processes ggH qqH, {"ZTT", "ZL", "ZJ", "W", H125, bbH, bbA etc.
+            #     # signals, mssm_signals, signals_ggHToWW, signals_qqHToWW,{"ZTT", "ZL", "ZJ", "W"}
+            #     for variation in recoil_variations:
+            #         # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
+            #         proc_intersection = list(set(self._zl_sys_processes) & set(channel_holder._processes.keys()))
+            #         # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+            #         for process_nick in proc_intersection:
+            #             self._systematics.add_systematic_variation(
+            #                 variation=variation,
+            #                 process=channel_holder._processes[process_nick],
+            #                 channel=channel_holder._channel_obj,
+            #                 era=self.era
+            #             )
 
     def upplyFesCuts(self, pipeline, depth):
         '''

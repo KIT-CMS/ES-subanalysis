@@ -15,6 +15,14 @@ ees_sys_processes: ["EMB"]
 zl_sys_processes: ["ZL"]
 tpt_sys_processes: ["TTT", "TTL", "TTJ", "TT"]
 
+# DECORRELATION
+# //// per ERA
+# // MC uncorrelated uncertainty
+tes_sys_processes_mc_uncor: ["ZTT", "TTT", "TTL", "VVT", "VVL", "EWKT", "DYJetsToLL", "jetFakes", "jetFakesEMB"]
+# // Embedded uncorrelated uncertainty
+tes_sys_processes_mc_uncor: ["EMB", "jetFakes", "jetFakes", "jetFakesEMB"]
+# // MC + embedded correlated uncertainty
+
 _complexEstimationMethods: [
   WEstimationWithQCD ,
   QCDEstimationWithW ,
