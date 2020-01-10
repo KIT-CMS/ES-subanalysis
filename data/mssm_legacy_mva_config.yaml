@@ -1,0 +1,300 @@
+backend: classic
+channels: [et, mt, tt, em]
+num_threads: 1
+datasets: datasets/datasets.json
+
+binning: data/binning.yaml
+binning_key: control
+
+# 1 GeV binning
+# binning: data/binning_fes.yaml
+# binning_key: etau_fes
+
+
+era: '2017'
+tag: mssm
+context_analysis: mssmMVA
+methods_collection_key: "Legacy_FES_with_QCDSStoOS" # Legacy_FES_with_EMB_QCDSStoOS ; in 2017: Original_FES_with_FF
+
+output_file: Null  # keep it empty for auto-naming
+output_file_name: Null  # keep it empty for auto-naming: era + context_analysis + methods_collection_key
+
+user_specific:
+  output_file_dir:
+    byhost:
+      default: Null
+    glusheno:
+      naf: Null
+    ohlushch:
+      bms:/ceph/ohlushch/shapes/MSSM/mva/shapes/
+
+  ## Path to inputs with nominal pipeline and systematics
+  ## Note: shared samples should Not be used in the FES subanalysis since those contain the old FES corrections
+  directory:
+    byhost:
+      default: Null
+      naf:
+        Null
+      bms:
+        Null
+    glusheno:
+      naf: Null
+    #TODO: check on how to use $ARTUS_OUTPUTS_2017 and shifts with common friends
+    ohlushch:
+      bms:
+        # '2016': /ceph/ohlushch/ETauFakeES_deeptau_v0/2016/merged_noshifts/2016
+        '2017': /ceph/ohlushch/MSSM_Legacy_mva_v0/merged/2017
+        '2018': /ceph/ohlushch/MSSM_Legacy_mva_v0/merged/2018
+
+  et_friend_directory:
+    byhost:
+      default: []
+      bms:
+        '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
+  mt_friend_directory:
+    byhost:
+      default: []
+      bms:
+        '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
+  tt_friend_directory:
+    byhost:
+      default: []
+      bms:
+        '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
+  em_friend_directory:
+    byhost:
+      default: []
+      bms:
+        '2017' : []
+        '2018' : []
+
+  fake_factor_friend_directory:
+    byhost:
+      default: ["$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"]
+      bms:
+        '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
+
+  ## FES shifts pipelines should be stored separatelys
+  fes_friend_directory:
+    byhost:
+      default: []
+
+  # 2016
+  etau_es_shifts:
+    byhost:
+      default: []
+
+# et_friend_directory: ''
+# mt_friend_directory: ''
+# tt_friend_directory: ''
+# fake_factor_friend_directory: "$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"
+# fes_friend_directory: "/ceph/ohlushch/naf/FES/FES/FESshifts_2017/merged/"
+
+variables_names: [
+  #
+  # # Artus values
+  #
+  # m_1, m_2,
+  # mt_1, mt_2,
+  # pt_1, pt_2,
+  # eta_1, eta_2,
+  # jpt_1, jpt_2,
+  # jeta_1, jeta_2,
+  # decayMode_1, decayMode_2,
+  # iso_1, iso_2,
+  # d0_1, d0_2,
+  # dZ_1, dZ_2
+  m_vis,
+  # njets,
+  # mt_tot,
+  # # ptvis,
+  # # npv,
+  # njets,
+  # nbtag,
+  # met,
+  # mjj,
+  # dijetpt,
+  # pZetaMissVis,
+  # rho,
+  #
+  # # SVFIT values
+  #
+  # eta_fastmtt
+  # eta_fastmtt_puppi
+  # eta_sv
+  # eta_sv_puppi
+  # m_fastmtt
+  # m_fastmtt_puppi
+  # m_sv
+  # m_sv_puppi
+  # phi_fastmtt
+  # phi_fastmtt_puppi
+  # phi_sv
+  # phi_sv_puppi
+  # pt_fastmtt
+  # pt_fastmtt_puppi
+  # pt_sv
+  # pt_sv_puppi
+]
+
+# Update extrapolation factors for QCD if available
+update_process_per_category: False
+
+## Cuts
+no_extra_cuts: False  # disabling all below mentioned cuts
+
+# Cuts applied to FES pipelines
+no_fes_extra_cuts: False
+fes_extra_cuts: {}
+
+# Minimal plot level cuts
+# applied to all pipelines! ; might be not callable with smHtt samples
+no_mt_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
+no_et_minplotlev_cuts: True  # do not re-apply minplotlevel cuts
+et_minplotlev_cuts: {}
+mt_minplotlev_cuts: {}
+tt_minplotlev_cuts: {}
+em_minplotlev_cuts: {}
+
+# Global cuts
+# applied to all pipelines! Here a global difference between master shapes and FES selection should be made
+no_force_cuts: True
+force_cuts: {}
+
+# Invert cuts if present
+# applied to all pipelines!
+invert_cuts: [] # Cuts to be inverted. Applied prior the force-cuts and don't affect them.
+
+## Processed is the intersection with list from _known_estimation_methods
+skip_systematic_variations: False
+shifts: [
+  nominal,
+
+  # EMB,
+  FES_shifts,
+  Zpt,
+  prefiring,
+  Tpt,
+  TrgEff,
+  # QCDem,
+  # WG1,
+  # FF,
+  # 'ZTTpTT'
+
+  TES,
+  # BTag,
+  # METES,
+  EES,
+  # ZES,
+  #
+  # JES, todo
+]
+
+## Weights
+replace_weights: {}
+
+## Categories
+use_grid_categories: False
+grid_categories:
+
+  eta_2_region: [
+    'inc_eta_2',
+    'eta_2_barel',
+    'eta_2_endcap',
+    # 'eta_2_barel_real',
+    # 'eta_2_gap',
+    # 'eta_2_endcap_real',
+  ]
+
+  decay_mode: [
+    'alldm',
+    'dm0',
+    'dm1',
+    # 'dm10', # for FES is not interesting
+  ]
+
+  jets_multiplicity: [
+    'njetN',
+    # 'njet0', # worse fits
+  ]
+
+use_single_categories: False # by dault not producing these shapes
+single_categories:
+
+  # inclusive: {}  # signal region
+
+  inclusive_withminplotlev:
+    'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
+    'extraelec_veto': 'extraelec_veto < 0.5'
+    'extramuon_veto': 'extramuon_veto < 0.5'
+
+  # mt1_lt70:
+  #   'm_t': 'mt_1<70'  # signal region
+
+  # mt1_gt70:
+  #   'm_t': 'mt_1>70'
+
+  # extra_elec_invert:
+  #   'extraelec_veto': 'extraelec_veto > 0.5'
+
+  # nDiElectronVetoPairsOS_invert:
+  #   'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS > 0.5'
+
+  # dilepton_veto_invert:
+  #   'dilepton_veto': 'dilepton_veto>0.5'
+
+use_channel_specific: True
+channel_specific:
+  em:
+    # use_grid_categories: True
+    grid_categories:
+
+      btag_region: [
+        'nbtag_zero',
+        'nbtag_nonzero',
+      ]
+
+      pZetaMissVis_region: [
+        'dzeta_low',
+        'dzeta_medium',
+        'dzeta_high',
+      ]
+  et:
+    # use_grid_categories: True
+    grid_categories:
+
+      btag_region: [
+        'nbtag_zero',
+        'nbtag_nonzero',
+      ]
+
+      mt_1_region: [
+        'mt_1_tight',
+        'mt_1_loose',
+      ]
+  mt:
+    # use_grid_categories: True
+    grid_categories:
+
+      btag_region: [
+        'nbtag_zero',
+        'nbtag_nonzero',
+      ]
+
+      mt_1_region: [
+        'mt_1_tight',
+        'mt_1_loose',
+      ]
+  tt:
+    # use_grid_categories: True
+    grid_categories:
+
+      btag_region: [
+        'nbtag_zero',
+        'nbtag_nonzero',
+      ]
+
