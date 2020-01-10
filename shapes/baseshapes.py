@@ -49,23 +49,23 @@ class Shapes(object):
                  danger=False,
                  era=None,
                  et_friend_directory=None,
+                 mt_friend_directory=None,
+                 tt_friend_directory=None,
+                 em_friend_directory=None,
                  fake_factor_friend_directory=None,
                  fes_friend_directory=None,
                  fes_extra_cuts={},
-                 et_minplotlev_cuts={},
                  force_cuts={},
                  invert_cuts=None,
                  extra_chain=None,
                  gof_channel=None,
                  gof_variable=None,
-                 mt_friend_directory=None,
                  num_threads=None,
                  skip_systematic_variations=None,
                  tag=None,
                  output_file=None,
                  output_file_name=None,
                  output_file_dir=None,
-                 tt_friend_directory=None,
                  context_analysis=None,
                  variables_names=None,  # X
                  processes=None,
@@ -118,6 +118,8 @@ class Shapes(object):
         else:
             self._etau_es_shifts = etau_es_shifts
 
+        # assert isinstance(self._etau_es_shifts, six.string_types), "Shapes::FES shifts not set"
+
         self._datasets = datasets
         assert isinstance(self._datasets, six.string_types), "Shapes::datasets not set"
 
@@ -146,6 +148,7 @@ class Shapes(object):
             '_et_friend_directory': et_friend_directory,
             '_mt_friend_directory': mt_friend_directory,
             '_tt_friend_directory': tt_friend_directory,
+            '_em_friend_directory': em_friend_directory,
             '_fake_factor_friend_directory': fake_factor_friend_directory,
             '_fes_friend_directory': fes_friend_directory,
         }
@@ -161,8 +164,6 @@ class Shapes(object):
             else:
                 setattr(self, k, [os.path.expandvars(i) for i in v])
 
-        self._fes_extra_cuts = fes_extra_cuts
-        self._et_minplotlev_cuts = et_minplotlev_cuts
         self._force_cuts = force_cuts
         for year in ['2016', '2017', '2018']:
             if year in self._force_cuts.keys():
@@ -174,18 +175,31 @@ class Shapes(object):
         self._replace_weights = replace_weights
 
         # Cuts manipulations
+        channel_minplotlev_cuts = [
+            'et_minplotlev_cuts', 'mt_minplotlev_cuts',
+            'tt_minplotlev_cuts', 'em_minplotlev_cuts',
+            'channel_specific'
+        ]
         cuts_manipulations = [
             'fes_extra_cuts', 'force_cuts', 'extra_cuts',
-            'et_minplotlev_cuts', 'mt_minplotlev_cuts',
             'grid_categories', 'single_categories',
+            'channel_specific'
         ]
-        for base in cuts_manipulations:
+        # defaults {}
+        for base in channel_minplotlev_cuts:
+            setattr(self,
+                '_' + base,
+                kwargs[base] if base in kwargs.keys() else {})
+
+        # use_*/no_*
+        for base in cuts_manipulations + channel_minplotlev_cuts:
             for p in ['use_', 'no_']:
                 setattr(self,
                     '_' + p + base,
                     kwargs[p + base] if p + base in kwargs.keys() else None)
             use = getattr(self, '_use_' + base)
             nouse = getattr(self, '_no_' + base)
+            use = False if nouse == use and use is None else use
             assert nouse != use, "Cant use %s and %s together" % ('use_' + base, 'no_' + base)
 
         if self._no_fes_extra_cuts:
@@ -242,7 +256,8 @@ class Shapes(object):
 
         self._shifts = shifts
 
-        if not self._no_grid_categories or self._use_grid_categories:
+        # set the categories
+        if (not self._no_grid_categories and self._no_grid_categories is not None) or self._use_grid_categories:
             self._grid_categories = grid_categories
             for k, v in parser_grid_categories.iteritems():
                 self._grid_categories[k] = copy.deepcopy(v)
@@ -250,7 +265,7 @@ class Shapes(object):
             self._logger.warning('All grid categorries ignored')
             self._grid_categories = {}
 
-        if not self._no_single_categories or self._use_single_categories:
+        if (not self._no_single_categories and self._no_single_categories is not None) or self._use_single_categories:
             self._single_categories = single_categories
         else:
             self._single_categories = {}
@@ -471,6 +486,7 @@ class Shapes(object):
         parser.add_argument('--use-extra-cuts', action='store_true', default=None, help='use extra cuts')
         parser.add_argument('--use-grid-categories', action='store_true', default=None, help='use categorisation defined by grid_categories config.')
         parser.add_argument('--use-single-categories', action='store_true', default=None, help='use categorisation defined by single_categories config.')
+        parser.add_argument('--use-channel-specific', action='store_true', default=None, help='use categorisation defined separately for channels.')
 
         parser.add_argument('--update-process-per-category', action='store_true', default=None, help='Used to update extrapolation factors for the QCD estimation methods if they are provided')
 
@@ -520,6 +536,7 @@ class Shapes(object):
         defaultArguments['use_extra_cuts'] = False
         defaultArguments['use_grid_categories'] = False
         defaultArguments['use_single_categories'] = False
+        defaultArguments['use_channel_specific'] = False
 
         defaultArguments['update_process_per_category'] = False
 
@@ -974,11 +991,18 @@ class Shapes(object):
             return d
 
     # TODO: needs to belong to ChannelHolder ;
-    def getCategorries(self, channel_holder, cuts=None):
+    def getCategorries(self, channel_holder, cuts=None,
+            grid_categories=None,
+            single_categories=None,
+            channel_specific=None):
         """
         Returns dict of Cattegories for Channel
         """
         self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+
+        grid_categories = self._grid_categories if grid_categories is None else grid_categories
+        single_categories = self._single_categories if single_categories is None else single_categories
+        channel_specific = self._channel_specific if channel_specific is None else channel_specific
         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
         categories = []
         intersection = lambda x, y: list(set(x) & set(y))
@@ -993,7 +1017,8 @@ class Shapes(object):
             #         )
             #         channel_holder._channel_obj.cuts.remove("m_t")
 
-            categories_by_space = [self._grid_categories[k] for k in self._grid_categories.keys()]
+            # grid categories
+            categories_by_space = [grid_categories[k] for k in grid_categories.keys()]
             if len(categories_by_space) > 0:
                 for category_space_cuts in product(*categories_by_space):
                     # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
@@ -1013,7 +1038,7 @@ class Shapes(object):
 
                     for cuts_class in self._known_cuts.keys():
                         # Add the $cuts_class splitting cattegorization
-                        if cuts_class in self._grid_categories.keys():
+                        if cuts_class in grid_categories.keys():
                             cut_class_key = intersection(category_space_cuts, self._known_cuts[cuts_class].keys())
                             if len(cut_class_key) > 1:
                                 raise Exception("Too many %s values to unfold: [%s]" % (cuts_class, ', '.join(cut_class_key)))
@@ -1022,7 +1047,8 @@ class Shapes(object):
                                 self._logger.debug("Add the %s splitting: {%s: %s}" % (cuts_class, cut_class_key, self._known_cuts[cuts_class][cut_class_key]))
                                 categories[-1].cuts.add(Cut(self._known_cuts[cuts_class][cut_class_key], cut_class_key))
 
-            for category_name, category_cuts in self._single_categories.iteritems():
+            # single categories
+            for category_name, category_cuts in single_categories.iteritems():
                 self._logger.info('%s : ..adding single category %s' % (sys._getframe().f_code.co_name, category_name))
                 categories.append(
                     Category(
@@ -1041,6 +1067,16 @@ class Shapes(object):
                     if cut_expression is not None:
                         categories[-1].cuts.add(Cut(cut_expression, cut_key))
                     self._logger.debug('\t appending category cut: {"%s": "%s"}' % (cut_key, cut_expression))
+
+            # categories specific for the channel
+            if channel_holder._channel_obj.name in channel_specific.keys():
+                ch = channel_specific[channel_holder._channel_obj.name]
+                categories += self.getCategorries(
+                    channel_holder=channel_holder,
+                    grid_categories=ch['grid_categories'] if 'grid_categories' in ch.keys() else {}, # TODO: 'and use_grid_categories'
+                    single_categories=ch['single_categories'] if 'single_categories' in ch.keys() else {}, # TODO: 'and use_single_categories'
+                    channel_specific={},
+                )
 
         log_categories = '\tCattegories:\n'
         for category in categories:
@@ -1066,7 +1102,6 @@ class Shapes(object):
         # import pdb; pdb.set_trace()
         # # !import code; code.interact(local=vars())
 
-
         if 'nominal' not in self._shifts:
             self._logger.warning("Nominal shapes will not be produced")
             # import pdb; pdb.set_trace()
@@ -1074,8 +1109,8 @@ class Shapes(object):
         shapes_to_prod = '\n'
         shapes_to_prod_debug = '\n'
         for i in self._systematics._systematics:
-            shapes_to_prod += "{:>60s} {:<10s}  {:<25s}\n".format(i._variation.name, i._process._name, i._category._name)
-            shapes_to_prod_debug += "{:>60s} {:<10s}  {:<25s}\n {:s}".format(i._variation.name, i._process._name, i._category._name, i._process._estimation_method.get_weights().__str__)
+            shapes_to_prod += "{:>60s} {:<10s}  {:<30s} {:<2}\n".format(i._variation.name, i._process._name, i._category._name, i._process._estimation_method._channel.name)
+            shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2}\n {:s}".format(i._variation.name, i._process._name, i._category._name, i._process._estimation_method.get_weights().__str__, i._process._estimation_method._channel.name)
 
         if self._log_level != 'debug':
             self._logger.info("Starting to produce following shapes: " + shapes_to_prod)
