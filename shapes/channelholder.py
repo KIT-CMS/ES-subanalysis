@@ -61,7 +61,7 @@ class ChannelHolder(object):
         self._debug = debug
 
         self._channel_obj = channel_obj  # channel instance from shape-producer
-        self._name = name
+        self._name = name if name is not None else self._channel_obj.name
         self._cuts = cuts  # only channel-defining cuts, not the categories
         self._processes = processes  # dict of process instances from shape-producer
         self._variables = variables
