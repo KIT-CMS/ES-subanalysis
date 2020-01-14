@@ -1,5 +1,6 @@
 import os
 
+import subprocess
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -78,10 +79,10 @@ def produce_shapes_variables(config):
 
     print '\n # 8 - convert to synched shapes'
 
-    import subprocess
-    process = subprocess.Popen(['send', '"MSSM shape production finished: %s"' % (shapes._output_file)],
-        stdout=subprocess.PIPE, shell=True)
-    output, error = process.communicate()
+    if not shapes._dry:
+        process = subprocess.Popen(['send', '"MSSM shape production finished: %s"' % (shapes._output_file)],
+            stdout=subprocess.PIPE, shell=True)
+        output, error = process.communicate()
 
     if os.path.basename(os.path.normpath(shapes._output_file_dir)) == 'shapes':
         import copy
