@@ -35,20 +35,20 @@ def produce_shapes_variables(config):
 
     shapes.setup_logging(
         output_file=shapes._output_file.replace('.root', '.log'),
-        level=shapes._log_level,
+        level=shapes._log_level.lower(),
         logger=shapes._logger,
         danger=shapes._danger,
     )
     # # Disabling some printouts
     # TODO - add this only to the case with higher verbosity
-    if shapes._log_level == 'debug':
+    if shapes._log_level == 'DEBUG':  # shapes._debug_shape_producer:  # shapes._log_level == 'debug'
         logging.getLogger('shape_producer').setLevel(log.DEBUG)
     else:
         logging.getLogger('shape_producer').setLevel(log.INFO)
     # # logging.getLogger('shape_producer.systematics').setLevel(log.INFO)
     # # logging.getLogger('shape_producer.histogram').setLevel(log.INFO)
 
-    if shapes._log_level == 'debug':
+    if shapes._log_level == 'Debug':
         logging.getLogger('shape_producer.histogram').setLevel(log.DEBUG)
         # logging.getLogger('shape_producer.systematics').setLevel(log.DEBUG)
         # logging.getLogger('shape_producer.systematic_variations').setLevel(log.DEBUG)
