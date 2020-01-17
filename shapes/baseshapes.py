@@ -1174,14 +1174,36 @@ class Shapes(object):
             self._systematics._systematics = [i for i in self._systematics._systematics if i._variation._name != 'Nominal']
         shapes_to_prod = '\n'
         shapes_to_prod_debug = '\n'
+        log_d = {}
         for i in self._systematics._systematics:
-            shapes_to_prod += "{:>60s} {:<10s}  {:<30s} {:<2}\n".format(i._variation.name, i._process._name, i._category._name, i._process._estimation_method._channel.name)
-            shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2}\n {:s}".format(i._variation.name, i._process._name, i._category._name, i._process._estimation_method.get_weights().__str__, i._process._estimation_method._channel.name)
+            ch = i._process._estimation_method._channel.name
+            variation = i._variation.name
+            cat = i._category._name
+            if ch not in log_d.keys():
+                log_d[ch] = {'n': 0, 'variation': {}}
+            if variation not in log_d[ch]['variation'].keys():
+                log_d[ch]['variation'][variation] = {'n': 0, 'categ': {}}
+            if cat not in log_d[ch]['variation'][variation]['categ'].keys():
+                log_d[ch]['variation'][variation]['categ'][cat] = 0
+            log_d[ch]['variation'][variation]['categ'][cat] += 1
+            shapes_to_prod += "{:>60s} {:<10s}  {:<30s} {:<2}\n".format(variation, i._process._name, cat, ch)
+            shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2}\n {:s}".format(variation, i._process._name, cat, i._process._estimation_method.get_weights().__str__, ch)
 
-        if self._log_level != 'debug':
+        for ch in log_d.keys():
+            n1 = 0
+            for v in log_d[ch]['variation'].keys():
+                n = 0
+                for c in log_d[ch]['variation'][v]['categ'].keys():
+                    n += log_d[ch]['variation'][v]['categ'][c]
+                log_d[ch]['variation'][v]['n'] = n
+                n1 += n
+            log_d[ch]['n'] = n1
+
+        if self._log_level.lower() != 'debug':
             self._logger.info("Starting to produce following shapes: " + shapes_to_prod)
         else:
             self._logger.info("Starting to produce following shapes [debug]: " + shapes_to_prod_debug)
+            pp.pprint(log_d)
         # print 'name:', self._systematics._systematics[0]._variation._name, self._systematics._systematics[0]._process._name, self._systematics._systematics[0]._category._name
         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 
@@ -1192,7 +1214,7 @@ class Shapes(object):
                 return
             self._systematics.produce()
         else:
-            self._logger.info("Dry run, stopping")
+            self._logger.info("Dry run, stopping. Nshapes: %d" % len(self._systematics._systematics))
 
 
 if __name__ == '__main__':
