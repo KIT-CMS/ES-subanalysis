@@ -95,6 +95,7 @@ class Shapes(object):
                  shifts=None,
                  grid_categories={},
                  parser_grid_categories={},
+                 mask_grid_categories={},
                  single_categories={},
                  indent=0,
                  update_process_per_category=None,
@@ -222,6 +223,23 @@ class Shapes(object):
             self._et_minplotlev_cuts = {}
             self._force_cuts = {}
 
+        if self._no_channel_specific:
+            self._logger.warning('All channel_specific categorries are ignored')
+            self._channel_specific = {}
+        else:
+            for c in self._channel_specific.keys():
+                if 'grid_categories' in self._channel_specific[c].keys():
+
+                    # add-update categories
+                    for k, v in parser_grid_categories.iteritems():
+                        self._channel_specific[c]['grid_categories'][k] = copy.deepcopy(v)
+
+                    # mask/limit catogories
+                    for k, v in mask_grid_categories.iteritems():
+                        k = k.strip('mask_')
+                        if k in self._channel_specific[c]['grid_categories'].keys():
+                            self._channel_specific[c]['grid_categories'][k] = copy.deepcopy(v)
+
         self._extra_chain = extra_chain
         self._gof_channel = gof_channel
         self._gof_variable = gof_variable
@@ -250,7 +268,8 @@ class Shapes(object):
             'ees_sys_processes', 'zl_sys_processes', 'tpt_sys_processes',
         ]
         for sys_process in sys_processes:
-            setattr(self,
+            setattr(
+                self,
                 '_' + sys_process,
                 kwargs[sys_process] if sys_process in kwargs.keys() else None)
 
@@ -259,8 +278,16 @@ class Shapes(object):
         # set the categories
         if (not self._no_grid_categories and self._no_grid_categories is not None) or self._use_grid_categories:
             self._grid_categories = grid_categories
+
+            # add-update catogories
             for k, v in parser_grid_categories.iteritems():
                 self._grid_categories[k] = copy.deepcopy(v)
+
+            # mask/limit catogories
+            for k, v in mask_grid_categories.iteritems():
+                k = k.strip('mask_')
+                if k in self._grid_categories.keys():
+                    self._grid_categories[k] = copy.deepcopy(v)
         else:
             self._logger.warning('All grid categorries ignored')
             self._grid_categories = {}
@@ -268,6 +295,7 @@ class Shapes(object):
         if (not self._no_single_categories and self._no_single_categories is not None) or self._use_single_categories:
             self._single_categories = single_categories
         else:
+            self._logger.warning('All single categorries ignored')
             self._single_categories = {}
         assert isinstance(self._grid_categories, dict), "grid_categories:: should be dict"
         assert isinstance(self._single_categories, dict), "single_categories:: should be dict"
@@ -331,7 +359,7 @@ class Shapes(object):
                 log.fatal('variables_names should be a list of string or string')
                 raise
         elif all(isinstance(item, basestring) for item in value):
-                self._variables_names = value
+            self._variables_names = value
         else:
             log.fatal('variables_names list contains a non-string: [' + ', '.join(self._variables_names) + ']')
             raise
@@ -466,11 +494,24 @@ class Shapes(object):
         # parser.add_argument("--emb-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
 
         parser.add_argument("--shifts", nargs='+', type=str, help="Pipelines, uncertainties variations, shifts : processed is the intersection of this list with list from _known_estimation_methods")
+        parser.add_argument("--binning-key", type=str, help="Used only to pick the binning! example: gof, control")
+        parser.add_argument("--log-level", type=str, help="Log level")
+
+        # Updating if the cuts grooup is already in defined grid-categories and adds it otherwise
         parser.add_argument("--eta-1-region", nargs='+', type=str, help="Needed for categorisation. Choices: eta_1_barel, eta_1_endcap, eta_1_endcap_real")
         parser.add_argument("--decay-mode", nargs='+', type=str, help="Needed for categorisation. Choices: all, dm0, dm1, dm10")
         parser.add_argument("--jets-multiplicity", nargs='+', type=str, help="Needed for categorisation. Choices: njetN, njet0")
-        parser.add_argument("--binning-key", type=str, help="Used only to pick the binning! example: gof, control")
-        parser.add_argument("--log-level", type=str, help="Log level")
+        parser.add_argument("--pZetaMissVis-region", nargs='+', type=str, help="Needed for categorisation. Choices: dzeta_low, dzeta_medium, dzeta_high")
+        parser.add_argument("--mt_1-region", nargs='+', type=str, help="Needed for categorisation. Choices: mt_1_tight, mt_1_loose")
+        parser.add_argument("--btag-region", nargs='+', type=str, help="Needed for categorisation. Choices: nbtag_zero, nbtag_nonzero")
+
+        # Updating if the cuts group is already in defined grid-categories but does NOT add it if it's not
+        parser.add_argument("--mask-eta-1-region", nargs='+', type=str, help="Masks the grid categorries such that only mentioned cuts stay")
+        parser.add_argument("--mask-decay-mode", nargs='+', type=str, help="Masks the grid categorries such that only mentioned cuts stay")
+        parser.add_argument("--mask-jets-multiplicity", nargs='+', type=str, help="Masks the grid categorries such that only mentioned cuts stay")
+        parser.add_argument("--mask-pZetaMissVis-region", nargs='+', type=str, help="Masks the grid categorries such that only mentioned cuts stay")
+        parser.add_argument("--mask-mt_1-region", nargs='+', type=str, help="Masks the grid categorries such that only mentioned cuts stay")
+        parser.add_argument("--mask-btag-region", nargs='+', type=str, help="Masks the grid categorries such that only mentioned cuts stay")
 
         parser.add_argument('--no-fes-extra-cuts', action='store_true', default=None, help='drop extra cuts. Note: will add a prefix to the output file')
         parser.add_argument('--no-et-minplotlev-cuts', action='store_true', default=None, help='drop et minplotlev cuts')
@@ -487,6 +528,7 @@ class Shapes(object):
         parser.add_argument('--use-grid-categories', action='store_true', default=None, help='use categorisation defined by grid_categories config.')
         parser.add_argument('--use-single-categories', action='store_true', default=None, help='use categorisation defined by single_categories config.')
         parser.add_argument('--use-channel-specific', action='store_true', default=None, help='use categorisation defined separately for channels.')
+        parser.add_argument('--no-channel-specific', action='store_true', default=None, help='use categorisation defined separately for channels.')
 
         parser.add_argument('--update-process-per-category', action='store_true', default=None, help='Used to update extrapolation factors for the QCD estimation methods if they are provided')
 
@@ -515,11 +557,22 @@ class Shapes(object):
         # defaultArguments['tpt_sys_processes'] = ["TTT", "TTL", "TTJ", "TT"]
 
         defaultArguments['shifts'] = ['nominal', 'TES', 'EMB', 'FES_shifts', 'TES_shifts']
+        defaultArguments['binning_key'] = 'control'
+        defaultArguments['log_level'] = 'info'
+
         defaultArguments['decay_mode'] = ['all', 'dm0', 'dm1', 'dm10']
         defaultArguments['jets_multiplicity'] = ['njetN', 'njet0']
         defaultArguments['eta_1_region'] = ['inc_eta_1', 'eta_1_barel', 'eta_1_endcap', 'eta_1_barel_real', 'eta_1_endcap_real']
-        defaultArguments['binning_key'] = 'control'
-        defaultArguments['log_level'] = 'info'
+        defaultArguments['pZetaMissVis_region'] = ['dzeta_low', 'dzeta_medium', 'dzeta_high']
+        defaultArguments['mt_1_region'] = ['mt_1_tight', 'mt_1_loose']
+        defaultArguments['btag_region'] = ['nbtag_zero', 'nbtag_nonzero']
+
+        defaultArguments['mask_decay_mode'] = ['all', 'dm0', 'dm1', 'dm10']
+        defaultArguments['mask_jets_multiplicity'] = ['njetN', 'njet0']
+        defaultArguments['mask_eta_1_region'] = ['inc_eta_1', 'eta_1_barel', 'eta_1_endcap', 'eta_1_barel_real', 'eta_1_endcap_real']
+        defaultArguments['mask_pZetaMissVis_region'] = ['dzeta_low', 'dzeta_medium', 'dzeta_high']
+        defaultArguments['mask_mt_1_region'] = ['mt_1_tight', 'mt_1_loose']
+        defaultArguments['mask_btag_region'] = ['nbtag_zero', 'nbtag_nonzero']
 
         for base in cls.cuts_manipulations + cls.channel_minplotlev_cuts:
             for p in ['use_', 'no_']:
@@ -532,6 +585,7 @@ class Shapes(object):
         defaultArguments['no_extra_cuts'] = False
         defaultArguments['no_grid_categories'] = False
         defaultArguments['no_single_categories'] = False
+        defaultArguments['no_channel_specific'] = False
 
         defaultArguments['use_fes_extra_cuts'] = False
         defaultArguments['use_et_minplotlev_cuts'] = False
@@ -558,7 +612,7 @@ class Shapes(object):
                 if argument not in configuration:
                     configuration[argument] = default
 
-        for base in ['fes_extra_cuts', 'et_minplotlev_cuts', 'mt_minplotlev_cuts', 'force_cuts', 'extra_cuts', 'grid_categories', 'single_categories']:
+        for base in ['fes_extra_cuts', 'et_minplotlev_cuts', 'mt_minplotlev_cuts', 'force_cuts', 'extra_cuts', 'grid_categories', 'single_categories', 'channel_specific']:
             use = 'use_' + base
             nouse = 'no_' + base
             assert not (use in configuration.keys() and nouse in configuration.keys()), "%s and %s can't be set at the same time" % (use, nouse)
@@ -570,9 +624,16 @@ class Shapes(object):
                 configuration[use] = not configuration[nouse]
 
         configuration['parser_grid_categories'] = {}
-        for k in ['decay_mode', 'jets_multiplicity', 'eta_1_region']:
+        for k in ['decay_mode', 'jets_multiplicity', 'eta_1_region',
+                  'pZetaMissVis_region', 'mt_1_region', 'btag_region']:
             if k in configuration.keys():
                 configuration['parser_grid_categories'][k] = configuration.pop(k)
+
+        configuration['mask_grid_categories'] = {}
+        for k in ['mask_decay_mode', 'mask_jets_multiplicity', 'mask_eta_1_region',
+                  'mask_pZetaMissVis_region', 'mask_mt_1_region', 'mask_btag_region']:
+            if k in configuration.keys():
+                configuration['mask_grid_categories'][k] = configuration.pop(k)
 
         # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
         return configuration
