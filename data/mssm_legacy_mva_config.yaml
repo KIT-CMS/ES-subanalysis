@@ -24,9 +24,10 @@ user_specific:
     byhost:
       default: Null
     glusheno:
-      naf: Null
+      naf: /nfs/dust/cms/user/glusheno/shapes/MSSM/mva/shapes/
+      bird: /nfs/dust/cms/user/glusheno/shapes/MSSM/mva/shapes/
     ohlushch:
-      bms:/ceph/ohlushch/shapes/MSSM/mva/shapes/
+      bms: /ceph/ohlushch/shapes/MSSM/mva/shapes/
 
   ## Path to inputs with nominal pipeline and systematics
   ## Note: shared samples should Not be used in the FES subanalysis since those contain the old FES corrections
@@ -38,7 +39,13 @@ user_specific:
       bms:
         Null
     glusheno:
-      naf: Null
+      naf:
+        # '2016': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged /ceph/ohlushch/ETauFakeES_deeptau_v0/2016/merged_noshifts/2016
+        '2017': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2017
+        '2018': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2018
+      bird:
+        '2017': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2017
+        '2018': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2018
     #TODO: check on how to use $ARTUS_OUTPUTS_2017 and shifts with common friends
     ohlushch:
       bms:
@@ -49,24 +56,48 @@ user_specific:
   et_friend_directory:
     byhost:
       default: []
+      naf:
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+      bird:
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
   mt_friend_directory:
     byhost:
       default: []
+      naf:
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+      bird:
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
   tt_friend_directory:
     byhost:
       default: []
+      naf:
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+      bird:
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
   em_friend_directory:
     byhost:
       default: []
+      naf:
+        '2017' : []
+        '2018' : []
+      bird:
+        '2017' : []
+        '2018' : []
       bms:
         '2017' : []
         '2018' : []
@@ -74,6 +105,12 @@ user_specific:
   fake_factor_friend_directory:
     byhost:
       default: ["$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"]
+      naf:
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+      bird:
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
@@ -175,7 +212,6 @@ shifts: [
   nominal,
 
   # EMB,
-  FES_shifts,
   Zpt,
   prefiring,
   Tpt,
@@ -183,15 +219,16 @@ shifts: [
   # QCDem,
   # WG1,
   # FF,
-  # 'ZTTpTT'
+  'ZTTpTT',
 
   TES,
-  # BTag,
-  # METES,
+  # FES, # : todo
+  BTag,
+  METES,
   EES,
   # ZES,
   #
-  # JES, todo
+  # JES, # : todo
 ]
 
 ## Weights
@@ -248,6 +285,7 @@ single_categories:
   #   'dilepton_veto': 'dilepton_veto>0.5'
 
 use_channel_specific: True
+# updated values get OVERWRITTEN, not extended/updated!
 channel_specific:
   em:
     # use_grid_categories: True
