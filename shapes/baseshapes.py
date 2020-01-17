@@ -34,6 +34,16 @@ class Shapes(object):
     def intersection(x, y):
         return list(set(x) & set(y))
 
+    channel_minplotlev_cuts = [
+            'et_minplotlev_cuts', 'mt_minplotlev_cuts',
+            'tt_minplotlev_cuts', 'em_minplotlev_cuts',
+            'channel_specific'
+    ]
+    cuts_manipulations = [
+        'fes_extra_cuts', 'force_cuts', 'extra_cuts',
+        'grid_categories', 'single_categories',
+    ]
+
     # @inidecorator   # TODO: TEST
     def __init__(self,
                  ofset=0,
@@ -175,24 +185,14 @@ class Shapes(object):
         self._replace_weights = replace_weights
 
         # Cuts manipulations
-        channel_minplotlev_cuts = [
-            'et_minplotlev_cuts', 'mt_minplotlev_cuts',
-            'tt_minplotlev_cuts', 'em_minplotlev_cuts',
-            'channel_specific'
-        ]
-        cuts_manipulations = [
-            'fes_extra_cuts', 'force_cuts', 'extra_cuts',
-            'grid_categories', 'single_categories',
-            'channel_specific'
-        ]
         # defaults {}
-        for base in channel_minplotlev_cuts:
+        for base in self.channel_minplotlev_cuts:
             setattr(self,
                 '_' + base,
                 kwargs[base] if base in kwargs.keys() else {})
 
         # use_*/no_*
-        for base in cuts_manipulations + channel_minplotlev_cuts:
+        for base in self.cuts_manipulations + self.channel_minplotlev_cuts:
             for p in ['use_', 'no_']:
                 setattr(self,
                     '_' + p + base,
@@ -520,6 +520,10 @@ class Shapes(object):
         defaultArguments['eta_1_region'] = ['inc_eta_1', 'eta_1_barel', 'eta_1_endcap', 'eta_1_barel_real', 'eta_1_endcap_real']
         defaultArguments['binning_key'] = 'control'
         defaultArguments['log_level'] = 'info'
+
+        for base in cls.cuts_manipulations + cls.channel_minplotlev_cuts:
+            for p in ['use_', 'no_']:
+                defaultArguments[p + base] = False
 
         defaultArguments['no_fes_extra_cuts'] = False
         defaultArguments['no_et_minplotlev_cuts'] = False
