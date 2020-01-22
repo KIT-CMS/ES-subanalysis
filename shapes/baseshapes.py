@@ -229,16 +229,21 @@ class Shapes(object):
         else:
             for c in self._channel_specific.keys():
                 if 'grid_categories' in self._channel_specific[c].keys():
+                    # TODO: for now the global switch controls also individual channels
+                    if (not self._no_grid_categories and self._no_grid_categories is not None) or self._use_grid_categories:
 
-                    # add-update categories
-                    for k, v in parser_grid_categories.iteritems():
-                        self._channel_specific[c]['grid_categories'][k] = copy.deepcopy(v)
-
-                    # mask/limit catogories
-                    for k, v in mask_grid_categories.iteritems():
-                        k = k.strip('mask_')
-                        if k in self._channel_specific[c]['grid_categories'].keys():
+                        # add-update categories
+                        for k, v in parser_grid_categories.iteritems():
                             self._channel_specific[c]['grid_categories'][k] = copy.deepcopy(v)
+
+                        # mask/limit catogories
+                        for k, v in mask_grid_categories.iteritems():
+                            k = k.strip('mask_')
+                            if k in self._channel_specific[c]['grid_categories'].keys():
+                                self._channel_specific[c]['grid_categories'][k] = copy.deepcopy(v)
+                    else:
+                        self._logger.warning('All channel_specific grid categorries are ignored')
+                        self._channel_specific[c]['grid_categories'] = {}
 
         self._extra_chain = extra_chain
         self._gof_channel = gof_channel
@@ -275,7 +280,7 @@ class Shapes(object):
 
         self._shifts = shifts
 
-        # set the categories
+        # set the grid categories
         if (not self._no_grid_categories and self._no_grid_categories is not None) or self._use_grid_categories:
             self._grid_categories = grid_categories
 
@@ -289,9 +294,10 @@ class Shapes(object):
                 if k in self._grid_categories.keys():
                     self._grid_categories[k] = copy.deepcopy(v)
         else:
-            self._logger.warning('All grid categorries ignored')
+            self._logger.warning('All grid categorries are ignored')
             self._grid_categories = {}
 
+        # set the single categories
         if (not self._no_single_categories and self._no_single_categories is not None) or self._use_single_categories:
             self._single_categories = single_categories
         else:
@@ -1178,6 +1184,7 @@ class Shapes(object):
         for i in self._systematics._systematics:
             ch = i._process._estimation_method._channel.name
             variation = i._variation.name
+            variable = i._category._variable.name
             cat = i._category._name
             if ch not in log_d.keys():
                 log_d[ch] = {'n': 0, 'variation': {}}
@@ -1186,8 +1193,9 @@ class Shapes(object):
             if cat not in log_d[ch]['variation'][variation]['categ'].keys():
                 log_d[ch]['variation'][variation]['categ'][cat] = 0
             log_d[ch]['variation'][variation]['categ'][cat] += 1
-            shapes_to_prod += "{:>60s} {:<10s}  {:<30s} {:<2}\n".format(variation, i._process._name, cat, ch)
-            shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2}\n {:s}".format(variation, i._process._name, cat, i._process._estimation_method.get_weights().__str__, ch)
+            # import pdb; pdb.set_trace()
+            shapes_to_prod += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n".format(variation, i._process._name, cat, ch, variable)
+            shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n {:s}".format(variation, i._process._name, cat, ch, variable, i._process._estimation_method.get_weights().__str__)
 
         for ch in log_d.keys():
             n1 = 0

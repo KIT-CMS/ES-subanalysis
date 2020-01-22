@@ -3,7 +3,7 @@ channels: [et, mt, tt, em]
 num_threads: 1
 datasets: datasets/datasets.json
 
-binning: data/binning.yaml
+binning: data/binning_mssm.yaml
 binning_key: control
 
 # 1 GeV binning
@@ -211,22 +211,21 @@ skip_systematic_variations: False
 shifts: [
   nominal,
 
-  # EMB,
+  # EMB, : todo
   Zpt,
   prefiring,
   Tpt,
   TrgEff,
-  # QCDem,
-  # WG1,
-  # FF,
+  # QCDem, : todo
+  # WG1, : todo
+  # FF, : todo
   'ZTTpTT',
 
   TES,
-  # FES, # : todo
   BTag,
   METES,
   EES,
-  # ZES,
+  ZES, # : todo: need to update with My numbers
   #
   # JES, # : todo
 ]
@@ -262,27 +261,7 @@ grid_categories:
 use_single_categories: False # by dault not producing these shapes
 single_categories:
 
-  # inclusive: {}  # signal region
-
-  inclusive_withminplotlev:
-    'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS < 0.5'
-    'extraelec_veto': 'extraelec_veto < 0.5'
-    'extramuon_veto': 'extramuon_veto < 0.5'
-
-  # mt1_lt70:
-  #   'm_t': 'mt_1<70'  # signal region
-
-  # mt1_gt70:
-  #   'm_t': 'mt_1>70'
-
-  # extra_elec_invert:
-  #   'extraelec_veto': 'extraelec_veto > 0.5'
-
-  # nDiElectronVetoPairsOS_invert:
-  #   'nDiElectronVetoPairsOS': 'nDiElectronVetoPairsOS > 0.5'
-
-  # dilepton_veto_invert:
-  #   'dilepton_veto': 'dilepton_veto>0.5'
+  inclusive: {}  # signal region
 
 use_channel_specific: True
 # updated values get OVERWRITTEN, not extended/updated!
