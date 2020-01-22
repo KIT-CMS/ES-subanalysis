@@ -94,6 +94,12 @@ def parse_arguments():
     # parser.add_argument("--mask-eta-1-region", default=['default'], nargs='+', type=str, help="Needed for categorisation. Choices: eta_1_barel, eta_1_endcap, eta_1_endcap_real")
     # parser.add_argument("--mask-decay-mode", default=['default'], nargs='+', type=str, help="Needed for categorisation. Choices: all, dm0, dm1, dm10")
     # parser.add_argument("--mask-jets-multiplicity", default=['default'], nargs='+', type=str, help="Needed for categorisation. Choices: njetN, njet0")
+    parser.add_argument("--variables-names", default=['default'], nargs='*', type=str, help="Variable names.")
+
+    parser.add_argument('--no-grid-categories', action='store_true', default=None, help='drop categorisation defined by grid_categories config.')
+    parser.add_argument('--no-single-categories', action='store_true', default=None, help='drop categorisation defined by single_categories config.')
+    parser.add_argument('--use-grid-categories', action='store_true', default=None, help='use categorisation defined by grid_categories config.')
+    parser.add_argument('--use-single-categories', action='store_true', default=None, help='use categorisation defined by single_categories config.')
 
     parser.add_argument("--year", "--era", default='default', type=str, help="Experiment era.")
     parser.add_argument("--output-file-dir", type=str, help="Output file directory")
@@ -117,29 +123,47 @@ def main(args):
         else:
             print(jobdir + ' exist and overriten is not set. use a different --jobdir-name')
             exit(1)
+    if os.path.exists(args.output_file_dir):
+        if args.force:
+            shutil.rmtree(args.output_file_dir)
+        else:
+            print(args.output_file_dir + ' exist and overriten is not set. use a different --output-file-dir')
+            exit(1)
+
     mkdir(jobdir)
-    for s, c, p, d, m, b in itertools.product(args.shifts, args.channels, args.processes, args.mask_pZetaMissVis_region, args.mask_mt_1_region, args.mask_btag_region):
+    for s, c, p, v, d, m, b in itertools.product(args.shifts, args.channels, args.processes, args.variables_names, args.mask_pZetaMissVis_region, args.mask_mt_1_region, args.mask_btag_region):
 
         cmnd = 'python utils/produce_shapes_mssm.py --log-level info'
         cmnd = ' '.join([cmnd, '--year', args.year]) if args.year != 'default' else cmnd
         cmnd = ' '.join([cmnd, '--channels', c]) if c != 'default' else cmnd
         cmnd = ' '.join([cmnd, '--shifts', s]) if s != 'default' else cmnd
         cmnd = ' '.join([cmnd, '--processes', p]) if p != 'default' else cmnd
+        cmnd = ' '.join([cmnd, '--variables-names', v]) if v != 'default' else cmnd
         cmnd = ' '.join([cmnd, '--mask-pZetaMissVis-region', d]) if d != 'default' else cmnd
         cmnd = ' '.join([cmnd, '--mask-mt_1-region', m]) if m != 'default' else cmnd
         cmnd = ' '.join([cmnd, '--mask-btag-region', b]) if b != 'default' else cmnd
 
         cmnd = ' '.join([cmnd, '--output-file-dir', args.output_file_dir]) if args.output_file_dir is not None and args.output_file_dir != '' else cmnd
 
-        output_file_name = args.output_file_name + '__'.join([
-            '_'.join(['year', args.year]),
-            '_'.join(['channels', c]),
-            '_'.join(['processes', p]),
-            '_'.join(['shifts', s]),
-            '_'.join(['mask_pZetaMissVis_region', d]),
-            '_'.join(['mask_mt_1_region', m]),
-            '_'.join(['mask_btag_region', b]),
-        ])
+        cmnd = ' '.join([cmnd, '--no-grid-categories']) if args.no_grid_categories is not None else cmnd
+        cmnd = ' '.join([cmnd, '--no-single-categories']) if args.no_single_categories is not None else cmnd
+        cmnd = ' '.join([cmnd, '--use-grid-categories']) if args.use_grid_categories is not None else cmnd
+        cmnd = ' '.join([cmnd, '--use-single-categories']) if args.use_single_categories is not None else cmnd
+
+        # Define name of the output file
+        name_parts = [
+            '_'.join([args.year]),
+            '_'.join([c]),
+            '_'.join([s]),
+            # '_'.join([p]),
+        ]
+        if p != 'default': name_parts.append('_'.join(['processes', p]))
+        if v != 'default': name_parts.append('_'.join(['variables_names', v]))
+        if d != 'default': name_parts.append('_'.join(['mask_pZetaMissVis_region', d]))
+        if m != 'default': name_parts.append('_'.join(['mask_mt_1_region', m]))
+        if b != 'default': name_parts.append('_'.join(['mask_btag_region', b]))
+        output_file_name = args.output_file_name + '.'.join(name_parts)
+
         cmnd = ' '.join([cmnd, '--output-file-name', output_file_name])
 
         print([str(id_counter), cmnd, "\n"])
