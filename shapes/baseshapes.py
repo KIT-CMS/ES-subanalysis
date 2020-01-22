@@ -1195,7 +1195,11 @@ class Shapes(object):
             log_d[ch]['variation'][variation]['categ'][cat] += 1
             # import pdb; pdb.set_trace()
             shapes_to_prod += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n".format(variation, i._process._name, cat, ch, variable)
-            shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n {:s}".format(variation, i._process._name, cat, ch, variable, i._process._estimation_method.get_weights().__str__)
+            # TODO : this try/except might be necessary to add on replacing weights functionality
+            try:
+                shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n {:s}".format(variation, i._process._name, cat, ch, variable, i._process._estimation_method.get_weights().__str__)
+            except NotImplementedError:
+                self._logger.warning("The get_weights() wasn't implemented inf estimation_methods: " + i._process._estimation_method.__str__())
 
         for ch in log_d.keys():
             n1 = 0

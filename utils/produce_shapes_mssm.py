@@ -110,7 +110,7 @@ def produce_shapes_variables(config):
 
 def main():
     styled.HEADER('Start MSSM shapes production')
-    debug = False
+    debug = True
 
     styled.HEADER('\n # 1 - prepareConfig')
     config = analysis_shapes_mssm.prepareConfig(
