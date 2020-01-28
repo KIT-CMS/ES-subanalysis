@@ -59,8 +59,12 @@ _known_methods_collections:
         ZTT                     : ZTTEstimation
         ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
         ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-        TT                      : TTEstimation  # class. QCD & W ; sum(TTL, TTJ, TTT)
-        VV                      : VVEstimation  # class. QCD & W ; sum(VVT, VVL, VVJ)
+        TTT                     : TTTEstimation  # combine
+        TTJ                     : TTJEstimation  # combine
+        TTL                     : TTLEstimation  # new to combine
+        VVT                     : VVTEstimation  # combine
+        VVL                     : VVLEstimation  # new to combine
+        VVJ                     : VVJEstimation  # combine
         W                       : WEstimationWithQCD  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
         QCD                     : QCDEstimationWithW  # combine needs ["ZTT", "ZL", "ZJ", "TT", "VV"]
         WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW

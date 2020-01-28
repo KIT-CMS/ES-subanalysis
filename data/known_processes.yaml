@@ -1,7 +1,7 @@
 tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL",
                     "jetFakes", "jetFakesEMB",
                     QCDSStoOS, QCDSStoOSEMB, QCDEMB,
-                    W
+                    W, WMC
                   ]
 # tes_shifts_sys_processes: ['ZTT', "EWKT"]
 fes_sys_processes: ['ZL', 'DYJetsToLL']
@@ -44,9 +44,9 @@ _complexEstimationMethodsRequirements:
     QCDEstimationWithW: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"] # ["EMB", "ZLL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL", "EWKJ"] qcd_ss_to_os_extrapolation_factor=1.09
 
   W:
-    WEstimationWithQCD: ["ZTT", "ZL", "ZJ", "TT", "VV"] # ["ZTT", "ZLL", "ZJ", "TT", "VV", "EWK"]
+    WEstimationWithQCD: ["ZTT", "ZL", "ZJ", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"] # ["ZTT", "ZL", "ZJ", "TT", "VV"] # ["ZTT", "ZLL", "ZJ", "TT", "VV", "EWK"]
   QCD:
-    QCDEstimationWithW: ["ZTT", "ZL", "ZJ", "TT", "VV"] # ["ZTT", "ZLL", "ZJ", "TT", "VV", "EWK"]
+    QCDEstimationWithW: ["ZTT", "ZL", "ZJ", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"] # ["ZTT", "ZL", "ZJ", "TT", "VV"] # ["ZTT", "ZLL", "ZJ", "TT", "VV", "EWK"]
 
   QCDSStoOS:
     QCDEstimation_SStoOS_MTETEM: ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
