@@ -347,6 +347,46 @@ class ETauFES(Shapes):
                 # print "aft:", len(self._systematics._systematics)
                 # exit(0)
 
+            # expansioon of uncertainties on the FES shapes
+            if 'prefiring_FES_shifts' in self._shifts and channel_name in ["et"]:
+                self._logger.info('\n\n prefiring_FES_shifts...')
+                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
+                root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
+                for es in self._etau_es_shifts:
+                    shift_str = root_str(es)
+                    # TODO: here the pipeline WILL depend on the category per DM
+                    for pipeline in [
+                        # "eleTauEsInclusiveShift_",
+                        "eleTauEsOneProngShift_",
+                        "eleTauEsOneProngPiZerosShift_",
+                        # "eleTauEsThreeProngShift_"
+                    ]:
+                        proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
+
+                        prefiring_variations = []
+                        for updownvar in ['Up', 'Down']:
+                            prefiring_variations.append(
+                                ReplaceWeight(
+                                    "%s_CMS_fes_prefiring_Run%s" % (shift_str, channel_holder._year),
+                                    "prefireWeight",
+                                    Weight(
+                                        "prefiringweight%s" % updownvar.lower(),
+                                        "prefireWeight"),
+                                    updownvar))
+
+                        for variation in prefiring_variations:
+                            for process_nick in proc_intersection:
+                                self._systematics.add_systematic_variation(
+                                    variation=variation,
+                                    process=channel_holder._processes[process_nick],
+                                    channel=channel_holder._channel_obj,
+                                    era=self.era
+                                )
+
+                                # Upplying cuts that are only for fes shifts
+                                self.upplyFesCuts(pipeline=pipeline, depth=categories, folder=pipeline + shift_str)
+
             # Z pt reweighting
             if 'Zpt' in self._shifts:
                 self._logger.info('\n\n Z pt reweighting')
@@ -364,6 +404,41 @@ class ETauFES(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
+
+            # expansioon of uncertainties on the FES shapes
+            if 'Zpt_FES_shifts' in self._shifts and channel_name in ["et"]:
+                self._logger.info('\n\n Zpt_FES_shifts...')
+                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
+                root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
+                for es in self._etau_es_shifts:
+                    shift_str = root_str(es)
+                    # TODO: here the pipeline WILL depend on the category per DM
+                    for pipeline in [
+                        # "eleTauEsInclusiveShift_",
+                        "eleTauEsOneProngShift_",
+                        "eleTauEsOneProngPiZerosShift_",
+                        # "eleTauEsThreeProngShift_"
+                    ]:
+                        proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
+
+                        zpt_variations = create_systematic_variations(
+                            name="%s_CMS_fes_htt_dyShape_Run%s" % (shift_str, channel_holder._year),
+                            property_name="zPtReweightWeight",
+                            systematic_variation=SquareAndRemoveWeight,
+                        )
+
+                        for variation in zpt_variations:
+                            for process_nick in ETauFES.intersection(self._zpt_sys_processes, proc_intersection):
+                                self._systematics.add_systematic_variation(
+                                    variation=variation,
+                                    process=channel_holder._processes[process_nick],
+                                    channel=channel_holder._channel_obj,
+                                    era=self.era
+                                )
+
+                                # Upplying cuts that are only for fes shifts
+                                self.upplyFesCuts(pipeline=pipeline, depth=categories, folder=pipeline + shift_str)
 
             # top pt reweighting
             if 'Tpt' in self._shifts:
@@ -704,6 +779,7 @@ class ETauFES(Shapes):
                             era=self.era
                         )
 
+            # expansioon of uncertainties on the FES shapes
             if 'EES_FES_shifts' in self._shifts and channel_name in ["et"]:
                 self._logger.info('\n\n EES_FES_shifts...')
                 # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
@@ -721,9 +797,9 @@ class ETauFES(Shapes):
                         proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
 
                         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                        ele_es_emb_variations = create_systematic_variations("CMS_fes_scale_emb_e_%s" % shift_str, "%s%s_eleEs" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
-                        ele_es_variations = create_systematic_variations("CMS_fes_scale_mc_e_%s" % shift_str, "%s%s_eleScale" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
-                        ele_es_variations += create_systematic_variations("CMS_fes_reso_mc_e_%s" % shift_str, "%s%s_eleSmear" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
+                        ele_es_emb_variations = create_systematic_variations("%s_CMS_fes_scale_emb_e" % shift_str, "%s%s_eleEs" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
+                        ele_es_variations = create_systematic_variations("%s_CMS_fes_scale_mc_e" % shift_str, "%s%s_eleScale" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
+                        ele_es_variations += create_systematic_variations("%s_CMS_fes_reso_mc_e" % shift_str, "%s%s_eleSmear" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
 
                         for process_nick in [x for x in proc_intersection if 'EMB' in x and 'QCDSStoOS' not in x]:
                             self._systematics.add_systematic_variation(
@@ -791,7 +867,7 @@ class ETauFES(Shapes):
             #                 era=self.era
             #             )
 
-    def upplyFesCuts(self, pipeline, depth):
+    def upplyFesCuts(self, pipeline, depth, folder=None):
         '''
         Upplying cuts that are only for fes shifts
         '''
@@ -800,6 +876,8 @@ class ETauFES(Shapes):
                 shift_systematic.category.cuts.add(Cut(cut_expression, cut_key))
 
             shift_systematic._process._estimation_method._directory = self._fes_friend_directory[0]
+            if folder is not None:
+               shift_systematic._process._estimation_method._folder = folder
 
             # Removing shifts from unmatching by decay mode requirement/cuts categories
             if ('InclusiveShift' in pipeline and len(ETauFES.intersection(shift_systematic.category.cuts.names, ['dm0', 'dm1', 'dm10'])) != 0) \
