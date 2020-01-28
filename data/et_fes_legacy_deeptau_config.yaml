@@ -43,9 +43,8 @@ user_specific:
     ohlushch:
       bms:
         # deeptau v2
-        # '2016': /storage/8/ohlushch/ETauFakeES_deeptau_v2/2016/merged_nominal
-        '2016': /ceph/ohlushch/ETauFakeES_deeptau_v2/2016/merged_nominal
-
+        # '2016': /ceph/ohlushch/ETauFakeES_deeptau_v2/2016/merged_nominal
+        '2016': /storage/8/ohlushch/ETauFakeES_deeptau_v2/2016/merged_nominal
         '2017': /storage/8/ohlushch/ETauFakeES_deeptau_v2/2017/merged_nominal
         '2018': /storage/8/ohlushch/ETauFakeES_deeptau_v2/2018/merged_nominal
         # deeptau v1 - accepted
@@ -60,6 +59,9 @@ user_specific:
     byhost:
       default: []
   tt_friend_directory:
+    byhost:
+      default: []
+  em_friend_directory:
     byhost:
       default: []
   fake_factor_friend_directory:
@@ -225,8 +227,13 @@ skip_systematic_variations: False
 shifts: [
   nominal,
 
-  # EMB,
+  ## FES related unc
   FES_shifts,
+  prefiring_FES_shifts,
+  EES_FES_shifts,
+  Zpt_FES_shifts,
+
+  # EMB,
   Zpt,
   prefiring,
   Tpt,
