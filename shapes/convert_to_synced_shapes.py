@@ -9,6 +9,13 @@
     --input   /ceph/ohlushch/shapes/FES/ET/v3_noele27/shapes/2017_etFes_Legacy_FES_noupdate_QCDSStoOS_woFR.root \
     --output /ceph/ohlushch/shapes/FES/ET/v3_noele27/sconverted_shapes \
     --variables m_vis --debug
+
+
+ python shapes/convert_to_synced_shapes.py \
+    --input   /storage/8/ohlushch/shapes/FES/ET/deeptau/test_extend_prefiring/2017_etFes_Legacy_FES_noupdate_QCDSStoOS_woFR.root \
+    --output /storage/8/ohlushch/shapes/FES/ET/deeptau/test_extend_prefiring/converted_shapes \
+    --variables m_vis --debug
+
  # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 """
 import ROOT
@@ -222,12 +229,19 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                         year = '13TeV_'
 
                     new_name = name_output
+
+                    # for the normal FES shifts
                     for f in fes_shifts_indicators:
                         if f in new_name:
                             new_name = '_'.join([new_name.split('_')[0], new_name.split('_'.join([f, year]))[-1]])
                             break
-                    logger.debug('Replacing when converting: %s -> %s' % (name_output, new_name))
-                    name_output = new_name
+
+                    if name_output != new_name:
+                        logger.debug('Replacing when converting: %s -> %s' % (name_output, new_name))
+                        name_output = new_name
+                    else:
+                        logger.warning('Name stayed unchanged: %s ' % (name_output))
+
                 else:
                     logger.debug('Replacing when converting: %s -> %s' % (hist_map[channel][category][name], name_output.replace(category, '')))
                     name_output = name_output.replace(category, '')
@@ -238,14 +252,14 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                 if 'ZL' == name_output:
                     name_output += '_0'
 
-                if 'ZL_' in name_output and not name_output.endswith('Up') and not name_output.endswith('Down'):
+                if 'ZL_' in name_output and ((not name_output.endswith('Up') and not name_output.endswith('Down')) or ('_fes_' in name_output)):
                     old_name_output = name_output
                     name_output = name_output.replace('_neg', '_-')
                     for i in range(0, 10):
                         if 'p' not in name_output and '.' not in name_output and name_output != 'ZL_0':
                             logger.warning('\t name %s adding p0' % (name_output))
                             name_output += 'p0'
-                        name_output = name_output.replace(str(i) + 'p', str(i) + '.')
+                        name_output = name_output.replace(str(i) + 'p', str(i) + '.').replace('_fes_', '_')
                     logger.debug('Replacing when converting: %s -> %s' % (old_name_output, name_output))
 
                 output_names.append(name_output)
@@ -257,7 +271,10 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                 hist.Write()
 
             output_names.sort()
-            logger.info('names: [%s]' % ', '.join(output_names))
+            info = ""
+            for i in output_names:
+                info += "\t{:<s} \n".format(i)
+            logger.info('names: %s' % info)
             logger.warning("Standart processes that were not found: " + " ".join(check_if_missing))
 
         output_file.Close()
