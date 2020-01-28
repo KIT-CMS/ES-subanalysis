@@ -206,7 +206,7 @@ force_cuts:
   #
   # Was used before
   # TEMP
-  "mt_1" : "mt_1<70"  # less W+J
+  "m_t" : "mt_1<70"  # less W+J
   "byTightDeepTau2017v2p1VSe_2": "byTightDeepTau2017v2p1VSe_2>0.5" # only for use with v0, but in principle doesn't hurt
   # Cuts to overwrite by year:
   '2016':
