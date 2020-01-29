@@ -1232,12 +1232,12 @@ class Shapes(object):
         self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
         self._logger.debug(self._systematics)
-        # import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace() # !import code; code.interact(local=vars())
         # # !import code; code.interact(local=vars())
 
         if 'nominal' not in self._shifts:
             self._logger.warning("Nominal shapes will not be produced")
-            # import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace() # !import code; code.interact(local=vars())
             self._systematics._systematics = [i for i in self._systematics._systematics if i._variation._name != 'Nominal']
         shapes_to_prod = '\n'
         shapes_to_prod_debug = '\n'
@@ -1261,6 +1261,7 @@ class Shapes(object):
                 shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n {:s}".format(variation, i._process._name, cat, ch, variable, i._process._estimation_method.get_weights().__str__)
             except NotImplementedError:
                 self._logger.warning("The get_weights() wasn't implemented inf estimation_methods: " + i._process._estimation_method.__str__())
+                shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8} {:s}\n".format(variation, i._process._name, cat, ch, variable, " WARNING: get_weights() not implemented!")
 
         for ch in log_d.keys():
             n1 = 0
