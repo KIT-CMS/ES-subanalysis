@@ -141,6 +141,7 @@ class Shapes(object):
 
         self._log_level = log_level
         self._indent = indent
+
         self._methods_collection_key = methods_collection_key
 
         self._backend = backend
@@ -438,6 +439,13 @@ class Shapes(object):
 
         config.update(prompt_args)
 
+        # prompt options overrule per-channel definitions in the config
+        if 'methods_collection_key' in prompt_args.keys():
+            logging.getLogger(__name__).warning('methods_collection_key was used in terminal -> updating all channel-specific values!')
+            for channel in config['channel_specific'].keys():
+                if 'methods_collection_key' in config['channel_specific'][channel]:
+                    config['channel_specific'][channel].pop('methods_collection_key')
+
         if debug:
             print 'config:'
             pp.pprint(config)
@@ -629,6 +637,7 @@ class Shapes(object):
                 print 'called --%s' % nouse, 'setting --%s=' % use, not configuration[nouse]
                 configuration[use] = not configuration[nouse]
 
+        # keys intended solely for usage with terminal command eg not defined in config
         configuration['parser_grid_categories'] = {}
         for k in ['decay_mode', 'jets_multiplicity', 'eta_1_region',
                   'pZetaMissVis_region', 'mt_1_region', 'btag_region']:
@@ -1040,6 +1049,16 @@ class Shapes(object):
 
     def getMethodsDict(self, channel_name, era=None, context=None):
         # TODO: make initialisation universal
+
+        # if self._channel_specific is not None and
+        if channel_name in self._channel_specific.keys() and 'methods_collection_key' in self._channel_specific[channel_name].keys():
+            methods_collection_key = self._channel_specific[channel_name]['methods_collection_key']
+
+            self._logger.info("Methods key in channel %s : %s" % (channel_name, methods_collection_key))
+        else:
+            methods_collection_key = self._methods_collection_key
+            self._logger.info("Methods key in channel %s [global]: %s" % (channel_name, methods_collection_key))
+
         if era is None:
             era = self._era_name
         era = str(era)
@@ -1048,9 +1067,9 @@ class Shapes(object):
 
         if len(self._processes) == 0:
             try:
-                return self._known_methods_collections[self._methods_collection_key]
+                return self._known_methods_collections[methods_collection_key]
             except:
-                self._logger.error(' '.join("Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name))
+                self._logger.error(' '.join(["Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name]))
                 self._logger.error('Possible _known_estimation_methods:')
                 pp.pprint(self._known_estimation_methods[era][context][channel_name])
                 raise Exception
