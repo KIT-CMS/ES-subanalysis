@@ -1028,23 +1028,26 @@ class Shapes(object):
                     self._logger.warning('Removing from estimetion method %s weight associated to %s' % (key, replace_weights_key))
                     self._logger.debug('... old weights:%s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
                     new_weights = copy.deepcopy(processes[key]._estimation_method.get_weights())
-                    self._logger.debug('... old copy weights:\n%s' % (str(new_weights)))
 
+                    action = 'REPLACING'
                     if replace_weights_key in new_weights.names:
                         new_weights.remove(replace_weights_key)
                     else:
-                        self._logger.warning('\t\t ... nothing to remove')
+                        action = 'ADDING'
+                        # self._logger.warning('\t\t ... nothing to remove. weight will be just added.')
 
                     if isinstance(replace_weights_value, six.string_types):
-                        self._logger.warning('\t\t ... adding weight {%s : %s}' % (replace_weights_key, replace_weights_value))
+                        self._logger.warning('\t\t ... %s weight {%s : %s}' % (action, replace_weights_key, replace_weights_value))
                         new_weights.add(Weight(replace_weights_value, replace_weights_key))
                     elif replace_weights_value is not None:
                         raise Exception('Undefined manipulation with weights during EstimationMethods initialization')
 
+                    self._logger.debug('\t\t ... old_weights address:%s' % (hex(id(processes[key]._estimation_method.get_weights))))
                     self._logger.debug('\t\t ... new_weights address:%s' % (hex(id(new_weights))))
 
                     processes[key]._estimation_method.get_weights = Shapes.make_get_weights_fun(new_weights)  #lambda: copy.deepcopy(new_weights)
                     self._logger.debug('... new assigned weights: %s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
+                    self._logger.debug('\t\t ... address:%s' % (hex(id(processes[key]._estimation_method.get_weights))))
 
                 except NotImplementedError:
                     self._logger.warning("The get_weights() wasn't implemented in estimation_methods: " + key + "\n \t replace_weights_key: " + replace_weights_key + "\n\t replace_weights_value" + replace_weights_value + "\n " + processes[key]._estimation_method.__str__())
