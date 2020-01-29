@@ -30,6 +30,7 @@ _complexEstimationMethods: [
   NewFakeEstimationTT ,
   QCDEstimation_SStoOS_MTETEM ,
   AddHistogramEstimationMethod ,
+  QCDEstimation_ABCD_TT_ISO2
 ]
 
 _complexEstimationMethodsRequirements:
@@ -52,6 +53,11 @@ _complexEstimationMethodsRequirements:
     QCDEstimation_SStoOS_MTETEM: ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
   QCDSStoOSEMB:
     QCDEstimation_SStoOS_MTETEM: ["EMB", "ZL", "ZJ", "W", "TTJ", "TTL", "VVJ", "VVL"]
+
+  QCDABCD:
+    QCDEstimation_ABCD_TT_ISO2: ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
+  QCDABCDEMB:
+    QCDEstimation_ABCD_TT_ISO2: ["EMB", "ZL", "ZJ", "W", "TTJ", "TTL", "VVJ", "VVL"]
 
   ZTTpTTTauTauDown:
     AddHistogramEstimationMethod: ["EMB", "TTT"]

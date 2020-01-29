@@ -14,7 +14,7 @@ binning_key: control
 era: '2017'
 tag: mssm
 context_analysis: mssmMVA
-methods_collection_key: "Legacy_FES_with_QCDSStoOS" # Legacy_FES_with_EMB_QCDSStoOS ; in 2017: Original_FES_with_FF
+methods_collection_key: Legacy_MSSM_with_QCDSStoOS
 
 output_file: Null  # keep it empty for auto-naming
 output_file_name: Null  # keep it empty for auto-naming: era + context_analysis + methods_collection_key
@@ -267,6 +267,8 @@ use_channel_specific: True
 # updated values get OVERWRITTEN, not extended/updated!
 channel_specific:
   em:
+    # SMHTT: QCDEstimation_SStoOS_MTETEM
+    methods_collection_key: Legacy_MSSM_with_QCDSStoOS
     # use_grid_categories: True
     grid_categories:
 
@@ -280,7 +282,10 @@ channel_specific:
         'dzeta_medium',
         'dzeta_high',
       ]
+
   et:
+    # SMHTT: FF or QCDEstimation_SStoOS_MTETEM
+    # methods_collection_key: Legacy_MSSM_with_QCDSStoOS
     # use_grid_categories: True
     grid_categories:
 
@@ -294,6 +299,8 @@ channel_specific:
         'mt_1_loose',
       ]
   mt:
+    # SMHTT: FF or QCDEstimation_SStoOS_MTETEM
+    # methods_collection_key: Legacy_MSSM_with_QCDSStoOS
     # use_grid_categories: True
     grid_categories:
 
@@ -307,6 +314,9 @@ channel_specific:
         'mt_1_loose',
       ]
   tt:
+    # SMHTT: FF or QCDEstimation_ABCD_TT_ISO2
+    methods_collection_key: Legacy_MSSM_with_QCDABCD
+
     # use_grid_categories: True
     grid_categories:
 

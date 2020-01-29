@@ -15,6 +15,34 @@ _known_methods_collections:
         data_obs                : data
         jetFakes                : FAKES
 
+    Legacy_MSSM_with_QCDABCD:
+        data_obs                : DataEstimation  # combine
+        ZTT                     : ZTTEstimation
+        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
+        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        TTT                     : TTTEstimation  # combine
+        TTJ                     : TTJEstimation  # combine
+        TTL                     : TTLEstimation  # new to combine
+        VVT                     : VVTEstimation  # combine
+        VVL                     : VVLEstimation  # new to combine
+        VVJ                     : VVJEstimation  # combine
+        W                       : WEstimation  # class. QCD & W ; now contains also EWKW
+        QCDABCD                 : QCDEstimation_ABCD_TT_ISO2  # combine needs ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
+
+    Legacy_MSSM_with_QCDSStoOS:
+        data_obs                : DataEstimation  # combine
+        ZTT                     : ZTTEstimation
+        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
+        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        TTT                     : TTTEstimation  # combine
+        TTJ                     : TTJEstimation  # combine
+        TTL                     : TTLEstimation  # new to combine
+        VVT                     : VVTEstimation  # combine
+        VVL                     : VVLEstimation  # new to combine
+        VVJ                     : VVJEstimation  # combine
+        W                       : WEstimation  # class. QCD & W ; now contains also EWKW
+        QCDSStoOS               : QCDEstimation_SStoOS_MTETEM  # combine needs ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
+
     Legacy_FES_with_FF:
         data_obs                : DataEstimation  # combine
         ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
