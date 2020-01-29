@@ -348,14 +348,12 @@ class ETauFES(Shapes):
                 # exit(0)
 
             # expansioon of uncertainties on the FES shapes
-            if 'prefiring_FES_shifts' in self._shifts and channel_name in ["et"]:
+            if 'prefiring_FES_shifts' in self._shifts and channel_holder._year != '2018' and channel_name in ["et"]:
                 self._logger.info('\n\n prefiring_FES_shifts...')
-                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
                 root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
                 for es in self._etau_es_shifts:
                     shift_str = root_str(es)
-                    # TODO: here the pipeline WILL depend on the category per DM
+
                     for pipeline in [
                         # "eleTauEsInclusiveShift_",
                         "eleTauEsOneProngShift_",
@@ -408,12 +406,10 @@ class ETauFES(Shapes):
             # expansioon of uncertainties on the FES shapes
             if 'Zpt_FES_shifts' in self._shifts and channel_name in ["et"]:
                 self._logger.info('\n\n Zpt_FES_shifts...')
-                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
                 root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
                 for es in self._etau_es_shifts:
                     shift_str = root_str(es)
-                    # TODO: here the pipeline WILL depend on the category per DM
+
                     for pipeline in [
                         # "eleTauEsInclusiveShift_",
                         "eleTauEsOneProngShift_",
@@ -871,13 +867,14 @@ class ETauFES(Shapes):
         '''
         Upplying cuts that are only for fes shifts
         '''
+        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
         for shift_systematic in self._systematics._systematics[-len(depth):]:
             for cut_key, cut_expression in self._fes_extra_cuts.iteritems():
                 shift_systematic.category.cuts.add(Cut(cut_expression, cut_key))
 
             shift_systematic._process._estimation_method._directory = self._fes_friend_directory[0]
             if folder is not None:
-               shift_systematic._process._estimation_method._folder = folder
+                shift_systematic._process._estimation_method._folder = folder
 
             # Removing shifts from unmatching by decay mode requirement/cuts categories
             if ('InclusiveShift' in pipeline and len(ETauFES.intersection(shift_systematic.category.cuts.names, ['dm0', 'dm1', 'dm10'])) != 0) \
@@ -886,7 +883,6 @@ class ETauFES(Shapes):
             or ('ThreeProngShift' in pipeline and len(ETauFES.intersection(shift_systematic.category.cuts.names, ['alldm', 'dm0', 'dm1'])) != 0):
                 self._logger.debug("Removing systematic shift %s from production because of unmatching dm in categorisation" % (shift_systematic.name))
                 self._systematics._systematics.remove(shift_systematic)
-
 
 
 if __name__ == '__main__':
