@@ -941,7 +941,7 @@ class Shapes(object):
                 qcdsstoos_parameters_list = copy.deepcopy(parameters_list)
 
                 qcdsstoos_parameters_list['bg_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
-                qcdsstoos_parameters_list['extrapolation_factor'] = 1.04  # 1.00  # 1.17?
+                qcdsstoos_parameters_list['extrapolation_factor'] = 1.17  # 1.00  # 1.17?
                 try:
                     qcdsstoos_parameters_list['data_process'] = processes['data_obs']
                 except:
