@@ -861,10 +861,15 @@ class Shapes(object):
         # print "ETauFES::Standalone importing"
         if channels_key is None:
             channels_key = self._channels_key
+
         imported_module = self.getModule()
+
         for channel_name in channels_key:
             # print "test:", self._known_estimation_methods[era][context_analysis]#[channel_name]#['methods']
-            for combine_name, method in self.getMethodsDict(era=era, context=context_analysis, channel_name=channel_name).iteritems():
+            for combine_name, method in self.getMethodsDict(
+                    era=era,
+                    context=context_analysis,
+                    channel_name=channel_name).iteritems():
                 if method in self._estimation_methods:
                     self._logger.warning('Warning: Estimation method %s already defined - skipped redefinition' % method)
                 # print 'module:', self._estimation_methods, method
@@ -946,6 +951,21 @@ class Shapes(object):
                         raise Exception("couldn't access processes['data_obs'] of data object")
 
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**qcdsstoos_parameters_list))
+
+            elif 'QCDABCD' in key:
+                qcdabcd_parameters_list = copy.deepcopy(parameters_list)
+
+                qcdabcd_parameters_list['bg_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
+
+                try:
+                    qcdabcd_parameters_list['data_process'] = processes['data_obs']
+                except:
+                    try:
+                        qcdabcd_parameters_list['data_process'] = processes['data']
+                    except:
+                        raise Exception("couldn't access processes neither ['data_obs'] not ['data'] of data object")
+
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**qcdabcd_parameters_list))
 
             elif 'jetFakes' in key:
                 ff_parameters_list = copy.deepcopy(parameters_list)
