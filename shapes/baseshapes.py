@@ -1013,27 +1013,49 @@ class Shapes(object):
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
 
             # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-            for replace_weights_key, replace_weights_value in self._replace_weights.iteritems():
-                self._logger.warning('Removing from estimetion method %s weight associated to %s' % (key, replace_weights_key))
-                self._logger.debug('... old weights:%s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
-                new_weights = copy.deepcopy(processes[key]._estimation_method.get_weights())
-                self._logger.debug('... old copy weights:\n%s' % (str(new_weights)))
+            if channel_name in self._channel_specific.keys() and 'replace_weights' in self._channel_specific[channel_name].keys():
+                replace_weights = self._channel_specific[channel_name]['replace_weights']
+                self._logger.info("replace_weights in channel %s " % (channel_name))
+            else:
+                replace_weights = self._replace_weights
+                self._logger.info("replace_weights key in channel %s [global]" % (channel_name))
 
-                if replace_weights_key in new_weights.names:
-                    new_weights.remove(replace_weights_key)
-                else:
-                    self._logger.warning('\t\t ... nothing to remove')
+            for replace_weights_key, replace_weights_value in replace_weights.iteritems():
+                try:
+                    if "data" in key:
+                        self._logger.warning('DO NOT REMOVE from estimetion method %s weight associated to %s' % (key, replace_weights_key))
+                        continue
+                    self._logger.warning('Removing from estimetion method %s weight associated to %s' % (key, replace_weights_key))
+                    self._logger.debug('... old weights:%s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
+                    new_weights = copy.deepcopy(processes[key]._estimation_method.get_weights())
+                    self._logger.debug('... old copy weights:\n%s' % (str(new_weights)))
 
-                if isinstance(replace_weights_value, six.string_types):
-                    self._logger.warning('\t\t ... adding weight {%s : %s}' % (replace_weights_key, replace_weights_value))
-                    new_weights.add(Weight(replace_weights_value, replace_weights_key))
-                elif replace_weights_value is not None:
+                    if replace_weights_key in new_weights.names:
+                        new_weights.remove(replace_weights_key)
+                    else:
+                        self._logger.warning('\t\t ... nothing to remove')
+
+                    if isinstance(replace_weights_value, six.string_types):
+                        self._logger.warning('\t\t ... adding weight {%s : %s}' % (replace_weights_key, replace_weights_value))
+                        new_weights.add(Weight(replace_weights_value, replace_weights_key))
+                    elif replace_weights_value is not None:
+                        raise Exception('Undefined manipulation with weights during EstimationMethods initialization')
+
+                    self._logger.debug('\t\t ... new_weights address:%s' % (hex(id(new_weights))))
+
+                    processes[key]._estimation_method.get_weights = Shapes.make_get_weights_fun(new_weights)  #lambda: copy.deepcopy(new_weights)
+                    self._logger.debug('... new assigned weights: %s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
+
+                except NotImplementedError:
+                    self._logger.warning("The get_weights() wasn't implemented in estimation_methods: " + key + "\n \t replace_weights_key: " + replace_weights_key + "\n\t replace_weights_value" + replace_weights_value + "\n " + processes[key]._estimation_method.__str__())
+                    # if 'QCDSStoOS' in key:
+                    #     self._logger.warning("For QCDSStoOS the get_weights() wasn't implemented therefore the bg processes get replaced weights.")
+                    #     self._bg_processes
+                    # else:
+                    #     pass
+
+                except Exception:
                     raise Exception('Undefined manipulation with weights during EstimationMethods initialization')
-
-                self._logger.debug('\t\t ... new_weights address:%s' % (hex(id(new_weights))))
-
-                processes[key]._estimation_method.get_weights = Shapes.make_get_weights_fun(new_weights)  #lambda: copy.deepcopy(new_weights)
-                self._logger.debug('... new assigned weights: %s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
 
         return processes
 
