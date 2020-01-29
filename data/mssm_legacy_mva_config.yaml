@@ -298,6 +298,12 @@ channel_specific:
         'mt_1_tight',
         'mt_1_loose',
       ]
+    # todo: https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2?rev=89
+    # https://indico.cern.ch/event/836421/contributions/3507675/attachments/1884267/3166728/Yuta_TauPOG_20190925_v2.pdf
+    replace_weights:
+        taubyIsoIdWeight : "((gen_match_2 == 5)*0.89 + (gen_match_2 != 5))"
+
+
   mt:
     # SMHTT: FF or QCDEstimation_SStoOS_MTETEM
     # methods_collection_key: Legacy_MSSM_with_QCDSStoOS
@@ -313,9 +319,20 @@ channel_specific:
         'mt_1_tight',
         'mt_1_loose',
       ]
+
+    # todo: https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2?rev=89
+    replace_weights:
+        taubyIsoIdWeight : "((gen_match_2 == 5)*0.89 + (gen_match_2 != 5))"
+
   tt:
     # SMHTT: FF or QCDEstimation_ABCD_TT_ISO2
     methods_collection_key: Legacy_MSSM_with_QCDABCD
+
+    # need another expression since tt uses dm-dependant SF
+    replace_weights:
+        taubyIsoIdWeight : "((gen_match_1 == 5)*0.89 + (gen_match_1 != 5))*((gen_match_2 == 5)*0.89 + (gen_match_2 != 5))"
+    # replace_weights:
+    #     taubyIsoIdWeight : "((decayMode_1 == 0)*((gen_match_1 == 5)*0.820363 + (gen_match_1 != 5))+ (decayMode_1 == 1)*((gen_match_1 == 5)*0.875932 + (gen_match_1 != 5))+ (decayMode_1 == 10)*((gen_match_1 == 5)*0.863203 + (gen_match_1 != 5)))*((decayMode_2 == 0)*((gen_match_2 == 5)*0.820363 + (gen_match_2 != 5))+ (decayMode_2 == 1)*((gen_match_2 == 5)*0.875932 + (gen_match_2 != 5))+ (decayMode_2 == 10)*((gen_match_2 == 5)*0.863203 + (gen_match_2 != 5)))"
 
     # use_grid_categories: True
     grid_categories:
