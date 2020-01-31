@@ -234,7 +234,14 @@ class MSSM(Shapes):
 
             channel_holder._nnominals = len([i for i in self._systematics._systematics if i.variation.is_nominal()])
             if channel_holder._nnominals == 0:
-                raise Exception("no nominals were found - yet not implemented.")
+                raise Exception("no nominals were found - by construction they should be produced!")
+            # channel_holder._nnominals = len([i for i in self._systematics._systematics if i.variation.is_nominal()])
+            # if channel_holder._nnominals == 0:
+            #     # print processes
+            #     # print categories
+            #     self._logger.error('No nominals were found - yet not implemented.')
+            #     exit(1)
+            #     # raise Exception("no nominals were found - yet not implemented.")
 
             # TODO: decorrelate emb, mc, year
             # Tau energy scale (general, MC-specific & EMB-specific), it is mt, et & tt specific
@@ -688,14 +695,16 @@ class MSSM(Shapes):
                 met_unclustered_variations = create_systematic_variations("CMS_scale_met_unclustered", "metUnclusteredEn", DifferentPipeline)
 
                 proc_intersection = list(set(self._met_sys_processes) & set(channel_holder._processes.keys()))
-                self._logger.debug('\n\n METES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                for process_nick in proc_intersection:
-                    self._systematics.add_systematic_variation(
-                        variation=met_unclustered_variations,
-                        process=channel_holder._processes[process_nick],
-                        channel=channel_holder._channel_obj,
-                        era=self.era
-                    )
+                self._logger.debug('\n\n METES::variation name: %s\nintersection self._met_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                for variation in met_unclustered_variations:
+                    for process_nick in proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
 
             # Ele energy scale (EMB-specific),  it is et & em specific
             # Ele energy scale & smear uncertainties (MC-specific), it is et & em specific
