@@ -344,12 +344,14 @@ class Shapes(object):
         self._logger.info("Output file: %s" % (self._output_file))
 
         # Holds Systematics for all the channels. TODO: add the per-channel systematics to ChannelHolder
+        self.initSystematics()
+
+    def initSystematics(self):
         self._systematics = Systematics(
             output_file=self._output_file,
             num_threads=self._num_threads,
             skip_systematic_variations=self._skip_systematic_variations
         )
-        # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
 
     @property
     def variables_names(self):
