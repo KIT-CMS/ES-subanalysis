@@ -142,6 +142,7 @@ class Shapes(object):
             self._directory = directory
         assert isinstance(self._directory, six.string_types), "Shapes::directory not set"
 
+        # FES shifts
         if isinstance(etau_es_shifts, dict):
             try:
                 self._etau_es_shifts = etau_es_shifts[era]
@@ -274,6 +275,26 @@ class Shapes(object):
             self._logger.warning('All channel_specific categorries are ignored')
             self._channel_specific = {}
         else:
+            # unpack channel_specific configs (by year)
+            for channel in self._channel_specific.keys():
+                for option_name in self._channel_specific[channel].keys():
+                    option_dict = self._channel_specific[channel][option_name]
+                    if isinstance(option_dict, dict):
+                        if set(('default', era)).intersection(option_dict):
+                            if era in option_dict:
+                                self._channel_specific[channel][option_name] = option_dict[era]
+                                self._logger.info('%s : Set by era: %s = %s' % (channel, option_name, self._channel_specific[channel][option_name]))
+                            elif 'default' in option_dict:
+                                self._channel_specific[channel][option_name] = option_dict['default']
+                                self._logger.info('%s : Set by default: %s = %s' % (channel, option_name, self._channel_specific[channel][option_name]))
+                        else:
+                            self._logger.info('%s : Set as is (dict): %s = ' % (channel, option_name))
+                            pp.pprint(option_dict)
+                            self._channel_specific[channel][option_name] = option_dict
+                    else:
+                        self._logger.info('%s : Set as is: %s = %s' % (channel, option_name, option_dict))
+                        self._channel_specific[channel][option_name] = option_dict
+
             for c in self._channel_specific.keys():
                 if c not in self._channels_key:
                     del self._channel_specific[c]
@@ -794,6 +815,7 @@ class Shapes(object):
 
                 config = yaml.load(stream)
 
+                # unpack user_specific configs (by host and year)
                 for option_name in config['user_specific'].keys():
                     option_dict = config['user_specific'][option_name]
                     try:
