@@ -34,6 +34,28 @@ class Shapes(object):
     def intersection(x, y):
         return list(set(x) & set(y))
 
+    @staticmethod
+    def myeval(s):
+        s1 = copy.deepcopy(s).replace('&&', ' and ').replace('||', ' or ')
+        try:
+            return eval(s1)
+        except NameError:
+            return False
+        except:
+            raise
+
+    @staticmethod
+    def myevalast(s):
+        s1 = copy.deepcopy(s).replace('&&', ' and ').replace('||', ' or ')
+        try:
+            import ast
+            # print s, 'eval:', ast.literal_eval(s1)
+            return ast.literal_eval(s1)
+        except ValueError:
+            return False
+        except:
+            raise
+
     channel_minplotlev_cuts = [
         'et_minplotlev_cuts', 'mt_minplotlev_cuts',
         'tt_minplotlev_cuts', 'em_minplotlev_cuts',
@@ -253,6 +275,10 @@ class Shapes(object):
             self._channel_specific = {}
         else:
             for c in self._channel_specific.keys():
+                if c not in self._channels_key:
+                    del self._channel_specific[c]
+
+            for c in self._channel_specific.keys():
                 if 'grid_categories' in self._channel_specific[c].keys():
                     # TODO: for now the global switch controls also individual channels
                     if (not self._no_grid_categories and self._no_grid_categories is not None) or self._use_grid_categories:
@@ -261,11 +287,18 @@ class Shapes(object):
                         for k, v in parser_grid_categories.iteritems():
                             self._channel_specific[c]['grid_categories'][k] = copy.deepcopy(v)
 
-                        # mask/limit catogories
+                        # mask/limit categories (strict -> no categories on missing keys)
                         for k, v in mask_grid_categories.iteritems():
-                            k = k.strip('mask_')
+                            k = k.replace('mask_', '')
                             if k in self._channel_specific[c]['grid_categories'].keys():
                                 self._channel_specific[c]['grid_categories'][k] = copy.deepcopy(v)
+                            else:
+                                # if not any(eval(self._known_cuts[k][vi], {}, collections.defaultdict(lambda : 0)) for vi in v):
+                                if not any(Shapes.myeval(self._known_cuts[k][vi]) for vi in v):
+                                    # if the mask-key not in the dictionary - then no category can satisfy mask requirements
+                                    self._logger.warning('%s : masking didn\'t result in any category!' % c)
+                                    self._channel_specific[c]['grid_categories'] = {}
+                                    break
                     else:
                         self._logger.warning('All channel_specific grid categorries are ignored')
                         self._channel_specific[c]['grid_categories'] = {}
@@ -291,11 +324,18 @@ class Shapes(object):
             for k, v in parser_grid_categories.iteritems():
                 self._grid_categories[k] = copy.deepcopy(v)
 
-            # mask/limit catogories
+            # mask/limit categories (strict -> no categories on missing keys)
             for k, v in mask_grid_categories.iteritems():
-                k = k.strip('mask_')
+                k = k.replace('mask_', '')
+
                 if k in self._grid_categories.keys():
                     self._grid_categories[k] = copy.deepcopy(v)
+                else:
+                    if not any(Shapes.myeval(self._known_cuts[k][vi]) for vi in v):
+                        # if the mask-key not in the dictionary - then no category can satisfy mask requirements
+                        self._logger.warning('global _grid_categories : masking didn\'t result in any category!')
+                        self._grid_categories = {}
+                        break
         else:
             self._logger.warning('All grid categorries are ignored')
             self._grid_categories = {}
@@ -1149,6 +1189,7 @@ class Shapes(object):
         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
         categories = []
         intersection = lambda x, y: list(set(x) & set(y))
+        channel_name = channel_holder._channel_obj.name
         for name, var in channel_holder._variables.iteritems():
             # Cuts common for all categories
             cuts = Cuts()
@@ -1161,12 +1202,44 @@ class Shapes(object):
             #         channel_holder._channel_obj.cuts.remove("m_t")
 
             # grid categories
-            categories_by_space = [grid_categories[k] for k in grid_categories.keys()]
-            if len(categories_by_space) > 0:
-                for category_space_cuts in product(*categories_by_space):
-                    # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                    category_name = '_'.join(category_space_cuts)
-                    self._logger.info('%s : ..adding grid category %s: {%s}', sys._getframe().f_code.co_name, category_name, ' && '.join(category_space_cuts))
+            if not channel_specific \
+               or channel_name not in channel_specific.keys() \
+               or 'grid_categories' not in channel_specific[channel_name].keys():
+                categories_by_space = [grid_categories[k] for k in grid_categories.keys()]
+                if len(categories_by_space) > 0:
+                    for category_space_cuts in product(*categories_by_space):
+                        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                        category_name = '_'.join(category_space_cuts)
+                        self._logger.info('%s : ..adding grid category %s: {%s}', sys._getframe().f_code.co_name, category_name, ' && '.join(category_space_cuts))
+                        categories.append(
+                            Category(
+                                name=category_name,
+                                channel=channel_holder._channel_obj,
+                                cuts=cuts,
+                                variable=var)
+                        )
+                        # Remove cuts introduced in categorysation for the plots of isolation
+                        if name == "iso_1" or name == "iso_2":
+                            categories[-1].cuts.remove("ele_iso")
+                            categories[-1].cuts.remove("tau_iso")
+
+                        for cuts_class in self._known_cuts.keys():
+                            # Add the $cuts_class splitting cattegorization
+                            if cuts_class in grid_categories.keys():
+                                cut_class_key = intersection(category_space_cuts, self._known_cuts[cuts_class].keys())
+                                if len(cut_class_key) > 1:
+                                    raise Exception("Too many %s values to unfold: [%s]" % (cuts_class, ', '.join(cut_class_key)))
+                                else:
+                                    cut_class_key = cut_class_key[0]
+                                    self._logger.debug("Add the %s splitting: {%s: %s}" % (cuts_class, cut_class_key, self._known_cuts[cuts_class][cut_class_key]))
+                                    categories[-1].cuts.add(Cut(self._known_cuts[cuts_class][cut_class_key], cut_class_key))
+
+            # single categories
+            if not channel_specific \
+               or channel_name not in channel_specific.keys() \
+               or 'single_categories' not in channel_specific[channel_name].keys():
+                for category_name, category_cuts in single_categories.iteritems():
+                    self._logger.info('%s : ..adding single category %s' % (sys._getframe().f_code.co_name, category_name))
                     categories.append(
                         Category(
                             name=category_name,
@@ -1179,41 +1252,15 @@ class Shapes(object):
                         categories[-1].cuts.remove("ele_iso")
                         categories[-1].cuts.remove("tau_iso")
 
-                    for cuts_class in self._known_cuts.keys():
-                        # Add the $cuts_class splitting cattegorization
-                        if cuts_class in grid_categories.keys():
-                            cut_class_key = intersection(category_space_cuts, self._known_cuts[cuts_class].keys())
-                            if len(cut_class_key) > 1:
-                                raise Exception("Too many %s values to unfold: [%s]" % (cuts_class, ', '.join(cut_class_key)))
-                            else:
-                                cut_class_key = cut_class_key[0]
-                                self._logger.debug("Add the %s splitting: {%s: %s}" % (cuts_class, cut_class_key, self._known_cuts[cuts_class][cut_class_key]))
-                                categories[-1].cuts.add(Cut(self._known_cuts[cuts_class][cut_class_key], cut_class_key))
-
-            # single categories
-            for category_name, category_cuts in single_categories.iteritems():
-                self._logger.info('%s : ..adding single category %s' % (sys._getframe().f_code.co_name, category_name))
-                categories.append(
-                    Category(
-                        name=category_name,
-                        channel=channel_holder._channel_obj,
-                        cuts=cuts,
-                        variable=var)
-                )
-                # Remove cuts introduced in categorysation for the plots of isolation
-                if name == "iso_1" or name == "iso_2":
-                    categories[-1].cuts.remove("ele_iso")
-                    categories[-1].cuts.remove("tau_iso")
-
-                for cut_key, cut_expression in category_cuts.iteritems():
-                    categories[-1].cuts.remove(cut_key)
-                    if cut_expression is not None:
-                        categories[-1].cuts.add(Cut(cut_expression, cut_key))
-                    self._logger.debug('\t appending category cut: {"%s": "%s"}' % (cut_key, cut_expression))
+                    for cut_key, cut_expression in category_cuts.iteritems():
+                        categories[-1].cuts.remove(cut_key)
+                        if cut_expression is not None:
+                            categories[-1].cuts.add(Cut(cut_expression, cut_key))
+                        self._logger.debug('\t appending category cut: {"%s": "%s"}' % (cut_key, cut_expression))
 
             # categories specific for the channel
-            if channel_holder._channel_obj.name in channel_specific.keys():
-                ch = channel_specific[channel_holder._channel_obj.name]
+            if channel_name in channel_specific.keys():
+                ch = channel_specific[channel_name]
                 categories += self.getCategorries(
                     channel_holder=channel_holder,
                     grid_categories=ch['grid_categories'] if 'grid_categories' in ch.keys() else {}, # TODO: 'and use_grid_categories'
