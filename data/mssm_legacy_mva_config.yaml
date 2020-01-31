@@ -212,6 +212,8 @@ shifts: [
   nominal,
 
   # EMB, : todo
+  # 'ZTTpTT', # with embedding
+
   Zpt,
   prefiring,
   Tpt,
@@ -219,7 +221,6 @@ shifts: [
   # QCDem, : todo
   # WG1, : todo
   # FF, : todo
-  'ZTTpTT',
 
   TES,
   BTag,
