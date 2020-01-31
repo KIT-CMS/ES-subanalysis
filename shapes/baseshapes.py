@@ -35,9 +35,9 @@ class Shapes(object):
         return list(set(x) & set(y))
 
     channel_minplotlev_cuts = [
-            'et_minplotlev_cuts', 'mt_minplotlev_cuts',
-            'tt_minplotlev_cuts', 'em_minplotlev_cuts',
-            'channel_specific'
+        'et_minplotlev_cuts', 'mt_minplotlev_cuts',
+        'tt_minplotlev_cuts', 'em_minplotlev_cuts',
+        'channel_specific'
     ]
     cuts_manipulations = [
         'fes_extra_cuts', 'force_cuts', 'extra_cuts',
@@ -45,6 +45,7 @@ class Shapes(object):
     ]
 
     # @inidecorator   # TODO: TEST
+    # TODO: needs a splitting between init and setup
     def __init__(self,
                  ofset=0,
                  directory=None,
@@ -150,6 +151,29 @@ class Shapes(object):
         self._dry = dry
         self._danger = danger
         self._era_name = era
+
+        self._extra_chain = extra_chain
+        self._gof_channel = gof_channel
+        self._gof_variable = gof_variable
+        self._num_threads = num_threads
+        self._skip_systematic_variations = skip_systematic_variations
+        self._tag = tag
+        self._context_analysis = context_analysis
+        self._variables_names = variables_names
+        self._processes = processes
+        self._module = module
+
+        self._known_estimation_methods = _known_estimation_methods
+        self._known_processes = _known_processes
+        self._complexEstimationMethods = _complexEstimationMethods
+        self._complexEstimationMethodsRequirements = _complexEstimationMethodsRequirements
+        self._known_methods_collections = _known_methods_collections
+        self._known_estimation_modules = _known_estimation_modules
+        self._renaming = _renaming
+        self._known_cuts = _known_cuts
+
+        self._nominal_folder = nominal_folder
+
         # self._et_friend_directory = os.path.expandvars(et_friend_directory)
         # self._mt_friend_directory = os.path.expandvars(mt_friend_directory)
         # self._tt_friend_directory = os.path.expandvars(tt_friend_directory)
@@ -245,28 +269,6 @@ class Shapes(object):
                     else:
                         self._logger.warning('All channel_specific grid categorries are ignored')
                         self._channel_specific[c]['grid_categories'] = {}
-
-        self._extra_chain = extra_chain
-        self._gof_channel = gof_channel
-        self._gof_variable = gof_variable
-        self._num_threads = num_threads
-        self._skip_systematic_variations = skip_systematic_variations
-        self._tag = tag
-        self._context_analysis = context_analysis
-        self._variables_names = variables_names
-        self._processes = processes
-        self._module = module
-
-        self._known_estimation_methods = _known_estimation_methods
-        self._known_processes = _known_processes
-        self._complexEstimationMethods = _complexEstimationMethods
-        self._complexEstimationMethodsRequirements = _complexEstimationMethodsRequirements
-        self._known_methods_collections = _known_methods_collections
-        self._known_estimation_modules = _known_estimation_modules
-        self._renaming = _renaming
-        self._known_cuts = _known_cuts
-
-        self._nominal_folder = nominal_folder
 
         sys_processes = [
             'tes_sys_processes', 'fes_sys_processes', 'emb_sys_processes',
@@ -429,7 +431,7 @@ class Shapes(object):
         return output
 
     @classmethod
-    def prepareConfig(cls, analysis_shapes, config_file, debug=False):
+    def prepareConfig(cls, analysis_shapes, config_file, debug=False, parse_arguments=True):
         '''Read config and update to prompt'''
         self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name + ': '
         if debug:
@@ -437,16 +439,17 @@ class Shapes(object):
 
         config = analysis_shapes.readConfig(config_file)
 
-        prompt_args = analysis_shapes.parse_arguments(include_defaults=False)
+        if parse_arguments:
+            prompt_args = analysis_shapes.parse_arguments(include_defaults=False)
 
-        config.update(prompt_args)
+            config.update(prompt_args)
 
-        # prompt options overrule per-channel definitions in the config
-        if 'methods_collection_key' in prompt_args.keys():
-            logging.getLogger(__name__).warning('methods_collection_key was used in terminal -> updating all channel-specific values!')
-            for channel in config['channel_specific'].keys():
-                if 'methods_collection_key' in config['channel_specific'][channel]:
-                    config['channel_specific'][channel].pop('methods_collection_key')
+            # prompt options overrule per-channel definitions in the config
+            if 'methods_collection_key' in prompt_args.keys():
+                logging.getLogger(__name__).warning('methods_collection_key was used in terminal -> updating all channel-specific values!')
+                for channel in config['channel_specific'].keys():
+                    if 'methods_collection_key' in config['channel_specific'][channel]:
+                        config['channel_specific'][channel].pop('methods_collection_key')
 
         if debug:
             print 'config:'
@@ -717,6 +720,7 @@ class Shapes(object):
 
     @classmethod
     def readConfig(cls, config_file=None, debug=False):
+        logger = logging.getLogger(__name__)
         self_name = cls.__name__ + '::' + sys._getframe().f_code.co_name + ': '
         if debug:
             print '\n', self_name
@@ -754,21 +758,22 @@ class Shapes(object):
                     option_dict = config['user_specific'][option_name]
                     try:
                         config[option_name] = option_dict[username][hostname]
-                        print 'Set by host/username: %s = %s' % (option_name, config[option_name])
+                        logger.info('Set by host/username: %s = %s' % (option_name, config[option_name]))
                     except:
                         try:
                             config[option_name] = option_dict['byhost'][hostname]
-                            print'Set by host: %s = %s' % (option_name, config[option_name])
+                            logger.info('Set by host: %s = %s' % (option_name, config[option_name]))
                         except:
                             config[option_name] = option_dict['byhost']['default']
-                            print'Set to default: %s = %s' % (option_name, config[option_name])
+                            logger.info('Set to default: %s = %s' % (option_name, config[option_name]))
 
                 del config['user_specific']
 
                 # return config
 
             except yaml.YAMLError as exc:
-                print self_name + 'yaml config couldn\' be loaded:\n', config_file, '\n', exc
+                logger.critical("%s yaml config couldn\' be loaded:\n%s\n%s" % (self_name, config_file, exc))
+                # logger.critical(self_name + 'yaml config couldn\' be loaded:\n' +  config_file + '\n' + exc)
                 raise
 
         # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
@@ -1116,8 +1121,8 @@ class Shapes(object):
             try:
                 return self._known_methods_collections[methods_collection_key]
             except:
-                self._logger.error(' '.join(["Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name]))
-                self._logger.error('Possible _known_estimation_methods:')
+                self._logger.critical(' '.join(["Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name]))
+                self._logger.critical('Possible _known_estimation_methods:')
                 pp.pprint(self._known_estimation_methods[era][context][channel_name])
                 raise Exception
         else:
@@ -1233,6 +1238,17 @@ class Shapes(object):
         self._logger.warning('Not implemented!')
         pass
 
+    def getNCategories(self):
+        n = 0
+        for channel_name, channel_holder in self._channels.iteritems():
+            self._logger.info("Number of categories in channel %s : %d" % (channel_name, len(channel_holder._categorries)))
+            n += len(channel_holder._categorries)
+        self._logger.info("Number of categories in all channels: %d" % n)
+        return n
+
+    def getNShapes(self):
+        return len(self._systematics._systematics)
+
     def produce(self):
         self._logger.info(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
@@ -1287,7 +1303,7 @@ class Shapes(object):
         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 
         if not self._dry:
-            if len(self._systematics._systematics) == 0:
+            if self.getNShapes() == 0:
                 self._logger.critical("Nothing to produce! Switching to dry mode.")
                 self._dry = True
                 return
