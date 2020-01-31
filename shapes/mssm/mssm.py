@@ -782,8 +782,8 @@ class MSSM(Shapes):
                                 # Upplying cuts that are only for fes shifts
                                 self.upplyFesCuts(pipeline=pipeline, depth=categories)
 
-            # ZL fakes energy scale
-            if 'ZES' in self._shifts and channel_name in ["et", "em"]:
+            # ZL fakes energy scale (e->t, m->t)
+            if 'ZES' in self._shifts and channel_name in ["et", "mt"]:
                 self._logger.info('\n\n ZES reweighting')
                 fakelep_dict = {"et": "Ele", "mt": "Mu"}
 
