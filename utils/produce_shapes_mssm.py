@@ -8,7 +8,7 @@ import logging
 from rootpy import log
 # log.setLevel(log.INFO)
 from rootpy.logger.magic import DANGER
-# DANGER.enabled = True  # set True to raise exceptions
+DANGER.enabled = True  # set True to raise exceptions
 
 from shapes import styled
 from shapes.mssm import MSSM as analysis_shapes_mssm

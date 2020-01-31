@@ -232,17 +232,6 @@ class MSSM(Shapes):
                     )
                 )
 
-            channel_holder._nnominals = len([i for i in self._systematics._systematics if i.variation.is_nominal()])
-            if channel_holder._nnominals == 0:
-                raise Exception("no nominals were found - by construction they should be produced!")
-            # channel_holder._nnominals = len([i for i in self._systematics._systematics if i.variation.is_nominal()])
-            # if channel_holder._nnominals == 0:
-            #     # print processes
-            #     # print categories
-            #     self._logger.error('No nominals were found - yet not implemented.')
-            #     exit(1)
-            #     # raise Exception("no nominals were found - yet not implemented.")
-
             # TODO: decorrelate emb, mc, year
             # Tau energy scale (general, MC-specific & EMB-specific), it is mt, et & tt specific
             if 'TES' in self._shifts and channel_name in ['mt', 'et', 'tt']:

@@ -56,6 +56,13 @@ class Shapes(object):
         except:
             raise
 
+    _known_svfit_variables = [
+        'm_fastmtt_puppi', 'pt_fastmtt_puppi', 'eta_fastmtt_puppi', 'phi_fastmtt_puppi',
+        'm_sv_puppi', 'pt_sv_puppi', 'eta_sv_puppi', 'phi_sv_puppi',
+        'm_fastmtt', 'pt_fastmtt', 'eta_fastmtt', 'phi_fastmtt',
+        'm_sv', 'pt_sv', 'eta_sv', 'phi_sv',
+    ]
+
     channel_minplotlev_cuts = [
         'et_minplotlev_cuts', 'mt_minplotlev_cuts',
         'tt_minplotlev_cuts', 'em_minplotlev_cuts',
@@ -847,10 +854,14 @@ class Shapes(object):
         """
         Returns dict of Variables for Channel
         """
-        # print "ETauFES::getVariables"
+        self._logger.debug(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name)
+
         variables = {}
 
         for key in variable_names:
+            if channel_obj.name == 'em' and key in self._known_svfit_variables:
+                self._logger.warning('Skippong variable %s for em channel')
+                continue
             variables[key] = Variable(
                 key,
                 VariableBinning(binning[key]["bins"]),
