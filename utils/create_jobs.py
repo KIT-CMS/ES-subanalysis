@@ -423,7 +423,7 @@ def main(args):
         subprocess.call('condor_submit job.jdl', shell=True)
 
     else:
-        print("cd %d ; condor_submit job.jdl" % jobdir)
+        print("cd %s ; condor_submit job.jdl" % jobdir)
 
     print('done')
 
