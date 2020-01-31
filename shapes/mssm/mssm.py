@@ -684,9 +684,9 @@ class MSSM(Shapes):
                 met_unclustered_variations = create_systematic_variations("CMS_scale_met_unclustered", "metUnclusteredEn", DifferentPipeline)
 
                 proc_intersection = list(set(self._met_sys_processes) & set(channel_holder._processes.keys()))
-                self._logger.debug('\n\n METES::variation name: %s\nintersection self._met_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                 # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
                 for variation in met_unclustered_variations:
+                    self._logger.debug('\n\n METES::variation name: %s\nintersection self._met_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,

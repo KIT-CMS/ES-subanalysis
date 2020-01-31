@@ -295,8 +295,7 @@ class Shapes(object):
                                 self._channel_specific[channel][option_name] = option_dict['default']
                                 self._logger.info('%s : Set by default: %s = %s' % (channel, option_name, self._channel_specific[channel][option_name]))
                         else:
-                            self._logger.info('%s : Set as is (dict): %s = ' % (channel, option_name))
-                            pp.pprint(option_dict)
+                            self._logger.info('%s : Set as is (dict): %s =  %s' % (channel, option_name, option_dict))
                             self._channel_specific[channel][option_name] = option_dict
                     else:
                         self._logger.info('%s : Set as is: %s = %s' % (channel, option_name, option_dict))

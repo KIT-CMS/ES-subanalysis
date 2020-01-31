@@ -212,7 +212,7 @@ shifts: [
   nominal,
 
   # EMB, : todo
-  # 'ZTTpTT', # with embedding
+  # 'ZTTpTT', # with embedding, missing in artus
 
   Zpt,
   prefiring,
