@@ -268,7 +268,7 @@ use_channel_specific: True
 # updated values get OVERWRITTEN, not extended/updated!
 channel_specific:
   em:
-    # SMHTT: QCDEstimation_SStoOS_MTETEM
+    # SMHTT: QCDEstimation_SStoOS_MTETEM estim.method -> Legacy_MSSM_with_QCDSStoOS
     methods_collection_key: Legacy_MSSM_with_QCDSStoOS
 
     # use_grid_categories: True
@@ -346,7 +346,7 @@ channel_specific:
         taubyIsoIdWeight : "((gen_match_2 == 5)*0.90 + (gen_match_2 != 5))"
 
   tt:
-    # SMHTT: FF or QCDEstimation_ABCD_TT_ISO2
+    # SMHTT: FF or QCDEstimation_ABCD_TT_ISO2 -> Legacy_MSSM_with_QCDABCD
     methods_collection_key: Legacy_MSSM_with_QCDABCD
 
     # need another expression since tt uses dm-dependant SF

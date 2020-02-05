@@ -1193,7 +1193,7 @@ class Shapes(object):
             try:
                 return self._known_methods_collections[methods_collection_key]
             except:
-                self._logger.critical(' '.join(["Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name]))
+                self._logger.critical(' '.join(["Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name, 'methods_collection_key:', methods_collection_key]))
                 self._logger.critical('Possible _known_estimation_methods:')
                 pp.pprint(self._known_estimation_methods[era][context][channel_name])
                 raise Exception
