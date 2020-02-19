@@ -45,34 +45,76 @@ _known_methods_collections:
         W                       : WEstimation
 
     Legacy_MSSM_with_QCDABCD:
-        data_obs                : DataEstimation  # combine
+        data_obs                : DataEstimation
         ZTT                     : ZTTEstimation
-        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
-        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
-        TTT                     : TTTEstimation  # combine
-        TTJ                     : TTJEstimation  # combine
-        TTL                     : TTLEstimation  # new to combine
-        VVT                     : VVTEstimation  # combine
-        VVL                     : VVLEstimation  # new to combine
-        VVJ                     : VVJEstimation  # combine
-        W                       : WEstimation  # class. QCD & W ; now contains also EWKW
-        QCDABCD                 : QCDEstimation_ABCD_TT_ISO2  # combine needs ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
+        ZL                      : ZLEstimation
+        ZJ                      : ZJEstimation
+        TTT                     : TTTEstimation
+        TTJ                     : TTJEstimation
+        TTL                     : TTLEstimation
+        VVT                     : VVTEstimation
+        VVL                     : VVLEstimation
+        VVJ                     : VVJEstimation
+        W                       : WEstimation
+        QCDABCD                 : QCDEstimation_ABCD_TT_ISO2
 
     Legacy_MSSM_with_QCDSStoOS:
+        data_obs                : DataEstimation
+        ZTT                     : ZTTEstimation
+        ZL                      : ZLEstimation
+        ZJ                      : ZJEstimation
+        TTT                     : TTTEstimation
+        TTJ                     : TTJEstimation
+        TTL                     : TTLEstimation
+        VVT                     : VVTEstimation
+        VVL                     : VVLEstimation
+        VVJ                     : VVJEstimation
+        W                       : WEstimation
+        QCDSStoOS               : QCDEstimation_SStoOS_MTETEM
+
+    Legacy_MSSM_with_QCDSStoOSEM:
+        data_obs                : DataEstimation
+        ZTT                     : ZTTEstimation
+        ZL                      : ZLEstimation
+        ZJ                      : ZJEstimation
+        TTT                     : TTTEstimation
+        TTJ                     : TTJEstimation
+        TTL                     : TTLEstimation
+        VVT                     : VVTEstimation
+        VVL                     : VVLEstimation
+        VVJ                     : VVJEstimation
+        W                       : WEstimation
+        QCDSStoOSEM             : QCDEstimation_SStoOS_MTETEM  # for em all XXJ are removed
+
+    Legacy_MSSM_with_FFLT:
         data_obs                : DataEstimation  # combine
         ZTT                     : ZTTEstimation
         ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
-        ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        # ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
         TTT                     : TTTEstimation  # combine
-        TTJ                     : TTJEstimation  # combine
+        # TTJ                     : TTJEstimation  # combine
         TTL                     : TTLEstimation  # new to combine
         VVT                     : VVTEstimation  # combine
         VVL                     : VVLEstimation  # new to combine
-        VVJ                     : VVJEstimation  # combine
-        W                       : WEstimation  # class. QCD & W ; now contains also EWKW
-        QCDSStoOS               : QCDEstimation_SStoOS_MTETEM  # combine needs ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
+        # VVJ                   : VVJEstimation  # combine
+        # W                       : WEstimation  # class. QCD & W ; now contains also EWKW
+        jetFakesLT              : NewFakeEstimationLT # needs ["ZTT", "ZL", "TTL", "VVL"]
 
-    Legacy_FES_with_FF:
+    Legacy_MSSM_with_FFTT:
+        data_obs                : DataEstimation  # combine
+        ZTT                     : ZTTEstimation
+        ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
+        # ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
+        TTT                     : TTTEstimation  # combine
+        # TTJ                     : TTJEstimation  # combine
+        TTL                     : TTLEstimation  # new to combine
+        VVT                     : VVTEstimation  # combine
+        VVL                     : VVLEstimation  # new to combine
+        # VVJ                   : VVJEstimation  # combine
+        # W                       : WEstimation  # class. QCD & W ; now contains also EWKW
+        jetFakesTT              : NewFakeEstimationTT # needs ["ZTT", "ZL", "TTL", "VVL"]
+
+    Legacy_FES_with_FFLT:
         data_obs                : DataEstimation  # combine
         ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
         ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
@@ -99,7 +141,7 @@ _known_methods_collections:
         WMC                     : WEstimation  # class. QCD & W ; now contains also EWKW
         jetFakes                : NewFakeEstimationLT # needs ["ZTT", "ZL", "TTL", "VVL"]
 
-    Legacy_FES_with_EMB_with_FF:
+    Legacy_FES_with_EMB_with_FFLT:
         data_obs                : DataEstimation  # combine
         ZL                      : ZLEstimation    # combine; Signal ; class. QCD & W
         ZJ                      : ZJEstimation  # combine ; class. QCD & W ; embedding
@@ -109,7 +151,7 @@ _known_methods_collections:
         VVJ                     : VVJEstimation  # combine
         W                       : WEstimation
         EMB                     : ZTTEmbeddedEstimation
-        jetFakesEMB             : NewFakeEstimationLT # needs ["EMB", "ZL", "TTL", "VVL"]
+        jetFakesEMBLT             : NewFakeEstimationLT # needs ["EMB", "ZL", "TTL", "VVL"]
 
     Legacy_FES_with_QCDwithW:
         data_obs                : DataEstimation  # combine
