@@ -555,8 +555,10 @@ class Shapes(object):
         parser.add_argument("--yaml-conf", type=str, help="Context analysis.")
         parser.add_argument("--variables-names", nargs='*', type=str, help="Variable names.")
         parser.add_argument("--invert-cuts", nargs='*', type=str, help="Invert cuts by their key names.")
-        # parser.add_argument("--forve-cuts", action=type('', (argparse.Action, ), dict(__call__=lambda a, p, n, v, o: getattr(n, a.dest).update(dict([v.split('=')])))), default={})  # anonymously subclassing argparse.Action
-        parser.add_argument('--forve-cuts', type=ast.literal_eval, help="Dict of cuts to force. Format: --forve-cuts=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
+        # parser.add_argument("--force-cuts", action=type('', (argparse.Action, ), dict(__call__=lambda a, p, n, v, o: getattr(n, a.dest).update(dict([v.split('=')])))), default={})  # anonymously subclassing argparse.Action
+        parser.add_argument('--force-cuts', type=ast.literal_eval, help="Dict of cuts to force. Format: --force-cuts=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
+        # TODO!! this is just  a hack
+        parser.add_argument('--single-categories', type=ast.literal_eval, help="Dict of cuts to force. Format: --single-categories=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
         parser.add_argument('--replace-weights', type=ast.literal_eval, help="Dict of replace weights. Format: --replace-weights=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
 
         parser.add_argument("--etau-es-shifts", nargs='*', type=float, help="etau_es_shifts")
