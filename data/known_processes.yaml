@@ -34,10 +34,15 @@ _complexEstimationMethods: [
 ]
 
 _complexEstimationMethodsRequirements:
-  jetFakes:
-    NewFakeEstimationLT: ["ZTT", "ZL", "TTL", "VVL"]
-  jetFakesEMB:
+  jetFakesLT:
+    NewFakeEstimationLT: ["ZTT", "ZL", "TTL", "VVL", "VVT", "TTT"] # nofake_processes
+  jetFakesEMBLT:
     NewFakeEstimationLT: ["EMB", "ZL", "TTL", "VVL"]
+
+  jetFakesTT:
+    NewFakeEstimationTT: ["ZTT", "ZL", "TTL", "VVL", "VVT", "TTT"] # nofake_processes
+  jetFakesEMBTT:
+    NewFakeEstimationTT: ["EMB", "ZL", "TTL", "VVL"]
 
   WEMB:
     WEstimationWithQCD: ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"] # ["EMB", "ZLL", "ZJ", "TTL", "TTJ", "VVL", "VVJ", "EWKL", "EWKJ"] qcd_ss_to_os_extrapolation_factor=1.09
@@ -53,6 +58,12 @@ _complexEstimationMethodsRequirements:
     QCDEstimation_SStoOS_MTETEM: ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
   QCDSStoOSEMB:
     QCDEstimation_SStoOS_MTETEM: ["EMB", "ZL", "ZJ", "W", "TTJ", "TTL", "VVJ", "VVL"]
+
+  QCDSStoOSEM:
+    QCDEstimation_SStoOS_MTETEM: ["ZTT", "ZL", "W", "TTT", "TTL", "VVT", "VVL"]
+    # QCDEstimation_SStoOS_MTETEM: ["ZTT", "ZL", "W", "TTT",     "VVT", "VVL" ]
+  QCDSStoOSEMBEM:
+    QCDEstimation_SStoOS_MTETEM: ["EMB", "ZL", "W",  "TTL", "VVL"]
 
   QCDABCD:
     QCDEstimation_ABCD_TT_ISO2: ["ZTT", "ZL", "ZJ", "W", "TTT", "TTJ", "TTL", "VVT", "VVJ", "VVL"]
@@ -78,8 +89,12 @@ _known_processes:
   EWKT                    : EWKTEstimation
   EWKL                    : EWKLEstimation
   EWKJ                    : EWKJEstimation
-  jetFakes                : NewFakeEstimationLT
-  jetFakesEMB             : NewFakeEstimationLT
+  # jetFakes                : NewFakeEstimationLT
+  # jetFakesEMB             : NewFakeEstimationLT
+  jetFakesLT                : NewFakeEstimationLT
+  jetFakesEMBLT             : NewFakeEstimationLT
+  jetFakesTT                : NewFakeEstimationTT
+  jetFakesEMBTT             : NewFakeEstimationTT
   # jetFakes                : FakeEstimationLT
   WMC                     : WEstimation
   W                       : WEstimation
