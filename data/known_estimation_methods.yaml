@@ -15,6 +15,30 @@ _known_methods_collections:
         data_obs                : data
         jetFakes                : FAKES
 
+    FF_processes:
+        data_obs                : DataEstimation
+        ZTT                     : ZTTEstimation
+        ZL                      : ZLEstimation
+        ZJ                      : ZJEstimation
+        TTT                     : TTTEstimation
+        TTJ                     : TTJEstimation
+        TTL                     : TTLEstimation
+        VVT                     : VVTEstimation
+        VVL                     : VVLEstimation
+        VVJ                     : VVJEstimation
+        W                       : WEstimation
+
+    FF_EMB_processes:
+        data_obs                : DataEstimation
+        EMB                     : ZTTEmbeddedEstimation
+        ZL                      : ZLEstimation
+        ZJ                      : ZJEstimation
+        TTJ                     : TTJEstimation
+        TTL                     : TTLEstimation
+        VVL                     : VVLEstimation
+        VVJ                     : VVJEstimation
+        W                       : WEstimation
+
     Legacy_MSSM_with_QCDABCD:
         data_obs                : DataEstimation  # combine
         ZTT                     : ZTTEstimation
