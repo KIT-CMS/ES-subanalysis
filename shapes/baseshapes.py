@@ -1055,7 +1055,7 @@ class Shapes(object):
                 ff_parameters_list['friend_directory'].extend(self._fake_factor_friend_directory)
 
                 # import pdb; pdb.set_trace()
-                if estimation_method == 'NewFakeEstimationLT':
+                if estimation_method in ['NewFakeEstimationLT', 'NewFakeEstimationTT']:
                     # ? also TTT and VVT for no EMB case?
                     # nofake_processes = ["EMB", "ZL", "TTL", "VVL"] if "EMB" in key else ["ZTT", "ZL", "TTL", "VVL"]
                     # ff_parameters_list['nofake_processes'] = [processes[process] for process in nofake_processes]
@@ -1067,6 +1067,8 @@ class Shapes(object):
                             ff_parameters_list['data_process'] = processes['data']
                         except:
                             raise Exception("couldn't access processes['data'] or data_obs object")
+                else:
+                    raise Exception("The jetFakes is not associated a propper method in the known_processes files. The passed method: %s " % estimation_method)
 
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ff_parameters_list))
 
