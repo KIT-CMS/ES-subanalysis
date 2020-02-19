@@ -86,7 +86,7 @@ class MSSM(Shapes):
                     warning_message += "to new value [%s]" % (channel_holder._channel_obj.cuts.get(k))
                     self._logger.warning(warning_message)
                 else:
-                    self._logger.error("Couldn't invert cut %s - not found in the original cuts: " + channel_holder)
+                    self._logger.error("Couldn't invert cut %s - not found in the original cuts: %s" % (k, channel_holder))
 
             # forcing cuts
             for k, v in self._force_cuts.iteritems():

@@ -48,7 +48,7 @@ def produce_shapes_variables(config):
     # # logging.getLogger('shape_producer.systematics').setLevel(log.INFO)
     # # logging.getLogger('shape_producer.histogram').setLevel(log.INFO)
 
-    if shapes._log_level == 'Debug':
+    if shapes._log_level == 'Debug' or shapes._log_level == 'DEBUG':
         logging.getLogger('shape_producer.histogram').setLevel(log.DEBUG)
         # logging.getLogger('shape_producer.systematics').setLevel(log.DEBUG)
         # logging.getLogger('shape_producer.systematic_variations').setLevel(log.DEBUG)
