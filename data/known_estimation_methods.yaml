@@ -14,6 +14,11 @@ _known_methods_collections:
     renaming:
         data_obs                : data
         jetFakes                : FAKES
+        jetFakesLT              : FAKES
+        jetFakesTT              : FAKES
+        QCDSStoOS               : QCD
+        QCDSStoOSEM             : QCD
+        QCDABCD                 : QCD
 
     FF_processes:
         data_obs                : DataEstimation
