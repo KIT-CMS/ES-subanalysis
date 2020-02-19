@@ -860,9 +860,9 @@ class Shapes(object):
         variables = {}
 
         for key in variable_names:
-            if channel_obj.name == 'em' and key in self._known_svfit_variables:
-                self._logger.warning('Skippong variable %s for em channel')
-                continue
+            # if channel_obj.name == 'em' and key in self._known_svfit_variables:
+            #     self._logger.warning('Skippong variable %s for em channel' % key)
+            #     continue
             variables[key] = Variable(
                 key,
                 VariableBinning(binning[key]["bins"]),
@@ -1022,7 +1022,9 @@ class Shapes(object):
                 qcdsstoos_parameters_list = copy.deepcopy(parameters_list)
 
                 qcdsstoos_parameters_list['bg_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
-                qcdsstoos_parameters_list['extrapolation_factor'] = 1.17  # 1.00  # 1.17?
+                qcdsstoos_parameters_list['extrapolation_factor'] = 1.00  # 1.00  # QCD extrapolation_factor 1.17 for mt et 2016
+                if 'em' in channel_obj.name:
+                    qcdsstoos_parameters_list['qcd_weight'] = Weight("em_qcd_extrap_up_Weight", "qcd_weight")
                 try:
                     qcdsstoos_parameters_list['data_process'] = processes['data_obs']
                 except:
