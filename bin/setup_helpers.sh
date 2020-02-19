@@ -75,6 +75,47 @@ prep_resubmit() {
 }
 # prep_resubmit
 
+check_logs() {
+    if [[ $# -eq 0 ]] ; then
+        directory=$(pwd)
+    elif [[ $# -eq 1 ]] ; then
+        if [ -d "$1" ]; then
+            # echo "$1 exist"
+            directory=$1
+        else
+            echo "$1 is not a valid directory"
+            return
+        fi
+    else
+        echo "uncknown extra parameters"
+        return
+    fi
+
+    flag=0
+    for fullfile in ${directory}/out/*
+    do
+        filename="${fullfile##*/}"
+        extension="${filename##*.}"
+        condorid="${filename#*.}"
+        condorid="${condorid%.*}"
+        jobid="${filename%%.*}"
+        if [[ ! $(tail -n 1 $fullfile) == "done"* ]]
+        then
+            flag=1
+            echo "Error: ${jobid} [${condorid}]"
+            # mv $fullfile $fail_dir/$fullfile
+        # else
+        #     mv $fullfile $success_dir/$fullfile
+        fi
+    done
+
+    if [[ ${flag} -eq 1 ]] ; then
+        echo "done -> with errors"
+    else
+        echo "done -> no errors"
+    fi
+}
+
 submit_prep_resubmit() {
     arguments=$(prep_resubmit_silent $@)
     echo "Number to resubmit:"
