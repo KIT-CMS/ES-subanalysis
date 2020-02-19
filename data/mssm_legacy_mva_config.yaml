@@ -14,7 +14,7 @@ binning_key: control
 era: '2017'
 tag: mssm
 context_analysis: mssmMVA
-methods_collection_key: Legacy_MSSM_with_QCDSStoOS
+methods_collection_key: Legacy_MSSM_with_FFLT # Legacy_MSSM_with_QCDSStoOS
 
 output_file: Null  # keep it empty for auto-naming
 output_file_name: Null  # keep it empty for auto-naming: era + context_analysis + methods_collection_key
@@ -106,11 +106,11 @@ user_specific:
     byhost:
       default: ["$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"]
       naf:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
       bird:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
@@ -198,7 +198,7 @@ tt_minplotlev_cuts: {}
 em_minplotlev_cuts: {}
 
 # Global cuts
-# applied to all pipelines! Here a global difference between master shapes and FES selection should be made
+# applied to all pipelines!
 no_force_cuts: True
 force_cuts: {}
 
@@ -268,8 +268,8 @@ use_channel_specific: True
 # updated values get OVERWRITTEN, not extended/updated!
 channel_specific:
   em:
-    # SMHTT: QCDEstimation_SStoOS_MTETEM estim.method -> Legacy_MSSM_with_QCDSStoOS
-    methods_collection_key: Legacy_MSSM_with_QCDSStoOS
+    # SMHTT: Legacy_MSSM_with_QCDSStoOSEM (QCDEstimation_SStoOS_MTETEM with TTL in QCD est) estim.method -> Legacy_MSSM_with_QCDSStoOS
+    methods_collection_key: Legacy_MSSM_with_QCDSStoOSEM # in *EM skipping the XXJ from QCDest.
 
     # use_grid_categories: True
 
@@ -347,7 +347,7 @@ channel_specific:
 
   tt:
     # SMHTT: FF or QCDEstimation_ABCD_TT_ISO2 -> Legacy_MSSM_with_QCDABCD
-    methods_collection_key: Legacy_MSSM_with_QCDABCD
+    methods_collection_key: Legacy_MSSM_with_FFTT # Legacy_MSSM_with_QCDABCD
 
     # need another expression since tt uses dm-dependant SF
     replace_weights:
