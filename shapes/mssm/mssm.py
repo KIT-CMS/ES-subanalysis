@@ -278,8 +278,8 @@ class MSSM(Shapes):
                 #                 era=self.era
                 #             )
 
-            # EMB charged track correction uncertainty (DM-dependent)
-            if 'EMB' in self._shifts:
+            # EMB charged track correction uncertainty (DM-dependent): Ele energy scale
+            if 'EMB' in self._shifts and channel_name in ['mt', 'et', 'tt']:
                 self._logger.info('\n\n EMB shifts...')
                 decayMode_variations = []
                 decayMode_variations.append(
@@ -540,35 +540,52 @@ class MSSM(Shapes):
                             era=self.era
                         )
 
-            # TODO: decor. emb and mc
+            # TODO: refactor the emb part
             # Lepton trigger efficiency; the same values for (MC & EMB) and (mt & et)
             if 'TrgEff' in self._shifts and channel_name in ["mt", "et"]:
                 self._logger.info('\n\n Lepton trigger efficiency uncertainties (same for [MC & EMB], [mt & et])')
                 lep_trigger_eff_variations = []
+
+                l_eff_cut = {
+                    "mt": "25",
+                    "et": "25",
+                }
+                if self._trgeff_setup == 2020:
+                    if channel_holder._year in ["2017", "2018"]:
+                        l_eff_cut = {
+                            "mt": "25",
+                            "et": "28",
+                        }
+                    elif channel_holder._year == "2016":
+                        l_eff_cut = {
+                            "mt": "23",
+                            "et": "28",
+                        }
+
                 # MC
                 lep_trigger_eff_variations.append(
                     AddWeight(
                         "CMS_eff_trigger_%s_Run%s" % (channel_name, channel_holder._year),
                         "trg_%s_eff_weight" % channel_name,
-                        Weight("(1.0*(pt_1<=25)+1.02*(pt_1>25))", "trg_%s_eff_weight" % channel_name),
+                        Weight("(1.0*(pt_1<={ptcut})+1.02*(pt_1>{ptcut}))".format(ptcut=l_eff_cut[channel_name]), "trg_%s_eff_weight" % channel_name),
                         "Up"))
                 lep_trigger_eff_variations.append(
                     AddWeight(
                         "CMS_eff_trigger_%s_Run%s" % (channel_name, channel_holder._year),
                         "trg_%s_eff_weight" % channel_name,
-                        Weight("(1.0*(pt_1<=25)+0.98*(pt_1>25))", "trg_%s_eff_weight" % channel_name),
+                        Weight("(1.0*(pt_1<={ptcut})+0.98*(pt_1>{ptcut}))".format(ptcut=l_eff_cut[channel_name]), "trg_%s_eff_weight" % channel_name),
                         "Down"))
                 lep_trigger_eff_variations.append(
                     AddWeight(
                         "CMS_eff_xtrigger_%s_Run%s" % (channel_name, channel_holder._year),
                         "xtrg_%s_eff_weight" % channel_name,
-                        Weight("(1.054*(pt_1<=25)+1.0*(pt_1>25))", "xtrg_%s_eff_weight" % channel_name),
+                        Weight("(1.054*(pt_1<={ptcut})+1.0*(pt_1>{ptcut}))".format(ptcut=l_eff_cut[channel_name]), "xtrg_%s_eff_weight" % channel_name),
                         "Up"))
                 lep_trigger_eff_variations.append(
                     AddWeight(
                         "CMS_eff_xtrigger_%s_Run%s" % (channel_name, channel_holder._year),
                         "xtrg_%s_eff_weight" % channel_name,
-                        Weight("(0.946*(pt_1<=25)+1.0*(pt_1>25))", "xtrg_%s_eff_weight" % channel_name),
+                        Weight("(0.946*(pt_1<={ptcut})+1.0*(pt_1>{ptcut}))".format(ptcut=l_eff_cut[channel_name]), "xtrg_%s_eff_weight" % channel_name),
                         "Down"))
 
                 for variation in lep_trigger_eff_variations:
@@ -577,6 +594,41 @@ class MSSM(Shapes):
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+                if 'EMB' in channel_holder._processes.keys():
+                    lep_trigger_eff_variations_emb = []
+                    lep_trigger_eff_variations_emb.append(
+                        AddWeight(
+                            "CMS_eff_trigger_emb_%s_Run%s" % (channel_name, channel_holder._year),
+                            "trg_%s_eff_weight" % channel_name,
+                            Weight("(1.0*(pt_1<={ptcut})+1.02*(pt_1>{ptcut}))".format(ptcut=l_eff_cut[channel_name]), "trg_%s_eff_weight" % channel_name),
+                            "Up"))
+                    lep_trigger_eff_variations_emb.append(
+                        AddWeight(
+                            "CMS_eff_trigger_emb_%s_Run%s" % (channel_name, channel_holder._year),
+                            "trg_%s_eff_weight" % channel_name,
+                            Weight("(1.0*(pt_1<={ptcut})+0.98*(pt_1>{ptcut}))".format(ptcut=l_eff_cut[channel_name]), "trg_%s_eff_weight" % channel_name),
+                            "Down"))
+                    lep_trigger_eff_variations_emb.append(
+                        AddWeight(
+                            "CMS_eff_xtrigger_emb_%s_Run%s" % (channel_name, channel_holder._year),
+                            "xtrg_%s_eff_weight" % channel_name,
+                            Weight("(1.054*(pt_1<={ptcut})+1.0*(pt_1>{ptcut}))".format(ptcut=l_eff_cut[channel_name]), "xtrg_%s_eff_weight" % channel_name),
+                            "Up"))
+                    lep_trigger_eff_variations_emb.append(
+                        AddWeight(
+                            "CMS_eff_xtrigger_emb_%s_Run%s" % (channel_name, channel_holder._year),
+                            "xtrg_%s_eff_weight" % channel_name,
+                            Weight("(0.946*(pt_1<={ptcut})+1.0*(pt_1>{ptcut}))".format(ptcut=l_eff_cut[channel_name]), "xtrg_%s_eff_weight" % channel_name),
+                            "Down"))
+                    for variation in lep_trigger_eff_variations_emb:
+                        # self._logger.debug('\n\n TrgEff::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes['EMB'],
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
@@ -669,6 +721,9 @@ class MSSM(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
+
+            # Zll reweighting !!! replaced by log normal uncertainties:
+            # CMS_eFakeTau_Run2018 16%; CMS_mFakeTau_Run2018 26%
 
             # ZL fakes energy scale (e->t, m->t)
             if 'ZES' in self._shifts and channel_name in ["et", "mt"]:
