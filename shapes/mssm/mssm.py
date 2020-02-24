@@ -210,7 +210,7 @@ class MSSM(Shapes):
             # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 
             # active processes in groups
-            mc_processes = [key for key in channel_holder._processes.keys() if 'data' not in key and 'EMB' not in key]
+            mc_processes = [key for key in channel_holder._processes.keys() if 'data' not in key and 'EMB' not in key and "jetFakes" not in key]
             sm_ggH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["ggH125", "ggH_GG2H", "ggHToWW"])]
             # sm_qqH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["qqH125", "qqH_GG2H", "qqHToWW"])]
             # sm_VH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["WH125", "ZH125", "ttH125"])]
