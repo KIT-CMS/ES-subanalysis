@@ -1024,6 +1024,13 @@ class Shapes(object):
                 qcdsstoos_parameters_list['bg_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
                 qcdsstoos_parameters_list['extrapolation_factor'] = 1.00  # 1.00  # QCD extrapolation_factor 1.17 for mt et 2016
                 if 'em' in channel_obj.name:
+                    # latest sm-htt
+                    # if '2016' in channel_holder._year: closureweight = 1.2
+                    # elif '2017' in channel_holder._year: closureweight = 1.1
+                    # elif '2018' in channel_holder._year: closureweight = 1.2
+                    # else: raise Exception("Year not identified")
+                    # qcdsstoos_parameters_list['qcd_weight'] = Weight("{closureweight}*em_qcd_osss_binned_Weight".format(closureweight=closureweight), "qcd_weight")
+                    # previously
                     qcdsstoos_parameters_list['qcd_weight'] = Weight("em_qcd_extrap_up_Weight", "qcd_weight")
                 try:
                     qcdsstoos_parameters_list['data_process'] = processes['data_obs']
