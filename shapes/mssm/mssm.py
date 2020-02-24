@@ -673,15 +673,20 @@ class MSSM(Shapes):
             # ZL fakes energy scale (e->t, m->t)
             if 'ZES' in self._shifts and channel_name in ["et", "mt"]:
                 self._logger.info('\n\n ZES reweighting')
-                fakelep_dict = {"et": "Ele", "mt": "Mu"}
 
-                lep_fake_es_variations = create_systematic_variations("CMS_ZLShape_%s_1prong_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProng" % fakelep_dict[channel_name], DifferentPipeline)
-                lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_%s_1prong1pizero_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProngPiZeros" % fakelep_dict[channel_name], DifferentPipeline)
+                if channel_name == 'mt' or self._fes_et_setup != 2020:
+                    fakelep_dict = {"et": "Ele", "mt": "Mu"}
+                    lep_fake_es_variations = create_systematic_variations("CMS_ZLShape_%s_1prong_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProng" % fakelep_dict[channel_name], DifferentPipeline)
+                    lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_%s_1prong1pizero_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProngPiZeros" % fakelep_dict[channel_name], DifferentPipeline)
+                else:
+                    lep_fake_es_variations = create_systematic_variations("CMS_ZLShape_et_1prong_barrel_Run%s" % channel_holder._year, "tauEleFakeEsOneProngBarrel", DifferentPipeline)
+                    lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_et_1prong_endcap_Run%s" % channel_holder._year, "tauEleFakeEsOneProngEndcap", DifferentPipeline)
+                    lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_et_1prong1pizero_barrel_Run%s" % channel_holder._year, "tauEleFakeEsOneProngPiZerosBarrel", DifferentPipeline)
+                    lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_et_1prong1pizero_endcap_Run%s" % channel_holder._year, "tauEleFakeEsOneProngPiZerosEndcap", DifferentPipeline)
 
+                proc_intersection = MSSM.intersection(self._zl_sys_processes, channel_holder._processes.keys())
                 for variation in lep_fake_es_variations:
-                    # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
-                    proc_intersection = list(set(self._zl_sys_processes) & set(channel_holder._processes.keys()))
-                    # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    self._logger.debug('\n\n ZES::variation name: %s\n intersection self._zl_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
@@ -689,7 +694,6 @@ class MSSM(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
-
             # Recoil correction unc, for resonant processes
             if 'Recoil' in self._shifts:
                 self._logger.info('\n\n recoil reweighting')

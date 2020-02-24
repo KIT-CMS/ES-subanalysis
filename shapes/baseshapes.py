@@ -11,6 +11,7 @@ from itertools import product
 from rootpy import log
 from rootpy.logger.magic import DANGER
 
+from guppy import hpy
 import yaml
 
 import pprint
@@ -212,6 +213,8 @@ class Shapes(object):
         self._nominal_folder = nominal_folder
 
         self._qcdem_setup = kwargs['qcdem_setup']
+        self._fes_et_setup = kwargs['fes_et_setup']
+
         # self._et_friend_directory = os.path.expandvars(et_friend_directory)
         # self._mt_friend_directory = os.path.expandvars(mt_friend_directory)
         # self._tt_friend_directory = os.path.expandvars(tt_friend_directory)
