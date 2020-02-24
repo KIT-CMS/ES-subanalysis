@@ -11,7 +11,7 @@ zpt_sys_processes: ['ZTT', 'ZL', 'ZJ']
 qcdem_sys_processes: ['QCD', 'QCDSStoOS', 'QCDSStoOSEMB', 'QCDEMB']
 # trg_sys_processes : ["ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes", "EMB"]
 met_sys_processes: ["TTL", "VVL"]
-ees_sys_processes: ["EMB"]
+ees_sys_processes: ["EMB", 'ZTT', 'ZL', 'ZJ', 'TTT', 'TTL', 'TTJ', 'VVT', 'VVL', 'VVJ', 'W'] # should also be data?
 zl_sys_processes: ["ZL"]
 tpt_sys_processes: ["TTT", "TTL", "TTJ", "TT"]
 

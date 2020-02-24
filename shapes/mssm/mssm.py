@@ -718,28 +718,31 @@ class MSSM(Shapes):
                         )
 
             # Ele energy scale (EMB-specific),  it is et & em specific
+            # todo: one of them should affect the data too
             # Ele energy scale & smear uncertainties (MC-specific), it is et & em specific
             if 'EES' in self._shifts and channel_name in ["et", "em"]:
                 self._logger.info('\n\n EES reweighting')
-                ele_es_emb_variations = create_systematic_variations("CMS_scale_emb_e", "eleEs", DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
-                ele_es_variations = create_systematic_variations("CMS_scale_mc_e", "eleScale", DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
-                ele_es_variations += create_systematic_variations("CMS_reso_mc_e", "eleSmear", DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
 
-                for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' in x and 'QCDSStoOS' not in x]:
-                    # print 'process_nick emb:', process_nick, ele_es_emb_variations
+                if 'EMB' in channel_holder._processes.keys():
+                    ele_es_emb_variations = create_systematic_variations("CMS_scale_emb_e", "eleEs", DifferentPipeline)  # Run%s" % (channel_name, channel_holder._year)
+                    # for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' in x and 'QCDSStoOS' not in x and 'jetFakes' not in x]:
                     self._systematics.add_systematic_variation(
                         variation=ele_es_emb_variations,
-                        process=channel_holder._processes[process_nick],
+                        process=channel_holder._processes['EMB'],
                         channel=channel_holder._channel_obj,
                         era=self.era
                     )
 
+                ele_es_variations = create_systematic_variations("CMS_scale_mc_e", "eleScale", DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
+                ele_es_variations += create_systematic_variations("CMS_reso_mc_e", "eleSmear", DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
                 for variation in ele_es_variations:
                     # TODO: check all proc are needed here
                     # proc_intersection = list(set(self._ees_sys_processes) & set(channel_holder._processes.keys()))
-                    # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    # self._logger.debug('\n\n EES::variation name: %s\nintersection self._ees_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     # for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x and 'QCDSStoOS' not in x]:
-                    for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x]:
+                    # for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x]:
+                    # for process_nick in proc_intersection - set('EMB'):
+                    for processes_nick in mc_processes:
                         # print 'process_nick:', process_nick, variation
                         self._systematics.add_systematic_variation(
                             variation=variation,
@@ -747,51 +750,6 @@ class MSSM(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
-
-            if 'EES_FES_shifts' in self._shifts and channel_name in ["et"]:
-                self._logger.info('\n\n EES_FES_shifts...')
-                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                # Pipelines for producing shapes for calculating the TauElectronFakeEnergyCorrection*
-                root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
-                for es in self._etau_es_shifts:
-                    shift_str = root_str(es)
-                    # TODO: here the pipeline WILL depend on the category per DM
-                    for pipeline in [
-                        # "eleTauEsInclusiveShift_",
-                        "eleTauEsOneProngShift_",
-                        "eleTauEsOneProngPiZerosShift_",
-                        # "eleTauEsThreeProngShift_"
-                        ]:
-                        proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
-
-                        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                        ele_es_emb_variations = create_systematic_variations("CMS_fes_scale_emb_e_%s" % shift_str, "%s%s_eleEs" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
-                        ele_es_variations = create_systematic_variations("CMS_fes_scale_mc_e_%s" % shift_str, "%s%s_eleScale" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
-                        ele_es_variations += create_systematic_variations("CMS_fes_reso_mc_e_%s" % shift_str, "%s%s_eleSmear" % (pipeline, shift_str), DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
-
-                        for process_nick in [x for x in proc_intersection if 'EMB' in x and 'QCDSStoOS' not in x]:
-                            self._systematics.add_systematic_variation(
-                                variation=ele_es_emb_variations,
-                                process=channel_holder._processes[process_nick],
-                                channel=channel_holder._channel_obj,
-                                era=self.era
-                            )
-                            # Upplying cuts that are only for fes shifts
-                            self.upplyFesCuts(pipeline=pipeline, depth=categories)
-
-                        for variation in ele_es_variations:
-                            for process_nick in [x for x in proc_intersection if 'EMB' not in x and 'data' not in x]:
-                                # print 'before', len(self._systematics._systematics)
-                                # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
-                                self._systematics.add_systematic_variation(
-                                    variation=variation,
-                                    process=channel_holder._processes[process_nick],
-                                    channel=channel_holder._channel_obj,
-                                    era=self.era
-                                )
-                                # print 'after', len(self._systematics._systematics)
-                                # Upplying cuts that are only for fes shifts
-                                self.upplyFesCuts(pipeline=pipeline, depth=categories)
 
             # ZL fakes energy scale (e->t, m->t)
             if 'ZES' in self._shifts and channel_name in ["et", "mt"]:
