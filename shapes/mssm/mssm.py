@@ -557,17 +557,38 @@ class MSSM(Shapes):
                             era=self.era)
 
             # QCD for em
-            if 'QCDem' in self._shifts and channel_name == 'em':  # TODO: generalize?
+            if 'QCDem' in self._shifts and channel_name == 'em':
                 qcd_variations = []
                 for shift in ['Up', 'Down']:
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                    if self._qcdem_setup == 2020:
+                        # rate
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_rate%s_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_rate%s_Weight" % shift, "qcd_weight"), shift))
 
-                # previously
+                        # shape
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_shape%s_Weight" % shift, "qcd_weight"), shift))
+
+                    else:
+                        # rate
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+
+                        # shape
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+
                 for year_correlation in ['', '_Run{year}'.format(year=channel_holder._year)]:
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s" % year_correlation, "qcd_weight", Weight("em_qcd_extrap_up_Weight*em_qcd_extrap_uncert_Weight", "qcd_weight"), updownvar))
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s" % year_correlation, "qcd_weight", Weight("em_qcd_osss_binned_Weight", "qcd_weight"), "Down"))
+                    if self._qcdem_setup == 2020:
+                        for shift_direction in ["up", "down"]:
+                            qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s" % year_correlation, "qcd_weight", Weight("em_qcd_extrap_" + shift_direction + "_Weight", "qcd_weight"), shift_direction.capitalize()))
+                    else:
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s" % year_correlation, "qcd_weight", Weight("em_qcd_extrap_up_Weight*em_qcd_extrap_uncert_Weight", "qcd_weight"), "Up"))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s" % year_correlation, "qcd_weight", Weight("em_qcd_osss_binned_Weight", "qcd_weight"), "Down"))
 
                 for variation in qcd_variations:
                     proc_intersection = MSSM.intersection(self._qcdem_sys_processes, channel_holder._processes.keys())
