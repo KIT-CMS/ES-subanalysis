@@ -390,7 +390,7 @@ class MSSM(Shapes):
             if 'Tpt' in self._shifts:
                 self._logger.info('\n\ntop pt reweighting')
                 tpt_variations = create_systematic_variations(
-                    name="CMS_htt_ttbarShape_Run%s" % channel_holder._year,
+                    name="CMS_htt_ttbarShape",
                     property_name="topPtReweightWeight",
                     systematic_variation=SquareAndRemoveWeight,
                 )
