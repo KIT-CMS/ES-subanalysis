@@ -560,13 +560,14 @@ class MSSM(Shapes):
             if 'QCDem' in self._shifts and channel_name == 'em':  # TODO: generalize?
                 qcd_variations = []
                 for shift in ['Up', 'Down']:
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run2017", "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run2017", "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run2017", "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
 
-                for year_correlation in ['', '_Run2017']:
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s", "qcd_weight", Weight("em_qcd_extrap_up_Weight*em_qcd_extrap_uncert_Weight", "qcd_weight"), updownvar))
-                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s", "qcd_weight", Weight("em_qcd_osss_binned_Weight", "qcd_weight"), "Down"))
+                # previously
+                for year_correlation in ['', '_Run{year}'.format(year=channel_holder._year)]:
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s" % year_correlation, "qcd_weight", Weight("em_qcd_extrap_up_Weight*em_qcd_extrap_uncert_Weight", "qcd_weight"), updownvar))
+                    qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s" % year_correlation, "qcd_weight", Weight("em_qcd_osss_binned_Weight", "qcd_weight"), "Down"))
 
                 for variation in qcd_variations:
                     proc_intersection = MSSM.intersection(self._qcdem_sys_processes, channel_holder._processes.keys())
@@ -578,7 +579,7 @@ class MSSM(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era)
 
-            # Gluon-fusion WG1 uncertainty scheme, for sm signals (Uncertainty: Theory uncertainties)
+            # Gluon-fusion WG1 uncertainty scheme, for sm signals (Uncertainty: Theory uncertainties) : TODO
             if 'WG1' in self._shifts:
                 ggh_variations = []
                 THU_unc = [
