@@ -232,8 +232,9 @@ class MSSM(Shapes):
                     )
                 )
 
-            # TODO: decorrelate emb, mc, year
+            # TODO: decorrelate emb{emb,ff}, mc
             # Tau energy scale (general, MC-specific & EMB-specific), it is mt, et & tt specific
+            # note: "CMS_scale_emb_t_3prong_Run{era}" I call like "CMS_scale_t_3prong_Run{era}"
             if 'TES' in self._shifts and channel_name in ['mt', 'et', 'tt']:
                 self._logger.info('\n\nTES...')
                 tau_es_3prong_variations = create_systematic_variations(name="CMS_scale_t_3prong_Run%s" % channel_holder._year, property_name="tauEsThreeProng", systematic_variation=DifferentPipeline)
@@ -689,13 +690,12 @@ class MSSM(Shapes):
                 mistag_eff_variations = create_systematic_variations("CMS_htt_mistag_b_Run2017", "btagMistag", DifferentPipeline)
 
                 for variation in btag_eff_variations + mistag_eff_variations:
-                    # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
-                    # proc_intersection = list(set(self._jes_sys_processes) & set(channel_holder._processes.keys()))
-                    # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                    for process in processes:
+                    # proc_intersection = MSSM.intersection(channel_holder._processes.keys(), mc_processes)
+                    # self._logger.debug('\n\n BTag::variation name: %s\nintersection mc_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in mc_processes:
                         self._systematics.add_systematic_variation(
                             variation=variation,
-                            process=process,
+                            process=channel_holder._processes[process_nick],
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
