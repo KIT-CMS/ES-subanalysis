@@ -674,27 +674,25 @@ class MSSM(Shapes):
                             era=self.era
                         )
 
-            # TODO:
-            # # Recoil correction unc, for resonant processes
-            # if 'recoil' in self._shifts and channel_name in ["et", "em"]:
-            #     self._logger.info('\n\n recoil reweighting')
+            # Recoil correction unc, for resonant processes
+            if 'Recoil' in self._shifts:
+                self._logger.info('\n\n recoil reweighting')
 
-            #     recoil_variations = create_systematic_variations("CMS_htt_boson_reso_met_Run2017", "metRecoilResolution", DifferentPipeline)
-            #     recoil_variations += create_systematic_variations("CMS_htt_boson_scale_met_Run2017", "metRecoilResponse", DifferentPipeline)
+                recoil_variations = create_systematic_variations("CMS_htt_boson_reso_met_Run%s" % channel_holder._year, "metRecoilResolution", DifferentPipeline)
+                recoil_variations += create_systematic_variations("CMS_htt_boson_scale_met_Run%s" % channel_holder._year, "metRecoilResponse", DifferentPipeline)
 
-            #     # sm_ggH_processes ggH qqH, {"ZTT", "ZL", "ZJ", "W", H125, bbH, bbA etc.
-            #     # signals, mssm_signals, signals_ggHToWW, signals_qqHToWW,{"ZTT", "ZL", "ZJ", "W"}
-            #     for variation in recoil_variations:
-            #         # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
-            #         proc_intersection = list(set(self._zl_sys_processes) & set(channel_holder._processes.keys()))
-            #         # self._logger.debug('\n\n BTag::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-            #         for process_nick in proc_intersection:
-            #             self._systematics.add_systematic_variation(
-            #                 variation=variation,
-            #                 process=channel_holder._processes[process_nick],
-            #                 channel=channel_holder._channel_obj,
-            #                 era=self.era
-            #             )
+                # sm_ggH_processes ggH qqH, {"ZTT", "ZL", "ZJ", "W", H125, bbH, bbA etc.
+                # signals, mssm_signals, signals_ggHToWW, signals_qqHToWW,{"ZTT", "ZL", "ZJ", "W"}
+                proc_intersection = list(set(self._z_recoil_sys_processes) & set(channel_holder._processes.keys()))
+                for variation in recoil_variations:
+                    self._logger.debug('\n\n Recoil::variation name: %s\nintersection self._z_recoil_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
 
     def upplyFesCuts(self, pipeline, depth):
         '''

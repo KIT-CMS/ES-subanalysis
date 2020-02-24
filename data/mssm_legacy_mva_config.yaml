@@ -225,6 +225,7 @@ shifts: [
   # QCDem, : todo
   # WG1, : todo
   # FF, : todo
+  Recoil,
 
   TES,
   BTag,
@@ -232,7 +233,7 @@ shifts: [
   EES,
   ZES, # : todo: need to update with My numbers
   #
-  # JES, # : todo
+  # JES, # : todo, not yet in the artus ntuples
 ]
 
 ## Weights
@@ -268,6 +269,12 @@ single_categories:
 
   inclusive: {}  # signal region
 
+# 2019 : Denny, where 'up' are actually nominals are
+# em_qcd_osss_binned_Weight - down
+# em_qcd_extrap_uncert_Weight - nominal
+# em_qcd_extrap_up_Weight*em_qcd_extrap_uncert_Weight - up
+# so em_qcd_extrap_up_Weight is em_qcd_osss_binned_Weight*em_qcd_extrap_uncert_Weight
+# em_qcd_osss_binned_Weight*em_qcd_extrap_uncert_Weight^2 - up
 qcdem_setup: 2019
 use_channel_specific: True
 # updated values get OVERWRITTEN, not extended/updated!
