@@ -504,6 +504,22 @@ class MSSM(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era)
 
+            if 'JetToTauFake' in self._shifts and channel_name != 'em':
+                self._logger.info('\n\n JetToTauFake (jet->tau fake efficiency)')
+                jet_to_tau_fake_variations = [
+                    AddWeight("CMS_htt_jetToTauFake_Run{era}".format(era=args.era), "jetToTauFake_weight", Weight("max(1.0-pt_2*0.002, 0.6)", "jetToTauFake_weight"), "Up"),
+                    AddWeight("CMS_htt_jetToTauFake_Run{era}".format(era=args.era), "jetToTauFake_weight", Weight("min(1.0+pt_2*0.002, 1.4)", "jetToTauFake_weight"), "Down"),
+                ]
+                for variation in jet_to_tau_fake_variations:
+                    # self._logger.debug('\n\n JetToTauFake::variation name: %s\n intersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in MSSM.intersection(self._jet_to_tau_fake_sys_processes, channel_holder._processes.keys()):
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
             # Gluon-fusion WG1 uncertainty scheme, for sm signals (Uncertainty: Theory uncertainties) : TODO
             if 'WG1' in self._shifts:
                 ggh_variations = []

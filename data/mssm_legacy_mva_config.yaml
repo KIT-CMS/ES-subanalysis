@@ -226,6 +226,7 @@ shifts: [
   # WG1, : todo
   # FF, : todo
   Recoil,
+  JetToTauFake,
 
   TES,
   BTag,

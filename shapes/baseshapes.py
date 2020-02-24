@@ -341,7 +341,8 @@ class Shapes(object):
         sys_processes = [
             'tes_sys_processes', 'fes_sys_processes', 'emb_sys_processes',
             'zpt_sys_processes', 'qcdem_sys_processes', 'met_sys_processes',
-            'ees_sys_processes', 'zl_sys_processes', 'z_recoil_sys_processes', 'tpt_sys_processes',
+            'ees_sys_processes', 'zl_sys_processes', 'z_recoil_sys_processes',
+            'tpt_sys_processes', 'jet_to_tau_fake_sys_processes',
         ]
         for sys_process in sys_processes:
             setattr(
