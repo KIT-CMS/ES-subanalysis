@@ -565,7 +565,7 @@ class MSSM(Shapes):
                             era=self.era
                         )
 
-            # Splitted JES shapes
+            # Splitted JES shapes: todo
             if 'JES' in self._shifts:
                 self._logger.info('\n\n JES reweighting')
                 jet_es_variations = create_systematic_variations(name="CMS_scale_j_eta0to3_Run2017", property_name="jecUncEta0to3", systematic_variation=DifferentPipeline)
@@ -608,11 +608,11 @@ class MSSM(Shapes):
                 self._logger.info('\n\n METES reweighting')
                 met_unclustered_variations = create_systematic_variations("CMS_scale_met_unclustered", "metUnclusteredEn", DifferentPipeline)
 
-                proc_intersection = list(set(self._met_sys_processes) & set(channel_holder._processes.keys()))
+                # proc_intersection = list(set(self._met_sys_processes) & set(channel_holder._processes.keys()))
                 # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
                 for variation in met_unclustered_variations:
-                    self._logger.debug('\n\n METES::variation name: %s\nintersection self._met_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                    for process_nick in proc_intersection:
+                    # self._logger.debug('\n\n METES::variation name: %s\nintersection self._met_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in mc_processes:  # proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
