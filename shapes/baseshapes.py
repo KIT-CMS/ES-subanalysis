@@ -73,6 +73,13 @@ class Shapes(object):
         'grid_categories', 'single_categories',
     ]
 
+    # todo: move to config
+    em_closureweight = {
+        '2016': 1.2,
+        '2017': 1.1,
+        '2018': 1.2,
+    }
+
     # @inidecorator   # TODO: TEST
     # TODO: needs a splitting between init and setup
     def __init__(self,
@@ -204,6 +211,7 @@ class Shapes(object):
 
         self._nominal_folder = nominal_folder
 
+        self._qcdem_setup = kwargs['qcdem_setup']
         # self._et_friend_directory = os.path.expandvars(et_friend_directory)
         # self._mt_friend_directory = os.path.expandvars(mt_friend_directory)
         # self._tt_friend_directory = os.path.expandvars(tt_friend_directory)
@@ -1023,15 +1031,17 @@ class Shapes(object):
 
                 qcdsstoos_parameters_list['bg_processes'] = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]
                 qcdsstoos_parameters_list['extrapolation_factor'] = 1.00  # 1.00  # QCD extrapolation_factor 1.17 for mt et 2016
+
                 if 'em' in channel_obj.name:
-                    # latest sm-htt
-                    # if '2016' in channel_holder._year: closureweight = 1.2
-                    # elif '2017' in channel_holder._year: closureweight = 1.1
-                    # elif '2018' in channel_holder._year: closureweight = 1.2
-                    # else: raise Exception("Year not identified")
-                    # qcdsstoos_parameters_list['qcd_weight'] = Weight("{closureweight}*em_qcd_osss_binned_Weight".format(closureweight=closureweight), "qcd_weight")
-                    # previously
-                    qcdsstoos_parameters_list['qcd_weight'] = Weight("em_qcd_extrap_up_Weight", "qcd_weight")
+                    if self._qcdem_setup == 2020:
+                        # latest sm-htt
+                        # year = copy.deepcopy(self.era.name).replace('Run', '')
+                        if self._era_name not in self.em_closureweight.keys():
+                            raise Exception("self.em_closureweight not set for '%s' year" % self._era_name)
+                        qcdsstoos_parameters_list['qcd_weight'] = Weight("{closureweight}*em_qcd_osss_binned_Weight".format(closureweight=self.em_closureweight[self._era_name]), "qcd_weight")
+                    else:
+                        qcdsstoos_parameters_list['qcd_weight'] = Weight("em_qcd_extrap_up_Weight", "qcd_weight")
+
                 try:
                     qcdsstoos_parameters_list['data_process'] = processes['data_obs']
                 except:

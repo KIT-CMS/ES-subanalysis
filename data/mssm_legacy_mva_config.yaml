@@ -93,14 +93,14 @@ user_specific:
     byhost:
       default: []
       naf:
-        '2017' : []
-        '2018' : []
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
       bird:
-        '2017' : []
-        '2018' : []
+        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
       bms:
-        '2017' : []
-        '2018' : []
+        '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
+        '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
 
   fake_factor_friend_directory:
     byhost:
@@ -108,9 +108,13 @@ user_specific:
       naf:
         '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
         '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        # '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
+        # '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
       bird:
         '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
         '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        # '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
+        # '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
@@ -166,8 +170,8 @@ variables_names: [
   # eta_sv_puppi
   # m_fastmtt
   # m_fastmtt_puppi
-  # m_sv
-  # m_sv_puppi
+  # m_sv,
+  # m_sv_puppi,
   # phi_fastmtt
   # phi_fastmtt_puppi
   # phi_sv
@@ -264,6 +268,7 @@ single_categories:
 
   inclusive: {}  # signal region
 
+qcdem_setup: 2019
 use_channel_specific: True
 # updated values get OVERWRITTEN, not extended/updated!
 channel_specific:
@@ -346,7 +351,8 @@ channel_specific:
         taubyIsoIdWeight : "((gen_match_2 == 5)*0.90 + (gen_match_2 != 5))"
 
   tt:
-    # SMHTT: FF or QCDEstimation_ABCD_TT_ISO2 -> Legacy_MSSM_with_QCDABCD
+    # SMHTT: FF or QCDEstimation_ABCD_TT_ISO2 (2017,2018)-> Legacy_MSSM_with_QCDABCD
+    # Note : SMHTT: FF or QCDEstimationTT (2017,2018) -> why? https://github.com/KIT-CMS/sm-htt-analysis/blob/master/shapes/produce_shapes.py#L332
     methods_collection_key: Legacy_MSSM_with_FFTT # Legacy_MSSM_with_QCDABCD
 
     # need another expression since tt uses dm-dependant SF
