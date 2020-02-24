@@ -372,7 +372,7 @@ class MSSM(Shapes):
             if 'Zpt' in self._shifts:
                 self._logger.info('\n\n Z pt reweighting')
                 zpt_variations = create_systematic_variations(
-                    name="CMS_htt_dyShape_Run%s" % channel_holder._year,
+                    name="CMS_htt_dyShape_Run%s" % channel_holder._year if channel_holder._year != '2018' else "CMS_htt_dyShape",
                     property_name="zPtReweightWeight",
                     systematic_variation=SquareAndRemoveWeight,
                 )
