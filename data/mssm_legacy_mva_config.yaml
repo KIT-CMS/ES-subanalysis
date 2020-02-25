@@ -222,13 +222,14 @@ shifts: [
   prefiring,
   Tpt,
   TrgEff,
-  # QCDem, : todo
-  # WG1, : todo
-  # FF, : todo
+  QCDem, #: todo
+  # WG1, : todo?
+  FF, # : todo
   Recoil,
   JetToTauFake,
 
   TES,
+  # TauID, : todo once switched to split in pt id
   BTag,
   METES,
   EES,
@@ -277,6 +278,12 @@ single_categories:
 # so em_qcd_extrap_up_Weight is em_qcd_osss_binned_Weight*em_qcd_extrap_uncert_Weight
 # em_qcd_osss_binned_Weight*em_qcd_extrap_uncert_Weight^2 - up
 qcdem_setup: 2019
+fes_et_setup: 2019
+trgeff_setup: 2019
+
+mass_susy_ggH: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+mass_susy_qqH: [90, 110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1800, 2000, 2300, 2600, 3200]
+
 use_channel_specific: True
 # updated values get OVERWRITTEN, not extended/updated!
 channel_specific:
