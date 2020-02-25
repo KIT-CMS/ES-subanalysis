@@ -76,9 +76,9 @@ requirements = (OpSys == "LINUX")
 getenv = true
 max_retries = 3
 RequestCpus = 1
-+MaxRuntime = 10800
 queue arguments from arguments.txt\
 """
+# +MaxRuntime = 10800
 # transfer_output_files = ""
 # requirements = (OpSysAndVer =?= "SLCern6")
 # notification  = Complete
@@ -97,8 +97,8 @@ def parse_arguments():
     # structure: <jobdirs>/<jobdir_name>/job
     parser.add_argument("--jobdirs", type=str, default='/nfs/dust/cms/user/glusheno/shapes/MSSM/mva/job_dirs', help="The root where all tasks/jobdirs are")  # TODO config
     parser.add_argument("--jobdir-name", type=str, required=True, help="Name for task/jobdir")
-    parser.add_argument("--clear", default=False, action='store_true', help="")
-    parser.add_argument("--clear-all", default=False, action='store_true', help="")
+    parser.add_argument("--clear", default=False, action='store_true', help="Clear the htcondor job workdir")
+    parser.add_argument("--clear-all", default=False, action='store_true', help="Clear the htcondor job workdir and .root files in output folder")
     parser.add_argument("--dry", default=False, action='store_true', help="dry run")
     parser.add_argument("--submit", default=False, action='store_true', help="")
     parser.add_argument("--debug", default=False, action='store_true', help="debug")
