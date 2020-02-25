@@ -214,6 +214,10 @@ class Shapes(object):
 
         self._qcdem_setup = kwargs['qcdem_setup']
         self._fes_et_setup = kwargs['fes_et_setup']
+        self._trgeff_setup = kwargs['trgeff_setup']
+
+        self._mass_susy_ggH = kwargs['mass_susy_ggH']
+        self._mass_susy_qqH = kwargs['mass_susy_qqH']
 
         # self._et_friend_directory = os.path.expandvars(et_friend_directory)
         # self._mt_friend_directory = os.path.expandvars(mt_friend_directory)
@@ -1114,6 +1118,47 @@ class Shapes(object):
 
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ZTTpTTTauTau_parameters_list))
 
+            elif estimation_method in ['SUSYggHEstimation', 'SUSYbbHEstimation']:
+                if key == "SUSYggH":
+                    contributions = [
+                        "ggH_t", "ggH_b", "ggH_i",
+                        "ggA_i", "ggA_t", "ggA_b",
+                        "ggh_i", "ggh_t", "ggh_b",
+                    ]
+                    for contribution in contributions:
+                        for mass in self._mass_susy_ggH:
+                            susy_parameters_list = copy.deepcopy(parameters_list)
+                            susy_parameters_list['mass'] = str(mass)
+                            susy_parameters_list['contribution'] = contribution.replace('gg', '')
+                            subkey_name = "gg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
+
+                            processes[subkey_name] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
+
+                elif any([i in key for i in ["SUSYggH_", "SUSYggA_", "SUSYggh_"]]):
+                    for mass in self._mass_susy_ggH:
+                        susy_parameters_list = copy.deepcopy(parameters_list)
+                        susy_parameters_list['mass'] = str(mass)
+                        susy_parameters_list['contribution'] = copy.deepcopy(key).replace('SUSYgg', '')
+                        subkey_name = "gg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
+
+                        processes[subkey_name] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
+
+                elif "SUSYbbH" in key:
+                    for mass in self._mass_susy_qqH:
+                        susy_parameters_list = copy.deepcopy(parameters_list)
+                        susy_parameters_list['mass'] = str(mass)
+                        subkey_name = "bbH_%s" % susy_parameters_list['mass']
+
+                        processes[subkey_name] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
+
+                # not tested
+                else:
+                    self._logger.critical("NOT TESTED SETUP FOR SUSY")
+                    susy_parameters_list = copy.deepcopy(parameters_list)
+                    susy_parameters_list['mass'] = key.split('_')[-1]
+
+                    processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
+
             else:
                 # if key == 'ZL': print '-->getProcesses::', key, parameters_list
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
@@ -1381,14 +1426,17 @@ class Shapes(object):
             if cat not in log_d[ch]['variation'][variation]['categ'].keys():
                 log_d[ch]['variation'][variation]['categ'][cat] = 0
             log_d[ch]['variation'][variation]['categ'][cat] += 1
-            # import pdb; pdb.set_trace()
-            shapes_to_prod += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n".format(variation, i._process._name, cat, ch, variable)
+            # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+            proc_name = i._process._name
+            if any(i._process._estimation_method._name.startswith(j) for j in ['bbH_', 'ggH_', 'ggA_', 'ggh_', ]):
+                proc_name = i._process._estimation_method._name
+            shapes_to_prod += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n".format(variation, proc_name, cat, ch, variable)
             # TODO : this try/except might be necessary to add on replacing weights functionality
             try:
-                shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n {:s}".format(variation, i._process._name, cat, ch, variable, i._process._estimation_method.get_weights().__str__)
+                shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8}\n {:s}".format(variation, proc_name, cat, ch, variable, i._process._estimation_method.get_weights().__str__)
             except NotImplementedError:
                 self._logger.warning("The get_weights() wasn't implemented inf estimation_methods: " + i._process._estimation_method.__str__())
-                shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8} {:s}\n".format(variation, i._process._name, cat, ch, variable, " WARNING: get_weights() not implemented!")
+                shapes_to_prod_debug += "{:>60s} {:<10s}  {:<30s} {:<2} {:<8} {:s}\n".format(variation, proc_name, cat, ch, variable, " WARNING: get_weights() not implemented!")
 
         for ch in log_d.keys():
             n1 = 0
