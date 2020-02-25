@@ -104,6 +104,7 @@ class MSSM(Shapes):
 
             # get respective processes, variables, binning
             self._logger.info('...getProcesses')
+
             channel_holder._processes = self.getProcesses(
                 channel_obj=channel_holder._channel_obj,
                 friend_directory=friend_directory

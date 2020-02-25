@@ -117,6 +117,9 @@ def parse_arguments():
     # parser.add_argument("--mask-jets-multiplicity", default=['default'], nargs='+', type=str, help="Needed for categorisation. Choices: njetN, njet0")
     parser.add_argument("--variables-names", default=['default'], nargs='*', type=str, help="Variable names.")
 
+    parser.add_argument("--mass-susy-ggH", default=['default'], nargs='*', type=int, help="SUSY ggH masspoints")
+    parser.add_argument("--mass-susy-qqH", default=['default'], nargs='*', type=int, help="SUSY bbH masspoints")
+
     parser.add_argument('--no-grid-categories', action='store_true', default=None, help='drop categorisation defined by grid_categories config.')
     parser.add_argument('--no-single-categories', action='store_true', default=None, help='drop categorisation defined by single_categories config.')
     parser.add_argument('--use-grid-categories', action='store_true', default=None, help='use categorisation defined by grid_categories config.')
@@ -159,7 +162,7 @@ def convertFromNumber(n):
         return n.to_bytes(math.ceil(n.bit_length() / 8), 'little').decode()
 
 
-def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag):
+def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH):
     # shared across processes
     global dict_of_categ
     global id_counter
@@ -187,6 +190,17 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag):
         if pZeta != 'default': config['mask_grid_categories']['mask_pZetaMissVis_region'] = [pZeta]
         if mt_1 != 'default': config['mask_grid_categories']['mask_mt_1_region'] = [mt_1]
         if btag != 'default': config['mask_grid_categories']['mask_btag_region'] = [btag]
+
+        if mass_susy_qqH == []:
+            config['mass_susy_qqH'] = []
+        elif mass_susy_qqH != 'default':
+            config['mass_susy_qqH'] = [mass_susy_qqH]
+
+        if mass_susy_ggH == []:
+            config['mass_susy_ggH'] = []
+        elif mass_susy_ggH != 'default':
+            config['mass_susy_ggH'] = [mass_susy_ggH]
+
         # print config['mask_grid_categories']['mask_pZetaMissVis_region'] ; exit(1)
         if gargs.no_grid_categories is not None: config['no_grid_categories'] = True
         if gargs.no_single_categories is not None: config['no_single_categories'] = True
@@ -232,6 +246,16 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag):
     cmnd = ' '.join([cmnd, '--mask-pZetaMissVis-region', pZeta]) if pZeta != 'default' else cmnd
     cmnd = ' '.join([cmnd, '--mask-mt_1-region', mt_1]) if mt_1 != 'default' else cmnd
     cmnd = ' '.join([cmnd, '--mask-btag-region', btag]) if btag != 'default' else cmnd
+
+    if mass_susy_qqH == []:
+        cmnd = ' '.join([cmnd, '--mass-susy-qqH'])
+    elif mass_susy_qqH != 'default':
+        cmnd = ' '.join([cmnd, '--mass-susy-qqH'] + mass_susy_qqH)
+
+    if mass_susy_ggH == []:
+        cmnd = ' '.join([cmnd, '--mass-susy-ggH'])
+    elif mass_susy_ggH != 'default':
+        cmnd = ' '.join([cmnd, '--mass-susy-ggH'] + mass_susy_ggH)
 
     cmnd = ' '.join([cmnd, '--output-file-dir', gargs.output_file_dir]) if gargs.output_file_dir is not None and gargs.output_file_dir != '' else cmnd
 
@@ -367,19 +391,30 @@ def main(args):
         config_initial['use_single_categories'] = args.use_single_categories
 
     pool = Pool(processes=args.n_threads)
+    if args.mass_susy_qqH == []:
+        args.mass_susy_qqH = [[]]
+    if args.mass_susy_ggH == []:
+        args.mass_susy_ggH = [[]]
 
-    for idd, (shift, channel, process, variables, pZeta, mt_1, btag) in enumerate(itertools.product(
+    for idd, (shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH) in enumerate(itertools.product(
             args.shifts,
             args.channels,
             args.processes,
             args.variables_names,
             args.mask_pZetaMissVis_region,
             args.mask_mt_1_region,
-            args.mask_btag_region)):
-        results.append(pool.apply_async(prepare_command, args=(idd, shift, channel, process, variables, pZeta, mt_1, btag,))) # , callback=callback
+            args.mask_btag_region,
+            args.mass_susy_qqH,
+            args.mass_susy_ggH)):
+
+        # print shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH
+        # continue
+
+        results.append(pool.apply_async(prepare_command, args=(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH))) # , callback=callback
 
     for result in results:
         result.get()
+
     pool.close()
     pool.join()
     arguments.sort()
