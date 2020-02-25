@@ -1145,10 +1145,15 @@ class Shapes(object):
 
                 elif any([i in key for i in ["SUSYggH_", "SUSYggA_", "SUSYggh_"]]):
                     subkey_names = []
-                    for mass in self._mass_susy_ggH:
+
+                    masses = copy.deepcopy(self._mass_susy_ggH)
+                    if len(key.split('_')) == 3:
+                        masses = [key.split('_')[-1]]
+
+                    for mass in masses:
                         susy_parameters_list = copy.deepcopy(parameters_list)
                         susy_parameters_list['mass'] = str(mass)
-                        susy_parameters_list['contribution'] = copy.deepcopy(key).replace('SUSYgg', '')
+                        susy_parameters_list['contribution'] = '_'.join(copy.deepcopy(key).replace('SUSYgg', '').split('_')[:2])
                         subkey_name = "gg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
                         subkey_names.append(subkey_name)
 
@@ -1156,7 +1161,12 @@ class Shapes(object):
 
                 elif "SUSYbbH" in key:
                     subkey_names = []
-                    for mass in self._mass_susy_qqH:
+
+                    masses = copy.deepcopy(self._mass_susy_qqH)
+                    if 'SUSYbbH_' in key:
+                        masses = [key.split('_')[-1]]
+
+                    for mass in masses:
                         susy_parameters_list = copy.deepcopy(parameters_list)
                         susy_parameters_list['mass'] = str(mass)
                         subkey_name = "bbH_%s" % susy_parameters_list['mass']
@@ -1280,7 +1290,7 @@ class Shapes(object):
         if len(self._processes) == 0:
             try:
                 return self._known_methods_collections[methods_collection_key]
-            except:
+            except Exception:
                 self._logger.critical(' '.join(["Couldn't find the method for era:", era, 'context:', context, 'channel_name:', channel_name, 'methods_collection_key:', methods_collection_key]))
                 self._logger.critical('Possible _known_estimation_methods:')
                 pp.pprint(self._known_estimation_methods[era][context][channel_name])
@@ -1290,7 +1300,17 @@ class Shapes(object):
             for i in self._processes:
                 if i in d.keys():
                     raise ValueError(self.__class__.__name__ + '::' + sys._getframe().f_code.co_name + ': repeating process: ' + i)
-                d[i] = self._known_processes[i]
+
+                try:
+                    d[i] = self._known_processes[i]
+                except Exception:
+                    if i.startswith('SUSYgg'):
+                        d[i] = copy.deepcopy(self._known_processes['SUSYggH'])
+                    elif i.startswith('SUSYbb'):
+                        d[i] = copy.deepcopy(self._known_processes['SUSYbbH'])
+                    else:
+                        raise Exception
+                        # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
             return d
 
     # TODO: needs to belong to ChannelHolder ;
