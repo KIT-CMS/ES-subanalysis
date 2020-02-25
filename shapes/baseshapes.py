@@ -1011,6 +1011,8 @@ class Shapes(object):
         for combine_name, estimation_method in orderedProcesses.iteritems():
             key = combine_name if combine_name not in renaming.keys() else renaming[combine_name]
 
+            subkey_names = [key]
+
             if estimation_method not in self._estimation_methods.keys():
                 raise KeyError("Unknown estimation method: " + estimation_method)
 
@@ -1125,6 +1127,7 @@ class Shapes(object):
 
             elif estimation_method in ['SUSYggHEstimation', 'SUSYbbHEstimation']:
                 if key == "SUSYggH":
+                    subkey_names = []
                     contributions = [
                         "ggH_t", "ggH_b", "ggH_i",
                         "ggA_i", "ggA_t", "ggA_b",
@@ -1136,23 +1139,28 @@ class Shapes(object):
                             susy_parameters_list['mass'] = str(mass)
                             susy_parameters_list['contribution'] = contribution.replace('gg', '')
                             subkey_name = "gg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
+                            subkey_names.append(subkey_name)
 
                             processes[subkey_name] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
                 elif any([i in key for i in ["SUSYggH_", "SUSYggA_", "SUSYggh_"]]):
+                    subkey_names = []
                     for mass in self._mass_susy_ggH:
                         susy_parameters_list = copy.deepcopy(parameters_list)
                         susy_parameters_list['mass'] = str(mass)
                         susy_parameters_list['contribution'] = copy.deepcopy(key).replace('SUSYgg', '')
                         subkey_name = "gg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
+                        subkey_names.append(subkey_name)
 
                         processes[subkey_name] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
                 elif "SUSYbbH" in key:
+                    subkey_names = []
                     for mass in self._mass_susy_qqH:
                         susy_parameters_list = copy.deepcopy(parameters_list)
                         susy_parameters_list['mass'] = str(mass)
                         subkey_name = "bbH_%s" % susy_parameters_list['mass']
+                        subkey_names.append(subkey_name)
 
                         processes[subkey_name] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
@@ -1176,45 +1184,48 @@ class Shapes(object):
                 replace_weights = self._replace_weights
                 self._logger.info("replace_weights key in channel %s [global]" % (channel_name))
 
-            for replace_weights_key, replace_weights_value in replace_weights.iteritems():
-                try:
-                    if "data" in key:
-                        self._logger.warning('DO NOT REMOVE from estimetion method %s weight associated to %s' % (key, replace_weights_key))
-                        continue
-                    self._logger.warning('Removing from estimetion method %s weight associated to %s' % (key, replace_weights_key))
-                    self._logger.debug('... old weights:%s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
-                    new_weights = copy.deepcopy(processes[key]._estimation_method.get_weights())
+            for key_i in subkey_names:
+                for replace_weights_key, replace_weights_value in replace_weights.iteritems():
+                    try:
+                        if "data" in key_i:
+                            self._logger.warning('DO NOT REMOVE from estimetion method %s weight associated to %s' % (key_i, replace_weights_key))
+                            continue
+                        self._logger.warning('Removing from estimetion method %s weight associated to %s' % (key_i, replace_weights_key))
+                        self._logger.debug('... old weights:%s\n%s' % (processes[key_i]._estimation_method.get_weights, str(processes[key_i]._estimation_method.get_weights())))
+                        new_weights = copy.deepcopy(processes[key_i]._estimation_method.get_weights())
 
-                    action = 'REPLACING'
-                    if replace_weights_key in new_weights.names:
-                        new_weights.remove(replace_weights_key)
-                    else:
-                        action = 'ADDING'
-                        # self._logger.warning('\t\t ... nothing to remove. weight will be just added.')
+                        action = 'REPLACING'
+                        if replace_weights_key in new_weights.names:
+                            new_weights.remove(replace_weights_key)
+                        else:
+                            action = 'ADDING'
+                            # self._logger.warning('\t\t ... nothing to remove. weight will be just added.')
 
-                    if isinstance(replace_weights_value, six.string_types):
-                        self._logger.warning('\t\t ... %s weight {%s : %s}' % (action, replace_weights_key, replace_weights_value))
-                        new_weights.add(Weight(replace_weights_value, replace_weights_key))
-                    elif replace_weights_value is not None:
-                        raise Exception('Undefined manipulation with weights during EstimationMethods initialization')
+                        if isinstance(replace_weights_value, six.string_types):
+                            self._logger.warning('\t\t ... %s weight {%s : %s}' % (action, replace_weights_key, replace_weights_value))
+                            new_weights.add(Weight(replace_weights_value, replace_weights_key))
+                        elif replace_weights_value is not None:
+                            raise Exception('Undefined manipulation with weights during EstimationMethods initialization. replace_weights_value: %s' % replace_weights_value)
 
-                    self._logger.debug('\t\t ... old_weights address:%s' % (hex(id(processes[key]._estimation_method.get_weights))))
-                    self._logger.debug('\t\t ... new_weights address:%s' % (hex(id(new_weights))))
+                        self._logger.debug('\t\t ... old_weights address:%s' % (hex(id(processes[key_i]._estimation_method.get_weights))))
+                        self._logger.debug('\t\t ... new_weights address:%s' % (hex(id(new_weights))))
 
-                    processes[key]._estimation_method.get_weights = Shapes.make_get_weights_fun(new_weights)  #lambda: copy.deepcopy(new_weights)
-                    self._logger.debug('... new assigned weights: %s\n%s' % (processes[key]._estimation_method.get_weights, str(processes[key]._estimation_method.get_weights())))
-                    self._logger.debug('\t\t ... address:%s' % (hex(id(processes[key]._estimation_method.get_weights))))
+                        processes[key_i]._estimation_method.get_weights = Shapes.make_get_weights_fun(new_weights)  #lambda: copy.deepcopy(new_weights)
+                        self._logger.debug('... new assigned weights: %s\n%s' % (processes[key_i]._estimation_method.get_weights, str(processes[key_i]._estimation_method.get_weights())))
+                        self._logger.debug('\t\t ... address:%s' % (hex(id(processes[key_i]._estimation_method.get_weights))))
 
-                except NotImplementedError:
-                    self._logger.warning("The get_weights() wasn't implemented in estimation_methods: " + key + "\n \t replace_weights_key: " + replace_weights_key + "\n\t replace_weights_value" + replace_weights_value + "\n " + processes[key]._estimation_method.__str__())
-                    # if 'QCDSStoOS' in key:
-                    #     self._logger.warning("For QCDSStoOS the get_weights() wasn't implemented therefore the bg processes get replaced weights.")
-                    #     self._bg_processes
-                    # else:
-                    #     pass
+                    except NotImplementedError:
+                        self._logger.warning("The get_weights() wasn't implemented in estimation_methods: " + key_i + "\n \t replace_weights_key: " + replace_weights_key + "\n\t replace_weights_value" + replace_weights_value + "\n " + processes[key_i]._estimation_method.__str__())
+                        # if 'QCDSStoOS' in key_i:
+                        #     self._logger.warning("For QCDSStoOS the get_weights() wasn't implemented therefore the bg processes get replaced weights.")
+                        #     self._bg_processes
+                        # else:
+                        #     pass
 
-                except Exception:
-                    raise Exception('Undefined manipulation with weights during EstimationMethods initialization')
+                    except Exception:
+                        import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                        exit(1)
+                        raise Exception('Undefined manipulation with weights during EstimationMethods initialization. \n replace_weights_key: %s \n replace_weights_value: %s\n ... old weights:%s\n%s' % (replace_weights_key, replace_weights_value, processes[key_i]._estimation_method.get_weights, str(processes[key_i]._estimation_method.get_weights())))
 
         return processes
 
