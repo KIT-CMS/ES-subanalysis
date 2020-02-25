@@ -58,6 +58,8 @@ pp = pprint.PrettyPrinter(indent=4)
 
 import logging
 from rootpy import log
+from rootpy.logger.magic import DANGER
+DANGER.enabled = True  # set True to raise exceptions
 
 from six import string_types
 
@@ -171,7 +173,7 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
     global gargs
     # print('channel: %s, shifts: %s, var: %s, mask_pZetaMissVis: %s, mask_mt_1: %s, mask_btag: %s' % (channel, shift, variables, pZeta, mt_1, btag))
 
-    key = convertToNumberSum([channel, pZeta, mt_1, btag])
+    key = convertToNumberSum([shift, channel, pZeta, mt_1, btag])
     key2 = convertToNumberSum([shift, channel, process, variables, pZeta, mt_1, btag])
     key2 = idd
     prt = '\n' + '=' * 20
@@ -215,7 +217,7 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
             output_file=shapes._output_file.replace('.root', '.log'),
             level=shapes._log_level.lower(),
             logger=shapes._logger,
-            danger=shapes._danger,
+            danger=DANGER.enabled,
         )
         if gargs.debug: print("%d: evaluateEra " % key2)
         shapes.evaluateEra()
@@ -223,8 +225,8 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
         shapes.importEstimationMethods()
         if gargs.debug: print("%d: evaluateChannels " % key2)
         shapes.evaluateChannels()  # after this
-        dict_of_categ[key] = shapes.getNCategories()
-        if gargs.debug: print("%d: getNCategories %d(%d)" % (key2, dict_of_categ[key], shapes.getNCategories()))
+        dict_of_categ[key] = shapes.getNShapes()
+        if gargs.debug: print("%d: getNShapes %d(%d)" % (key2, dict_of_categ[key], shapes.getNShapes()))
 
     if dict_of_categ[key] == 0:
         if gargs.debug:
@@ -409,14 +411,17 @@ def main(args):
 
         # print shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH
         # continue
+        if args.n_threads != 1:
+            results.append(pool.apply_async(prepare_command, args=(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH))) # , callback=callback
+        else:
+            prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH)
 
-        results.append(pool.apply_async(prepare_command, args=(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH))) # , callback=callback
+    if args.n_threads != 1:
+        for result in results:
+            result.get()
 
-    for result in results:
-        result.get()
-
-    pool.close()
-    pool.join()
+        pool.close()
+        pool.join()
     arguments.sort()
     arguments = ['%d %s\n' % (i, v) for i, v in enumerate(arguments)]
     # print("Arguments:")
