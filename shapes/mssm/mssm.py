@@ -412,53 +412,65 @@ class MSSM(Shapes):
             # jetfakes : not applied to signals
             if 'FF' in self._shifts and channel_name in ['mt', 'et', 'tt']:
                 self._logger.info('\n\n FF related uncertainties ...')
-                fake_factor_variations_et = []
+                fake_factor_variations = []
 
                 if channel_name in ['mt', 'et']:
                     for systematic_shift in [
-                            "ff_qcd{ch}_syst_Run{year}{shift}",
-                            "ff_qcd_dm0_njet0{ch}_stat_Run{year}{shift}",
-                            "ff_qcd_dm0_njet1{ch}_stat_Run{year}{shift}",
-                            "ff_w_syst_Run{year}{shift}",
-                            "ff_w_dm0_njet0{ch}_stat_Run{year}{shift}",
-                            "ff_w_dm0_njet1{ch}_stat_Run{year}{shift}",
-                            "ff_tt_syst_Run{year}{shift}",
-                            "ff_tt_dm0_njet0_stat_Run{year}{shift}",
-                            "ff_tt_dm0_njet1_stat_Run{year}{shift}",
+                            "ff_qcd{ch}_syst_{runyear}{shift}",
+                            "ff_qcd_dm0_njet0{ch}_stat_{runyear}{shift}",
+                            "ff_qcd_dm0_njet1{ch}_stat_{runyear}{shift}",
+                            "ff_w_syst_{runyear}{shift}",
+                            "ff_w_dm0_njet0{ch}_stat_{runyear}{shift}",
+                            "ff_w_dm0_njet1{ch}_stat_{runyear}{shift}",
+                            "ff_tt_syst_{runyear}{shift}",
+                            "ff_tt_dm0_njet0_stat_{runyear}{shift}",
+                            "ff_tt_dm0_njet1_stat_{runyear}{shift}",
                     ]:
                         for shift_direction in ["Up", "Down"]:
-                            fake_factor_variations_et.append(
+                            fake_factor_variations.append(
                                 ReplaceWeight(
-                                    "CMS_%s" % (systematic_shift.format(ch='_' + channel_name, shift="", year=channel_holder._year).replace("_dm0", "")),
+                                    "CMS_%s" % (systematic_shift.format(
+                                        ch="",
+                                        shift="",
+                                        runyear='').replace("_dm0", "")),
                                     "fake_factor",
                                     Weight(
                                         "ff2_{syst}".format(
-                                            syst=systematic_shift.format(ch="", shift="_%s" % shift_direction.lower()).replace("_Run%s" % channel_holder._year, "")),
+                                            syst=systematic_shift.format(
+                                                ch="",
+                                                shift="_%s" % shift_direction.lower(),
+                                                runyear='').replace("_Run%s" % channel_holder._year, "")),
                                         "fake_factor"),
                                     shift_direction))
 
                 elif channel_name == 'tt':
                     for systematic_shift in [
-                            "ff_qcd{ch}_syst_Run{year}{shift}",
-                            "ff_qcd_dm0_njet0{ch}_stat_Run{year}{shift}",
-                            "ff_qcd_dm0_njet1{ch}_stat_Run{year}{shift}",
-                            "ff_w{ch}_syst_Run{year}{shift}", "ff_tt{ch}_syst_Run{year}{shift}",
-                            "ff_w_frac{ch}_syst_Run{year}{shift}",
-                            "ff_tt_frac{ch}_syst_Run{year}{shift}"
+                            "ff_qcd{ch}_syst_{runyear}{shift}",
+                            "ff_qcd_dm0_njet0{ch}_stat_{runyear}{shift}",
+                            "ff_qcd_dm0_njet1{ch}_stat_{runyear}{shift}",
+                            "ff_w{ch}_syst_{runyear}{shift}", "ff_tt{ch}_syst_{runyear}{shift}",
+                            "ff_w_frac{ch}_syst_{runyear}{shift}",
+                            "ff_tt_frac{ch}_syst_{runyear}{shift}"
                     ]:
                         for shift_direction in ["Up", "Down"]:
-                            fake_factor_variations_et.append(
+                            fake_factor_variations.append(
                                 ReplaceWeight(
-                                    "CMS_%s" % (systematic_shift.format(ch='_' + channel_name, shift="", year=channel_holder._year).replace("_dm0", "")),
+                                    "CMS_%s" % (systematic_shift.format(
+                                        ch='_' + channel_name,
+                                        shift="",
+                                        runyear='').replace("_dm0", "")),
                                     "fake_factor",
                                     Weight(
                                         "(0.5*ff1_{syst}*(byTightIsolationMVArun2017v2DBoldDMwLT2017_1<0.5)+0.5*ff2_{syst}*(byTightIsolationMVArun2017v2DBoldDMwLT2017_2<0.5))".format(
-                                            syst=systematic_shift.format(ch="", shift="_%s" % shift_direction.lower()).replace("_Run%s" % channel_holder._year, "")),
+                                            syst=systematic_shift.format(
+                                                ch="",
+                                                shift="_%s" % shift_direction.lower(),
+                                                runyear='').replace("_Run%s" % channel_holder._year, "")),
                                         "fake_factor"),
                                     shift_direction))
 
                 for k in [k for k in channel_holder._processes.keys() if 'jetFakes' in k]:
-                    for variation in fake_factor_variations_et:
+                    for variation in fake_factor_variations:
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[k],
@@ -513,8 +525,8 @@ class MSSM(Shapes):
             if 'JetToTauFake' in self._shifts and channel_name != 'em':
                 self._logger.info('\n\n JetToTauFake (jet->tau fake efficiency)')
                 jet_to_tau_fake_variations = [
-                    AddWeight("CMS_htt_jetToTauFake_Run{era}".format(era=args.era), "jetToTauFake_weight", Weight("max(1.0-pt_2*0.002, 0.6)", "jetToTauFake_weight"), "Up"),
-                    AddWeight("CMS_htt_jetToTauFake_Run{era}".format(era=args.era), "jetToTauFake_weight", Weight("min(1.0+pt_2*0.002, 1.4)", "jetToTauFake_weight"), "Down"),
+                    AddWeight("CMS_htt_jetToTauFake_Run{year}".format(year=channel_holder._year), "jetToTauFake_weight", Weight("max(1.0-pt_2*0.002, 0.6)", "jetToTauFake_weight"), "Up"),
+                    AddWeight("CMS_htt_jetToTauFake_Run{year}".format(year=channel_holder._year), "jetToTauFake_weight", Weight("min(1.0+pt_2*0.002, 1.4)", "jetToTauFake_weight"), "Down"),
                 ]
                 for variation in jet_to_tau_fake_variations:
                     # self._logger.debug('\n\n JetToTauFake::variation name: %s\n intersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
