@@ -15,7 +15,7 @@ ees_sys_processes: ["EMB", 'ZTT', 'ZL', 'ZJ', 'TTT', 'TTL', 'TTJ', 'VVT', 'VVL',
 zl_sys_processes: ["ZL"]
 z_recoil_sys_processes: ['ZTT', 'ZL', 'ZJ', 'W']
 tpt_sys_processes: ["TTT", "TTL", "TTJ", "TT"]
-
+jet_to_tau_fake_sys_processes: ['ZJ', 'TTJ', 'VVJ', 'W']
 # DECORRELATION
 # //// per ERA
 # // MC uncorrelated uncertainty
@@ -136,6 +136,19 @@ _known_processes:
   qqH_VH2JET125           : qqHEstimation_VH2JET
   qqH_PTJET1_GT200125     : qqHEstimation_PTJET1_GT200
 
+
+  SUSYggH                 : SUSYggHEstimation
+  SUSYggH_i               : SUSYggHEstimation
+  SUSYggA_i               : SUSYggHEstimation
+  SUSYggh_i               : SUSYggHEstimation
+  SUSYggH_t               : SUSYggHEstimation
+  SUSYggA_t               : SUSYggHEstimation
+  SUSYggh_t               : SUSYggHEstimation
+  SUSYggH_b               : SUSYggHEstimation
+  SUSYggA_b               : SUSYggHEstimation
+  SUSYggh_b               : SUSYggHEstimation
+  SUSYbbH                 : SUSYbbHEstimation
+
   # MSSM Signals
   bbH_250                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM250_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
   ggH_250                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM250_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
@@ -170,6 +183,7 @@ _known_processes:
   bbH_900                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM900_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
   bbH_200                 : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM200_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
   bbH_90                  : SUSYbbHEstimation # SUSYGluGluToBBHToTauTauM90_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
+
   ggH_100                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM100_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
   ggH_110                 : SUSYggHEstimation #  SUSYGluGluToHToTauTauM110_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1
   ggH_2600                : SUSYggHEstimation #  SUSYGluGluToHToTauTauM2600_RunIIFall17MiniAODv2_PU2017_13TeV_MINIAOD_pythia8_v1

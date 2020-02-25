@@ -85,6 +85,17 @@ _known_methods_collections:
         VVJ                     : VVJEstimation
         W                       : WEstimation
         QCDSStoOSEM             : QCDEstimation_SStoOS_MTETEM  # for em all XXJ are removed
+        # SUSYggH                : SUSYggHEstimation
+        SUSYggH_i               : SUSYggHEstimation
+        SUSYggA_i               : SUSYggHEstimation
+        SUSYggh_i               : SUSYggHEstimation
+        SUSYggH_t               : SUSYggHEstimation
+        SUSYggA_t               : SUSYggHEstimation
+        SUSYggh_t               : SUSYggHEstimation
+        SUSYggH_b               : SUSYggHEstimation
+        SUSYggA_b               : SUSYggHEstimation
+        SUSYggh_b               : SUSYggHEstimation
+        SUSYbbH                 : SUSYbbHEstimation
 
     Legacy_MSSM_with_FFLT:
         data_obs                : DataEstimation  # combine
@@ -99,6 +110,17 @@ _known_methods_collections:
         # VVJ                   : VVJEstimation  # combine
         # W                       : WEstimation  # class. QCD & W ; now contains also EWKW
         jetFakesLT              : NewFakeEstimationLT # needs ["ZTT", "ZL", "TTL", "VVL"]
+        # SUSYggH                : SUSYggHEstimation
+        SUSYggH_i               : SUSYggHEstimation
+        SUSYggA_i               : SUSYggHEstimation
+        SUSYggh_i               : SUSYggHEstimation
+        SUSYggH_t               : SUSYggHEstimation
+        SUSYggA_t               : SUSYggHEstimation
+        SUSYggh_t               : SUSYggHEstimation
+        SUSYggH_b               : SUSYggHEstimation
+        SUSYggA_b               : SUSYggHEstimation
+        SUSYggh_b               : SUSYggHEstimation
+        SUSYbbH                 : SUSYbbHEstimation
 
     Legacy_MSSM_with_FFTT:
         data_obs                : DataEstimation  # combine
@@ -113,6 +135,17 @@ _known_methods_collections:
         # VVJ                   : VVJEstimation  # combine
         # W                       : WEstimation  # class. QCD & W ; now contains also EWKW
         jetFakesTT              : NewFakeEstimationTT # needs ["ZTT", "ZL", "TTL", "VVL"]
+        # SUSYggH                : SUSYggHEstimation
+        SUSYggH_i               : SUSYggHEstimation
+        SUSYggA_i               : SUSYggHEstimation
+        SUSYggh_i               : SUSYggHEstimation
+        SUSYggH_t               : SUSYggHEstimation
+        SUSYggA_t               : SUSYggHEstimation
+        SUSYggh_t               : SUSYggHEstimation
+        SUSYggH_b               : SUSYggHEstimation
+        SUSYggA_b               : SUSYggHEstimation
+        SUSYggh_b               : SUSYggHEstimation
+        SUSYbbH                 : SUSYbbHEstimation
 
     Legacy_FES_with_FFLT:
         data_obs                : DataEstimation  # combine
