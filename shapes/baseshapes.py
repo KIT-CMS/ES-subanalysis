@@ -600,8 +600,8 @@ class Shapes(object):
         parser.add_argument("--shifts", nargs='+', type=str, help="Pipelines, uncertainties variations, shifts : processed is the intersection of this list with list from _known_estimation_methods")
         parser.add_argument("--binning-key", type=str, help="Used only to pick the binning! example: gof, control")
         parser.add_argument("--log-level", type=str, help="Log level")
-        parser.add_argument("--mass-susy-ggH", nargs='+', type=int, help="SUSY masspoints")
-        parser.add_argument("--mass-susy-qqH", nargs='+', type=int, help="SUSY masspoints")
+        parser.add_argument("--mass-susy-ggH", default=None, nargs='*', type=int, help="SUSY ggH masspoints")
+        parser.add_argument("--mass-susy-qqH", default=None, nargs='*', type=int, help="SUSY bbH masspoints")
 
         # Updating if the cuts grooup is already in defined grid-categories and adds it otherwise
         parser.add_argument("--eta-1-region", nargs='+', type=str, help="Needed for categorisation. Choices: eta_1_barel, eta_1_endcap, eta_1_endcap_real")
