@@ -37,7 +37,7 @@ def produce_shapes_variables(config):
         output_file=shapes._output_file.replace('.root', '.log'),
         level=shapes._log_level.lower(),
         logger=shapes._logger,
-        danger=shapes._danger,
+        danger=DANGER.enabled,  # shapes._danger,
     )
     # # Disabling some printouts
     # TODO - add this only to the case with higher verbosity
