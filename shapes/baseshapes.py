@@ -1138,10 +1138,10 @@ class Shapes(object):
                             susy_parameters_list = copy.deepcopy(parameters_list)
                             susy_parameters_list['mass'] = str(mass)
                             susy_parameters_list['contribution'] = contribution.replace('gg', '')
-                            subkey_name = "gg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
+                            subkey_name = "SUSYgg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
                             subkey_names.append(subkey_name)
 
-                            processes[subkey_name] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
+                            processes[subkey_name] = Process(subkey_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
                 elif any([i in key for i in ["SUSYggH_", "SUSYggA_", "SUSYggh_"]]):
                     subkey_names = []
@@ -1154,10 +1154,10 @@ class Shapes(object):
                         susy_parameters_list = copy.deepcopy(parameters_list)
                         susy_parameters_list['mass'] = str(mass)
                         susy_parameters_list['contribution'] = '_'.join(copy.deepcopy(key).replace('SUSYgg', '').split('_')[:2])
-                        subkey_name = "gg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
+                        subkey_name = "SUSYgg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
                         subkey_names.append(subkey_name)
 
-                        processes[subkey_name] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
+                        processes[subkey_name] = Process(subkey_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
                 elif "SUSYbbH" in key:
                     subkey_names = []
@@ -1169,10 +1169,10 @@ class Shapes(object):
                     for mass in masses:
                         susy_parameters_list = copy.deepcopy(parameters_list)
                         susy_parameters_list['mass'] = str(mass)
-                        subkey_name = "bbH_%s" % susy_parameters_list['mass']
+                        subkey_name = "SUSYbbH_%s" % susy_parameters_list['mass']
                         subkey_names.append(subkey_name)
 
-                        processes[subkey_name] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
+                        processes[subkey_name] = Process(subkey_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
                 # not tested
                 else:
@@ -1488,7 +1488,7 @@ class Shapes(object):
             self._logger.info("Starting to produce following shapes: " + shapes_to_prod)
         else:
             self._logger.info("Starting to produce following shapes [debug]: " + shapes_to_prod_debug)
-            pp.pprint(log_d)
+        pp.pprint(log_d)
         # print 'name:', self._systematics._systematics[0]._variation._name, self._systematics._systematics[0]._process._name, self._systematics._systematics[0]._category._name
         # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 
