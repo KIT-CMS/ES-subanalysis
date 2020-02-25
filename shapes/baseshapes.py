@@ -216,8 +216,8 @@ class Shapes(object):
         self._fes_et_setup = kwargs['fes_et_setup']
         self._trgeff_setup = kwargs['trgeff_setup']
 
-        self._mass_susy_ggH = kwargs['mass_susy_ggH']
-        self._mass_susy_qqH = kwargs['mass_susy_qqH']
+        self._mass_susy_ggH = kwargs['mass_susy_ggH'] if 'mass_susy_ggH' in kwargs.keys() else None
+        self._mass_susy_qqH = kwargs['mass_susy_qqH'] if 'mass_susy_qqH' in kwargs.keys() else None
 
         # self._et_friend_directory = os.path.expandvars(et_friend_directory)
         # self._mt_friend_directory = os.path.expandvars(mt_friend_directory)
@@ -600,6 +600,8 @@ class Shapes(object):
         parser.add_argument("--shifts", nargs='+', type=str, help="Pipelines, uncertainties variations, shifts : processed is the intersection of this list with list from _known_estimation_methods")
         parser.add_argument("--binning-key", type=str, help="Used only to pick the binning! example: gof, control")
         parser.add_argument("--log-level", type=str, help="Log level")
+        parser.add_argument("--mass-susy-ggH", nargs='+', type=int, help="SUSY masspoints")
+        parser.add_argument("--mass-susy-qqH", nargs='+', type=int, help="SUSY masspoints")
 
         # Updating if the cuts grooup is already in defined grid-categories and adds it otherwise
         parser.add_argument("--eta-1-region", nargs='+', type=str, help="Needed for categorisation. Choices: eta_1_barel, eta_1_endcap, eta_1_endcap_real")
@@ -663,6 +665,9 @@ class Shapes(object):
         defaultArguments['shifts'] = ['nominal', 'TES', 'EMB', 'FES_shifts', 'TES_shifts']
         defaultArguments['binning_key'] = 'control'
         defaultArguments['log_level'] = 'info'
+
+        defaultArguments['mass_susy_ggH'] = [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+        defaultArguments['mass_susy_qqH'] = [90, 110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1800, 2000, 2300, 2600, 3200]
 
         defaultArguments['decay_mode'] = ['all', 'dm0', 'dm1', 'dm10']
         defaultArguments['jets_multiplicity'] = ['njetN', 'njet0']
