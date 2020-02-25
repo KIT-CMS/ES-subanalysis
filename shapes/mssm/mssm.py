@@ -209,9 +209,13 @@ class MSSM(Shapes):
             categories = channel_holder._categorries
             # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 
-            # active processes in groups
-            mc_processes = [key for key in channel_holder._processes.keys() if 'data' not in key and 'EMB' not in key and "jetFakes" not in key]
-            sm_ggH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["ggH125", "ggH_GG2H", "ggHToWW"])]
+            # active MC processes in groups
+            mc_processes = set([key for key in channel_holder._processes.keys() if 'data' not in key and 'EMB' not in key and "jetFakes" not in key])
+
+            # signals (as for MSSM)
+            signal_processes = set([key for key in channel_holder._processes.keys() if 'SUSY' in channel_holder._processes[key].name])
+
+            # sm_ggH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["ggH125", "ggH_GG2H", "ggHToWW"])]
             # sm_qqH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["qqH125", "qqH_GG2H", "qqHToWW"])]
             # sm_VH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["WH125", "ZH125", "ttH125"])]
             # mssm_ggH_signals = {"ggh_t", "ggh_b", "ggh_i", "ggH_t", "ggH_b", "ggH_i", "ggA_t", "ggA_b", "ggA_i"};
@@ -243,9 +247,9 @@ class MSSM(Shapes):
 
                 for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
-                    proc_intersection = list(set(self._tes_sys_processes) & set(channel_holder._processes.keys()))
+                    proc_intersection = set(self._tes_sys_processes) & set(channel_holder._processes.keys())
                     self._logger.debug('\n\nTES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                    for process_nick in proc_intersection:
+                    for process_nick in signal_processes | proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
@@ -268,9 +272,9 @@ class MSSM(Shapes):
 
                 #     for variation in tau_es_3prong_variations + tau_es_1prong_variations + tau_es_1prong1pizero_variations:
                 #         # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
-                #         proc_intersection = list(set(decorr_proc) & set(channel_holder._processes.keys()))
+                #         proc_intersection = set(decorr_proc) & set(channel_holder._processes.keys())
                 #         self._logger.debug('\n\nTES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                #         for process_nick in proc_intersection:
+                #         for process_nick in signal_processes | proc_intersection:
                 #             self._systematics.add_systematic_variation(
                 #                 variation=variation,
                 #                 process=channel_holder._processes[process_nick],
@@ -278,7 +282,7 @@ class MSSM(Shapes):
                 #                 era=self.era
                 #             )
 
-            # EMB charged track correction uncertainty (DM-dependent): Ele energy scale
+            # EMB charged track correction uncertainty (DM-dependent): Ele energy scale : not applied to signals
             if 'EMB' in self._shifts and channel_name in ['mt', 'et', 'tt']:
                 self._logger.info('\n\n EMB shifts...')
                 decayMode_variations = []
@@ -304,7 +308,7 @@ class MSSM(Shapes):
                         "Down"))
 
                 for variation in decayMode_variations:
-                    proc_intersection = list(set(self._emb_sys_processes) & set(channel_holder._processes.keys()))
+                    proc_intersection = set(self._emb_sys_processes) & set(channel_holder._processes.keys())
                     self._logger.debug('\nEMB::variation name: %s\nintersection self._emb_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in proc_intersection:
                         self._systematics.add_systematic_variation(
@@ -314,7 +318,8 @@ class MSSM(Shapes):
                             era=self.era
                         )
 
-            # EMB?: 10% removed events in ttbar simulation (ttbar -> real tau tau events) added/subtracted to EMB shape to use as systematic.
+            # EMB : not applied to signals
+            # 10% removed events in ttbar simulation (ttbar -> real tau tau events) added/subtracted to EMB shape to use as systematic.
             if 'ZTTpTT' in self._shifts:
                 # ! Technical procedure different to usual systematic variations!
                 self._logger.info('\n\n ZTTpTT shifts...')
@@ -368,7 +373,7 @@ class MSSM(Shapes):
                 # print "aft:", len(self._systematics._systematics)
                 # exit(0)
 
-            # Z pt reweighting
+            # Z pt reweighting : not applied to signals
             if 'Zpt' in self._shifts:
                 self._logger.info('\n\n Z pt reweighting')
                 zpt_variations = create_systematic_variations(
@@ -386,7 +391,7 @@ class MSSM(Shapes):
                             era=self.era
                         )
 
-            # top pt reweighting
+            # top pt reweighting : not applied to signals
             if 'Tpt' in self._shifts:
                 self._logger.info('\n\ntop pt reweighting')
                 tpt_variations = create_systematic_variations(
@@ -404,7 +409,7 @@ class MSSM(Shapes):
                             era=self.era
                         )
 
-            # jetfakes
+            # jetfakes : not applied to signals
             if 'FF' in self._shifts and channel_name in ['mt', 'et', 'tt']:
                 self._logger.info('\n\n FF related uncertainties ...')
                 fake_factor_variations_et = []
@@ -460,7 +465,7 @@ class MSSM(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era)
 
-            # QCD for em
+            # QCD for em : not applied to signals
             if 'QCDem' in self._shifts and channel_name == 'em':
                 qcd_variations = []
                 for shift in ['Up', 'Down']:
@@ -504,6 +509,7 @@ class MSSM(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era)
 
+            # JetToTauFake : not applied to signals
             if 'JetToTauFake' in self._shifts and channel_name != 'em':
                 self._logger.info('\n\n JetToTauFake (jet->tau fake efficiency)')
                 jet_to_tau_fake_variations = [
@@ -520,25 +526,47 @@ class MSSM(Shapes):
                             era=self.era
                         )
 
-            # Gluon-fusion WG1 uncertainty scheme, for sm signals (Uncertainty: Theory uncertainties) : TODO
+            # WG1 uncertainty scheme, for sm signals (Uncertainty: Theory uncertainties) : TODO
             if 'WG1' in self._shifts:
+
+                # Gluon-fusion
                 ggh_variations = []
-                THU_unc = [
+                THU_ggH_unc = [
                     "THU_ggH_Mig01", "THU_ggH_Mig12", "THU_ggH_Mu", "THU_ggH_PT120",
                     "THU_ggH_PT60", "THU_ggH_Res", "THU_ggH_VBF2j", "THU_ggH_VBF3j",
-                    "THU_ggH_qmtop"
+                    "THU_ggH_qmtop",
                 ]
-                for unc in THU_unc:
+                for unc in THU_ggH_unc:
                     ggh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("({})".format(unc), "{}_weight".format(unc)), "Up"))
-                    ggh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("(1.0/{})".format(unc), "{}_weight".format(unc)), "Down"))
+                    # ggh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("(1.0/{})".format(unc), "{}_weight".format(unc)), "Down"))
+                    ggh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("(2.0-{})".format(unc), "{}_weight".format(unc)), "Down"))
 
-                for process_nick, variation in product(sm_ggH_processes, ggh_variations):
-                        self._systematics.add_systematic_variation(
-                            variation=variation,
-                            process=channel_holder._processes[process_nick],
-                            channel=channel_holder._channel_obj,
-                            era=self.era
-                        )
+                for process_nick, variation in product(sm_ggH_processes, ggh_variations):  # if "ggH" in nick and "HWW" not in nick
+                    self._systematics.add_systematic_variation(
+                        variation=variation,
+                        process=channel_holder._processes[process_nick],
+                        channel=channel_holder._channel_obj,
+                        era=self.era
+                    )
+
+                # VBF uncertainties
+                qqh_variations = []
+                THU_qqH_unc = [
+                    "THU_qqH_25", "THU_qqH_JET01", "THU_qqH_Mjj1000", "THU_qqH_Mjj120",
+                    "THU_qqH_Mjj1500", "THU_qqH_Mjj350", "THU_qqH_Mjj60", "THU_qqH_Mjj700",
+                    "THU_qqH_PTH200", "THU_qqH_TOT",
+                ]
+                for unc in THU_qqH_unc:
+                    qqh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("({})".format(unc), "{}_weight".format(unc)), "Up"))
+                    qqh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("(2.0-{})".format(unc), "{}_weight".format(unc)), "Down"))
+
+                for process_nick, variation in product(sm_ggH_processes, ggh_variations):  # if "qqH" in nick and "qqHWW" not in nick
+                    self._systematics.add_systematic_variation(
+                        variation=variation,
+                        process=channel_holder._processes[process_nick],
+                        channel=channel_holder._channel_obj,
+                        era=self.era
+                    )
 
             # TODO: refactor the emb part
             # Lepton trigger efficiency; the same values for (MC & EMB) and (mt & et)
@@ -644,12 +672,12 @@ class MSSM(Shapes):
 
                 for variation in jet_es_variations:
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
-                    # proc_intersection = list(set(self._jes_sys_processes) & set(channel_holder._processes.keys()))
+                    # proc_intersection = set(self._jes_sys_processes) & set(channel_holder._processes.keys())
                     # self._logger.debug('\n\n JES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                    for process in processes:
+                    for process_nick in mc_processes:
                         self._systematics.add_systematic_variation(
                             variation=variation,
-                            process=process,
+                            process=channel_holder._processes[process_nick],
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
@@ -657,8 +685,8 @@ class MSSM(Shapes):
             # B-tagging
             if 'BTag' in self._shifts:
                 self._logger.info('\n\n BTag reweighting')
-                btag_eff_variations = create_systematic_variations("CMS_htt_eff_b_Run2017", "btagEff", DifferentPipeline)
-                mistag_eff_variations = create_systematic_variations("CMS_htt_mistag_b_Run2017", "btagMistag", DifferentPipeline)
+                btag_eff_variations = create_systematic_variations("CMS_htt_eff_b_Run%s" % channel_holder._year, "btagEff", DifferentPipeline)
+                mistag_eff_variations = create_systematic_variations("CMS_htt_mistag_b_Run%s" % channel_holder._year, "btagMistag", DifferentPipeline)
 
                 for variation in btag_eff_variations + mistag_eff_variations:
                     # proc_intersection = MSSM.intersection(channel_holder._processes.keys(), mc_processes)
@@ -676,7 +704,7 @@ class MSSM(Shapes):
                 self._logger.info('\n\n METES reweighting')
                 met_unclustered_variations = create_systematic_variations("CMS_scale_met_unclustered", "metUnclusteredEn", DifferentPipeline)
 
-                # proc_intersection = list(set(self._met_sys_processes) & set(channel_holder._processes.keys()))
+                # proc_intersection = set(self._met_sys_processes) & set(channel_holder._processes.keys())
                 # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
                 for variation in met_unclustered_variations:
                     # self._logger.debug('\n\n METES::variation name: %s\nintersection self._met_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
@@ -708,7 +736,7 @@ class MSSM(Shapes):
                 ele_es_variations += create_systematic_variations("CMS_reso_mc_e", "eleSmear", DifferentPipeline) # Run%s" % (channel_name, channel_holder._year)
                 for variation in ele_es_variations:
                     # TODO: check all proc are needed here
-                    # proc_intersection = list(set(self._ees_sys_processes) & set(channel_holder._processes.keys()))
+                    # proc_intersection = set(self._ees_sys_processes) & set(channel_holder._processes.keys())
                     # self._logger.debug('\n\n EES::variation name: %s\nintersection self._ees_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     # for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x and 'QCDSStoOS' not in x]:
                     # for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x]:
@@ -725,7 +753,7 @@ class MSSM(Shapes):
             # Zll reweighting !!! replaced by log normal uncertainties:
             # CMS_eFakeTau_Run2018 16%; CMS_mFakeTau_Run2018 26%
 
-            # ZL fakes energy scale (e->t, m->t)
+            # ZL fakes energy scale (e->t, m->t) : not applied to signals
             if 'ZES' in self._shifts and channel_name in ["et", "mt"]:
                 self._logger.info('\n\n ZES reweighting')
 
@@ -749,6 +777,7 @@ class MSSM(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
+
             # Recoil correction unc, for resonant processes
             if 'Recoil' in self._shifts:
                 self._logger.info('\n\n recoil reweighting')
@@ -758,10 +787,10 @@ class MSSM(Shapes):
 
                 # sm_ggH_processes ggH qqH, {"ZTT", "ZL", "ZJ", "W", H125, bbH, bbA etc.
                 # signals, mssm_signals, signals_ggHToWW, signals_qqHToWW,{"ZTT", "ZL", "ZJ", "W"}
-                proc_intersection = list(set(self._z_recoil_sys_processes) & set(channel_holder._processes.keys()))
+                proc_intersection = set(self._z_recoil_sys_processes) & set(channel_holder._processes.keys())
                 for variation in recoil_variations:
                     self._logger.debug('\n\n Recoil::variation name: %s\nintersection self._z_recoil_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                    for process_nick in proc_intersection:
+                    for process_nick in signal_processes | proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
