@@ -8,19 +8,37 @@ prep_resubmit_silent() {
             # echo "$1 exist"
             arguments=$1
         elif [ -f "$1/arguments.txt" ]; then
-            arguments=$1
+            arguments=$1/arguments.txt
         else
             echo "$1[/arguments.txt] is not a valid file"
             return
         fi
     fi
-
     # echo arguments: $arguments
     dirpath=$(dirname "$arguments")
     f="$(basename -- $arguments)"
     f="${f%.*}"
-    arguments_finished=${dirpath}/${f}_finished.txt
+    # arguments_finished=${dirpath}/${f}_finished.txt
+    name=arguments
+    ext=txt
+    if [[ -e ${name}.${ext} || -L ${name}.${ext} ]] ; then
+        i=0
+        while [[ -e ${name}-${i}.${ext} || -L ${name}-${i}.${ext} ]] ; do
+            let i++
+        done
+        name=${name}-${i}
+    fi
+    # echo "${name}".${ext}
+    # touch -- "${name}".${ext}
+    mkdir ${dirpath}/${i}
+    arguments_finished=${dirpath}/${i}/"${name}".${ext}
     mv ${arguments} ${arguments_finished}
+    # cp ${arguments_finished} ${dirpath}/${i}/
+    mv ${dirpath}/log ${dirpath}/${i}/log
+    mv ${dirpath}/err ${dirpath}/${i}/err
+    mv ${dirpath}/out ${dirpath}/${i}/out
+    mkdir ${dirpath}/log ${dirpath}/err ${dirpath}/out
+
 
     # arguments_resubmit=${dirpath}/${f}_resubmit.txt
     # echo arguments: $arguments
@@ -38,7 +56,7 @@ prep_resubmit_silent() {
     # then
     #     mkdir -p ${success_dir}
     # fi
-    for fullfile in ${dirpath}/out/*
+    for fullfile in ${dirpath}/${i}/out/*
     do
         filename="${fullfile##*/}"
         extension="${filename##*.}"
@@ -66,6 +84,7 @@ prep_resubmit_silent() {
 
     echo $arguments
 }
+# prep_resubmit_silent /nfs/dust/cms/user/glusheno/shapes/MSSM/mva/job_dirs/control_plots_ff_2017
 
 prep_resubmit() {
     arguments=$(prep_resubmit_silent $@)
@@ -73,17 +92,17 @@ prep_resubmit() {
     cat ${arguments} | wc -l
     echo "$arguments"
 }
-# prep_resubmit
+# prep_resubmit /nfs/dust/cms/user/glusheno/shapes/MSSM/mva/job_dirs/control_plots_ff_2017
 
 check_logs() {
     if [[ $# -eq 0 ]] ; then
-        directory=$(pwd)
+        dirpath=$(pwd)
     elif [[ $# -eq 1 ]] ; then
         if [ -d "$1" ]; then
             # echo "$1 exist"
-            directory=$1
+            dirpath=$1
         else
-            echo "$1 is not a valid directory"
+            echo "$1 is not a valid dirpath"
             return
         fi
     else
@@ -92,7 +111,7 @@ check_logs() {
     fi
 
     flag=0
-    for fullfile in ${directory}/out/*
+    for fullfile in ${dirpath}/out/*
     do
         filename="${fullfile##*/}"
         extension="${filename##*.}"
