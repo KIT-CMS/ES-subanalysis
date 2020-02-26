@@ -754,7 +754,7 @@ class MSSM(Shapes):
                     # for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x and 'QCDSStoOS' not in x]:
                     # for process_nick in [x for x in channel_holder._processes.keys() if 'EMB' not in x and 'data' not in x]:
                     # for process_nick in proc_intersection - set('EMB'):
-                    for processes_nick in mc_processes:
+                    for process_nick in mc_processes:
                         # print 'process_nick:', process_nick, variation
                         self._systematics.add_systematic_variation(
                             variation=variation,

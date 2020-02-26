@@ -141,7 +141,6 @@ submit_prep_resubmit() {
     cat ${arguments} | wc -l
     echo "$arguments"
     dirpath=$(dirname "$arguments")
-    # cd $dirpath && condor_submit job.jdl
-    # cd -
+    cd $dirpath && condor_submit job.jdl && cd -
 }
 # submit_prep_resubmit
