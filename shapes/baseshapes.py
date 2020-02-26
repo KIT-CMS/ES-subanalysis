@@ -67,7 +67,7 @@ class Shapes(object):
     channel_minplotlev_cuts = [
         'et_minplotlev_cuts', 'mt_minplotlev_cuts',
         'tt_minplotlev_cuts', 'em_minplotlev_cuts',
-        'channel_specific'
+        'channel_specific',  # 'year_specific'
     ]
     cuts_manipulations = [
         'fes_extra_cuts', 'force_cuts', 'extra_cuts',
@@ -218,6 +218,31 @@ class Shapes(object):
 
         self._mass_susy_ggH = kwargs['mass_susy_ggH'] if 'mass_susy_ggH' in kwargs.keys() else None
         self._mass_susy_qqH = kwargs['mass_susy_qqH'] if 'mass_susy_qqH' in kwargs.keys() else None
+        if isinstance(self._mass_susy_qqH, dict):
+            if era in self._mass_susy_qqH:
+                self._mass_susy_qqH = self._mass_susy_qqH[era]
+            elif 'default' in self._mass_susy_qqH:
+                self._mass_susy_qqH = self._mass_susy_qqH['default']
+            else:
+                raise Exception('Couldn\'t initialize the self._mass_susy_qqH')
+
+        self._generator_qqH = kwargs['generator_qqH'] if 'generator_qqH' in kwargs.keys() else None
+        if isinstance(self._generator_qqH, list):
+            if len(self._generator_qqH) == 1:
+                self._generator_qqH = self._generator_qqH[0]
+            elif len(self._generator_qqH) == 0:
+                self._logger.info('Using default generator for qqH')
+                self._generator_qqH = None
+            else:
+                raise Exception('self._generator_qqH is list of more than 1 length - be sure to pass only 1 argument. Was passed: %s' % self._generator_qqH)
+        elif isinstance(self._generator_qqH, dict):
+            if era in self._generator_qqH:
+                self._generator_qqH = self._generator_qqH[era]
+            elif 'default' in self._generator_qqH:
+                self._generator_qqH = self._generator_qqH['default']
+            else:
+                raise Exception('Couldn\'t initialize the self._generator_qqH')
+        # print self._mass_susy_qqH ; exit(1)
 
         # self._et_friend_directory = os.path.expandvars(et_friend_directory)
         # self._mt_friend_directory = os.path.expandvars(mt_friend_directory)
@@ -345,6 +370,11 @@ class Shapes(object):
                         self._logger.warning('All channel_specific grid categorries are ignored')
                         self._channel_specific[c]['grid_categories'] = {}
 
+        # if self._no_year_specific:
+        #     self._logger.warning('All year_specific categorries are ignored')
+        #     self._year_specific = {}
+        # else:
+        #     for year
         sys_processes = [
             'tes_sys_processes', 'fes_sys_processes', 'emb_sys_processes',
             'zpt_sys_processes', 'qcdem_sys_processes', 'met_sys_processes',
@@ -527,6 +557,8 @@ class Shapes(object):
 
             config.update(prompt_args)
 
+            # prompt options overrule per-year definitions in the config
+
             # prompt options overrule per-channel definitions in the config
             if 'methods_collection_key' in prompt_args.keys():
                 logging.getLogger(__name__).warning('methods_collection_key was used in terminal -> updating all channel-specific values!')
@@ -602,6 +634,7 @@ class Shapes(object):
         parser.add_argument("--log-level", type=str, help="Log level")
         parser.add_argument("--mass-susy-ggH", default=None, nargs='*', type=int, help="SUSY ggH masspoints")
         parser.add_argument("--mass-susy-qqH", default=None, nargs='*', type=int, help="SUSY bbH masspoints")
+        parser.add_argument("--generator-qqH", default=None, nargs='*', type=str, help="SUSY bbH generator (leave blank to use whatever is defined in shapes-producer)")
 
         # Updating if the cuts grooup is already in defined grid-categories and adds it otherwise
         parser.add_argument("--eta-1-region", nargs='+', type=str, help="Needed for categorisation. Choices: eta_1_barel, eta_1_endcap, eta_1_endcap_real")
@@ -635,6 +668,9 @@ class Shapes(object):
         parser.add_argument('--use-single-categories', action='store_true', default=None, help='use categorisation defined by single_categories config.')
         parser.add_argument('--use-channel-specific', action='store_true', default=None, help='use categorisation defined separately for channels.')
         parser.add_argument('--no-channel-specific', action='store_true', default=None, help='use categorisation defined separately for channels.')
+
+        parser.add_argument('--use-year-specific', action='store_true', default=None, help='use categorisation defined separately for channels.')
+        parser.add_argument('--no-year-specific', action='store_true', default=None, help='use categorisation defined separately for channels.')
 
         parser.add_argument('--update-process-per-category', action='store_true', default=None, help='Used to update extrapolation factors for the QCD estimation methods if they are provided')
 
@@ -695,6 +731,7 @@ class Shapes(object):
         defaultArguments['no_grid_categories'] = False
         defaultArguments['no_single_categories'] = False
         defaultArguments['no_channel_specific'] = False
+        # defaultArguments['no_year_specific'] = False
 
         defaultArguments['use_fes_extra_cuts'] = False
         defaultArguments['use_et_minplotlev_cuts'] = False
@@ -704,6 +741,7 @@ class Shapes(object):
         defaultArguments['use_grid_categories'] = False
         defaultArguments['use_single_categories'] = False
         defaultArguments['use_channel_specific'] = False
+        # defaultArguments['use_year_specific'] = False
 
         defaultArguments['update_process_per_category'] = False
 
@@ -721,7 +759,10 @@ class Shapes(object):
                 if argument not in configuration:
                     configuration[argument] = default
 
-        for base in ['fes_extra_cuts', 'et_minplotlev_cuts', 'mt_minplotlev_cuts', 'force_cuts', 'extra_cuts', 'grid_categories', 'single_categories', 'channel_specific']:
+        for base in ['fes_extra_cuts', 'et_minplotlev_cuts', 'mt_minplotlev_cuts', 'force_cuts',
+                     'extra_cuts', 'grid_categories', 'single_categories', 'channel_specific',
+                     # 'year_specific',
+                     ]:
             use = 'use_' + base
             nouse = 'no_' + base
             assert not (use in configuration.keys() and nouse in configuration.keys()), "%s and %s can't be set at the same time" % (use, nouse)
@@ -1174,6 +1215,8 @@ class Shapes(object):
 
                         processes[subkey_name] = Process(subkey_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
+                        if self._generator_qqH is not None:
+                            processes[subkey_name]._estimation_method.queries[0]['generator'] = self._generator_qqH
                 # not tested
                 else:
                     self._logger.critical("NOT TESTED SETUP FOR SUSY")
