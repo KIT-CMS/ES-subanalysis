@@ -21,16 +21,21 @@ prep_resubmit_silent() {
     # arguments_finished=${dirpath}/${f}_finished.txt
     name=arguments
     ext=txt
-    if [[ -e ${name}.${ext} || -L ${name}.${ext} ]] ; then
+    if [[ -e ${dirpath}/${name}.${ext} || -L ${dirpath}/${name}.${ext} ]] ; then
         i=0
-        while [[ -e ${name}-${i}.${ext} || -L ${name}-${i}.${ext} ]] ; do
+        while [[ -e ${dirpath}/${i}  || -e ${dirpath}/${name}-${i}.${ext} || -L ${dirpath}/${name}-${i}.${ext} ]] ; do
+            printf "exist..++\\n"
             let i++
         done
         name=${name}-${i}
     fi
-    # echo "${name}".${ext}
+    if [[ -e ${dirpath}/${i} || -L ${dirpath}/${i} ]] ; then
+        echo "${dirpath}/${i} already exist! Something is wrong - check manually"
+        return 1
+    else
+        mkdir ${dirpath}/${i}
+    fi
     # touch -- "${name}".${ext}
-    mkdir ${dirpath}/${i}
     arguments_finished=${dirpath}/${i}/"${name}".${ext}
     mv ${arguments} ${arguments_finished}
     # cp ${arguments_finished} ${dirpath}/${i}/
@@ -39,12 +44,13 @@ prep_resubmit_silent() {
     mv ${dirpath}/out ${dirpath}/${i}/out
     mkdir ${dirpath}/log ${dirpath}/err ${dirpath}/out
 
-
+    # return
     # arguments_resubmit=${dirpath}/${f}_resubmit.txt
     # echo arguments: $arguments
     # echo arguments: $arguments
     ERRORED_MYID=()
     ERRORED_CONDORID=()
+    ERRORRED_COMMANDS=()
     touch ${arguments}
     # success_dir=${dirpath}/out/success
     # fail_dir=${dirpath}/out/prepared_to_resubmit
@@ -56,35 +62,57 @@ prep_resubmit_silent() {
     # then
     #     mkdir -p ${success_dir}
     # fi
-    for fullfile in ${dirpath}/${i}/out/*
+    # printf "Preparint the list\\n"
+    for fullfile in ${dirpath}/${i}/out/*.out
     do
+        # echo "-->fullfile: $fullfile"
         filename="${fullfile##*/}"
         extension="${filename##*.}"
         condorid="${filename#*.}"
         condorid="${condorid%.*}"
         jobid="${filename%%.*}"
+        # echo "-->filename: $filename"
+        # echo "-->filename: $filename"
+        # echo "-->jobid:$jobid"
         if [[ ! $(tail -n 1 $fullfile) == "done"* ]]
         then
+            # printf "\\t in file $fullfile : errored\\n"
             ERRORED_MYID+=($jobid)
             ERRORED_CONDORID+=($condorid)
+            first_line=$(head -n 1 ${fullfile})
+            prefix="@ :  "
+            err_command=${first_line#"$prefix"}
+            ERRORRED_COMMANDS+=(${err_command})
+            echo "${err_command}" >> ${arguments}
             # mv $fullfile $fail_dir/$fullfile
         # else
-        #     mv $fullfile $success_dir/$fullfile
+        #     printf "\\t in file $fullfile : done\\n"
+            # mv $fullfile $success_dir/$fullfile
         fi
     done
-    while IFS= read -r line
-    do
-        for jobid in "${ERRORED_MYID[@]}"
-        do
-            if [[ ${line} == ${jobid}* ]] ; then
-                echo "$line" >> ${arguments}
-            fi
-        done
-    done < ${arguments_finished}
+    sed -i '/^$/d' ${arguments}  # remove empty lines
+    sort -u -o ${arguments} ${arguments}  # sort and remove duplicates if met
 
+    # echo "${ERRORED_MYID[@]}"
+    # echo "${ERRORRED_COMMANDS[@]}"
+    # return
+    # while IFS= read -r line
+    # do
+    #     printf "line: ${line}\\n"
+    #     for jobid in "${ERRORED_MYID[@]}"
+    #     do
+    #         if [[ ${line} == "${jobid} "* ]] ; then
+    #             printf "\\t taking jobid: $jobid\\n"
+    #             # echo "$line" #>> ${arguments}
+    #         else
+    #             printf "\\t skipping jobid: $jobid\\n"
+    #         fi
+    #     done
+    # done < ${arguments_finished}
+    # set +x
     echo $arguments
 }
-# prep_resubmit_silent /nfs/dust/cms/user/glusheno/shapes/MSSM/mva/job_dirs/control_plots_ff_2017
+# prep_resubmit_silent /nfs/dust/cms/user/glusheno/shapes/MSSM/mva/job_dirs/control_plots_ff_full_syst_signal_2017
 
 prep_resubmit() {
     arguments=$(prep_resubmit_silent $@)
