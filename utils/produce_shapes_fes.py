@@ -97,6 +97,7 @@ def produce_shapes_variables(config):
             output_dir=os.path.join(converted_shapes_dir),
             variables=shapes._variables_names,
             debug=shapes._debug,
+            fes=1
         )
         print 'shapes:', shapes._output_file
         print 'converted_shapes_file:', converted_shapes_file

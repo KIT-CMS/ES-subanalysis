@@ -3,18 +3,23 @@
 """
  python convert_to_synced_shapes.py \
     --input etFes_2017_all_shapes.root \
-    --output converted_shapes
+    --output converted_shapes --fes
 
  python shapes/convert_to_synced_shapes.py \
     --input   /ceph/ohlushch/shapes/FES/ET/v3_noele27/shapes/2017_etFes_Legacy_FES_noupdate_QCDSStoOS_woFR.root \
     --output /ceph/ohlushch/shapes/FES/ET/v3_noele27/sconverted_shapes \
-    --variables m_vis --debug
+    --variables m_vis --debug --fes
 
 
  python shapes/convert_to_synced_shapes.py \
     --input   /storage/8/ohlushch/shapes/FES/ET/deeptau/test_extend_prefiring/2017_etFes_Legacy_FES_noupdate_QCDSStoOS_woFR.root \
     --output /storage/8/ohlushch/shapes/FES/ET/deeptau/test_extend_prefiring/converted_shapes \
-    --variables m_vis --debug
+    --variables m_vis --debug --fes
+
+python shapes/convert_to_synced_shapes.py \
+    --input   /storage/8/ohlushch/shapes/FES/ET/deeptau/v8_1GeVbinning/2017_*.root \
+    --output /storage/8/ohlushch/shapes/FES/ET/deeptau/v8_1GeVbinning/converted_shapes/ \
+    --variables m_vis --fes &
 
  # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
 """
@@ -69,6 +74,7 @@ def parse_arguments():
     parser.add_argument('--output-dir', default="", type=str, help='Output directory')
     parser.add_argument('--variables', '-v', type=str, nargs='*', default=['m_vis', 'njets_mvis', 'dm_mvis'], help='variables.')
     parser.add_argument('--debug', default=0, action="store_const", const=1, help="Debug option [Default: %(default)s]")
+    parser.add_argument('--fes', default=0, action="store_const", const=1, help="Debug option [Default: %(default)s]")
 
     return parser.parse_args()
 
@@ -151,7 +157,7 @@ def constructMap(hist_map, variables, input_file, debug=0):
 
 # import pdb; pdb.set_trace()  # \!import code; code.interact(local=vars())
 # input_path=args.input[0], output_dir=args.output, debug=args.debug, variables=args.variables)
-def convertToSynced(variables, input_path, output_dir='', debug=False):
+def convertToSynced(variables, input_path, output_dir='', debug=False, fes=False):
     # Open input ROOT file and output ROOT file
     if len(input_path) > 5 and input_path.endswith('.root'):
             pass
@@ -237,7 +243,7 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                             break
 
                     if name_output != new_name:
-                        logger.debug('Replacing when converting: %s -> %s' % (name_output, new_name))
+                        logger.debug('Replacing when converting [fes]: %s -> %s' % (name_output, new_name))
                         name_output = new_name
                     else:
                         logger.warning('Name stayed unchanged: %s ' % (name_output))
@@ -249,18 +255,27 @@ def convertToSynced(variables, input_path, output_dir='', debug=False):
                     check_if_missing.remove(name_output)
 
                 # the nominal ZL should be treated as ZL_0
-                if 'ZL' == name_output:
-                    name_output += '_0'
-
-                if 'ZL_' in name_output and ((not name_output.endswith('Up') and not name_output.endswith('Down')) or ('_fes_' in name_output)):
-                    old_name_output = name_output
-                    name_output = name_output.replace('_neg', '_-')
-                    for i in range(0, 10):
-                        if 'p' not in name_output and '.' not in name_output and name_output != 'ZL_0':
-                            logger.warning('\t name %s adding p0' % (name_output))
-                            name_output += 'p0'
-                        name_output = name_output.replace(str(i) + 'p', str(i) + '.').replace('_fes_', '_')
-                    logger.debug('Replacing when converting: %s -> %s' % (old_name_output, name_output))
+                if fes:
+                    if name_output.startswith('ZL'):
+                        if 'ZL' == name_output or name_output.startswith('ZL_CMS'):
+                            name_output = name_output.replace('ZL', 'ZL_0.0')
+                            # name_output += '_0'
+                            # if 'ZL' == name_output:
+                            #     import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                            #     exit(1)
+                        # print name_output
+                        # if 'ZL' == name_output:
+                        #     import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                        #     exit(1)
+                    if 'ZL_' in name_output and ((not name_output.endswith('Up') and not name_output.endswith('Down')) or ('_fes_' in name_output)):
+                        old_name_output = name_output
+                        name_output = name_output.replace('_neg', '_-')
+                        for i in range(0, 10):
+                            if 'p' not in name_output and '.' not in name_output:  # and name_output != 'ZL_0'
+                                logger.warning('\t name %s adding p0' % (name_output))
+                                name_output += 'p0'
+                            name_output = name_output.replace(str(i) + 'p', str(i) + '.').replace('_fes_', '_')
+                        logger.debug('Replacing when converting [fes]: %s -> %s' % (old_name_output, name_output))
 
                 output_names.append(name_output)
 
@@ -303,5 +318,6 @@ if __name__ == "__main__":
         input_path=args.input_file[0],
         output_dir=args.output_dir,
         debug=args.debug,
-        variables=args.variables
+        variables=args.variables,
+        fes=args.fes,
     )
