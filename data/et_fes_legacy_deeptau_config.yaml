@@ -201,7 +201,7 @@ et_minplotlev_cuts:
 # applied to all pipelines! Here a global difference between master shapes and FES selection should be made
 no_force_cuts: False  # forcing
 force_cuts:
-  'pt_2': 'pt_2>23' # 17/18->23; 16->30
+  'pt_2': 'pt_2>23' # 17/18->23; 16->30: unles shifts are prood on shapes level, meaningless because the triggercu has a larger req
   'dilepton_veto': Null  # removes the cut; to enhance Z->ee; it need at artus minimalplotlevfilter nDiElectronVetoPairsOS cut to be disabled
   #
   # Was used before
@@ -210,7 +210,7 @@ force_cuts:
   "byTightDeepTau2017v2p1VSe_2": "byTightDeepTau2017v2p1VSe_2>0.5" # only for use with v0, but in principle doesn't hurt
   # Cuts to overwrite by year:
   '2016':
-    'pt_2': 'pt_2>30' # 17/18->23; 16->30
+    'pt_2': 'pt_2>30' # 17/18->23; 16->30: unles shifts are prood on shapes level, meaningless because the triggercu has a larger req
 
   # "tau_iso": 'byLooseIsolationMVArun2017v2DBoldDMwLT2017_2 > 0.5' # to enhance Z->ee, I think it wasn't used in the last iteration, for it the new FF have to be recalculated...
   #
@@ -232,6 +232,7 @@ shifts: [
   prefiring_FES_shifts,
   EES_FES_shifts,
   Zpt_FES_shifts,
+  TrgEff_FES_shifts,
 
   # EMB,
   Zpt,

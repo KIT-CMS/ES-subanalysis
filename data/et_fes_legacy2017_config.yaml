@@ -56,6 +56,9 @@ user_specific:
   tt_friend_directory:
     byhost:
       default: []
+  em_friend_directory:
+    byhost:
+      default: []
   fake_factor_friend_directory:
     byhost:
       default: ["$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"]
@@ -195,6 +198,9 @@ shifts: [
 
   # EMB,
   FES_shifts,
+prefiring_FES_shifts,
+Zpt_FES_shifts,
+TrgEff_FES_shifts,
   Zpt,
   prefiring,
   Tpt,
@@ -241,7 +247,7 @@ grid_categories:
 
   jets_multiplicity: [
     'njetN',
-    'njet0',
+    #'njet0',
   ]
 
 use_single_categories: False # by dault not producing these shapes
