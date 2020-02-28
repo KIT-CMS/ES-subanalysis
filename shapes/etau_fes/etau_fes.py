@@ -689,6 +689,59 @@ class ETauFES(Shapes):
                             channel=channel_holder._channel_obj,
                             era=self.era
                         )
+            if 'TrgEff_FES_shifts' in self._shifts and channel_name in ["et"]:
+                self._logger.info('\n\n TrgEff_FES_shifts...')
+                root_str = lambda x: str(x).replace("-", "neg").replace(".", "p")
+                for es in self._etau_es_shifts:
+                    shift_str = root_str(es)
+
+                    for pipeline in [
+                        # "eleTauEsInclusiveShift_",
+                        "eleTauEsOneProngShift_",
+                        "eleTauEsOneProngPiZerosShift_",
+                        # "eleTauEsThreeProngShift_"
+                    ]:
+                        proc_intersection = list(set(self._fes_sys_processes) & set(channel_holder._processes.keys()))
+
+
+                        lep_trigger_eff_variations = []
+                        # MC
+                        lep_trigger_eff_variations.append(
+                            AddWeight(
+                                "%s_CMS_fes_eff_trigger_%s_Run%s" % (cshift_str, hannel_name, channel_holder._year),
+                                "trg_%s_eff_weight" % channel_name,
+                                Weight("(1.0*(pt_1<=25)+1.02*(pt_1>25))", "trg_%s_eff_weight" % channel_name),
+                                "Up"))
+                        lep_trigger_eff_variations.append(
+                            AddWeight(
+                                "%s_CMS_fes_eff_trigger_%s_Run%s" % (cshift_str, hannel_name, channel_holder._year),
+                                "trg_%s_eff_weight" % channel_name,
+                                Weight("(1.0*(pt_1<=25)+0.98*(pt_1>25))", "trg_%s_eff_weight" % channel_name),
+                                "Down"))
+                        lep_trigger_eff_variations.append(
+                            AddWeight(
+                                "%s_CMS_fes_eff_xtrigger_%s_Run%s" % (shift_str, channel_name, channel_holder._year),
+                                "xtrg_%s_eff_weight" % channel_name,
+                                Weight("(1.054*(pt_1<=25)+1.0*(pt_1>25))", "xtrg_%s_eff_weight" % channel_name),
+                                "Up"))
+                        lep_trigger_eff_variations.append(
+                            AddWeight(
+                                "%s_CMS_fes_eff_xtrigger_%s_Run%s" % (shift_str, channel_name, channel_holder._year),
+                                "xtrg_%s_eff_weight" % channel_name,
+                                Weight("(0.946*(pt_1<=25)+1.0*(pt_1>25))", "xtrg_%s_eff_weight" % channel_name),
+                                "Down"))
+
+                        for variation in lep_trigger_eff_variations:
+                            for process_nick in proc_intersection:
+                                self._systematics.add_systematic_variation(
+                                    variation=variation,
+                                    process=channel_holder._processes[process_nick],
+                                    channel=channel_holder._channel_obj,
+                                    era=self.era
+                                )
+
+                                # Upplying cuts that are only for fes shifts
+                                self.upplyFesCuts(pipeline=pipeline, depth=categories, folder=pipeline + shift_str)
 
             # Splitted JES shapes
             if 'JES' in self._shifts:
