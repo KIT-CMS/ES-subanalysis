@@ -218,9 +218,7 @@ shifts: [
   # EMB, : todo
   # 'ZTTpTT', # with embedding, missing in artus
 
-  Zpt,
   prefiring,
-  Tpt,
   TrgEff,
   QCDem, #: todo
   # WG1, : todo?
@@ -233,9 +231,13 @@ shifts: [
   BTag,
   METES,
   EES,
-  ZES, # : todo: need to update with My numbers
   #
   # JES, # : todo, not yet in the artus ntuples
+
+  # Shouldn't be applied to signals:
+  Zpt,
+  Tpt,
+  ZES, # : todo: need to update with My numbers
 ]
 
 ## Weights
@@ -342,6 +344,14 @@ channel_specific:
         'dzeta_high',
       ]
 
+    single_categories:
+        ttbar_control_1:
+           pZetaMissVis: '(pZetaMissVis<=-35)'
+
+        ttbar_control_2:
+           pZetaMissVis: '(pZetaMissVis<=-50)'
+
+
   et:
     # SMHTT: FF or QCDEstimation_SStoOS_MTETEM
     # methods_collection_key: Legacy_MSSM_with_QCDSStoOS
@@ -357,6 +367,10 @@ channel_specific:
         'mt_1_tight',
         'mt_1_loose',
       ]
+
+    single_categories:
+        wjets_control_1:
+           mt_1: '(mt_1>=70)'
 
     # todo: https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2?rev=89
     # https://indico.cern.ch/event/836421/contributions/3507675/attachments/1884267/3166728/Yuta_TauPOG_20190925_v2.pdf
@@ -385,6 +399,11 @@ channel_specific:
         'mt_1_tight',
         'mt_1_loose',
       ]
+
+    single_categories:
+        wjets_control_1:
+           mt_1: '(mt_1>=70)'
+
 
     # todo: https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2?rev=89
     # inclusive: https://indico.cern.ch/event/803792/contributions/3346123/attachments/1809416/2954490/Yuta_TauPOG_20190307.pdf
