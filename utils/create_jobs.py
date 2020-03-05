@@ -2,6 +2,8 @@
 
 # Example:
 '''
+TODO:
+    - test oopotion for --single-categories (done almost)
 test:
     N jobs:
         python utils/create_jobs.py \
@@ -40,6 +42,7 @@ test:
     naf system: /usr/lib64/python2.6/site-packages/htcondor.so
 '''
 import os
+import ast
 import struct
 import shutil
 import math
@@ -122,6 +125,13 @@ def parse_arguments():
     parser.add_argument("--mass-susy-ggH", default=['default'], nargs='*', type=int, help="SUSY ggH masspoints")
     parser.add_argument("--mass-susy-qqH", default=['default'], nargs='*', type=int, help="SUSY bbH masspoints")
 
+    #TODO: this option needs a test!
+    parser.add_argument('--single-categories', type=ast.literal_eval, help="Dict of cuts to force. Format: --single-categories=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
+
+    parser.add_argument('--filter-channels-grid', type=ast.literal_eval, help="Dict of cuts to force. Format: --single-categories=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
+    parser.add_argument("--mssm-categories-filtering", default=False, action='store_true', help="dry run")
+    # parser.add_argument('--single-categories', type=str, help="Dict of cuts to force. Format: --single-categories=\"\{'cut_key': 'cut_exp', 'cut_key': 'cut_exp'\}\"")
+
     parser.add_argument('--no-grid-categories', action='store_true', default=None, help='drop categorisation defined by grid_categories config.')
     parser.add_argument('--no-single-categories', action='store_true', default=None, help='drop categorisation defined by single_categories config.')
     parser.add_argument('--use-grid-categories', action='store_true', default=None, help='use categorisation defined by grid_categories config.')
@@ -164,7 +174,7 @@ def convertFromNumber(n):
         return n.to_bytes(math.ceil(n.bit_length() / 8), 'little').decode()
 
 
-def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH):
+def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, single_categories=None):
     # shared across processes
     global dict_of_categ
     global id_counter
@@ -173,15 +183,18 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
     global gargs
     # print('channel: %s, shifts: %s, var: %s, mask_pZetaMissVis: %s, mask_mt_1: %s, mask_btag: %s' % (channel, shift, variables, pZeta, mt_1, btag))
 
-    key = convertToNumberSum([shift, channel, pZeta, mt_1, btag])
-    key2 = convertToNumberSum([shift, channel, process, variables, pZeta, mt_1, btag])
-    key2 = idd
+    if process != 'default':
+        key_in = [shift, channel, pZeta, mt_1, btag]
+
+    else:
+        key_in = [shift, channel, process, pZeta, mt_1, btag]
+    key = convertToNumberSum(key_in)
+
     prt = '\n' + '=' * 20
     # prt += 'channel: %s, shifts: %s, var: %s, mask_pZetaMissVis: %s, mask_mt_1: %s, mask_btag: %s' % (channel, shift, variables, pZeta, mt_1, btag)
-
     if key not in dict_of_categ:
         prt += '\n\t(new init)'
-        if gargs.debug: print("%d: init " % key2)
+        if gargs.debug: print("%d: init " % idd)
         config = copy.deepcopy(config_initial)
         if gargs.year != 'default': config['era'] = gargs.year
         if channel != 'default': config['channels'] = [channel]
@@ -192,6 +205,7 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
         if pZeta != 'default': config['mask_grid_categories']['mask_pZetaMissVis_region'] = [pZeta]
         if mt_1 != 'default': config['mask_grid_categories']['mask_mt_1_region'] = [mt_1]
         if btag != 'default': config['mask_grid_categories']['mask_btag_region'] = [btag]
+        if single_categories is not None: config['single_categories'] = single_categories
 
         if mass_susy_qqH == []:
             config['mass_susy_qqH'] = []
@@ -219,25 +233,15 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
             logger=shapes._logger,
             danger=DANGER.enabled,
         )
-        if gargs.debug: print("%d: evaluateEra " % key2)
+        if gargs.debug: print("%d: evaluateEra " % key)
         shapes.evaluateEra()
-        if gargs.debug: print("%d: importEstimationMethods " % key2)
+        if gargs.debug: print("%d: importEstimationMethods " % key)
         shapes.importEstimationMethods()
-        if gargs.debug: print("%d: evaluateChannels " % key2)
+        if gargs.debug: print("%d: evaluateChannels " % key)
         shapes.evaluateChannels()  # after this
+        shapes.evaluateSystematics()  # gives final number of shapes
         dict_of_categ[key] = shapes.getNShapes()
-        if gargs.debug: print("%d: getNShapes %d(%d)" % (key2, dict_of_categ[key], shapes.getNShapes()))
-
-    if dict_of_categ[key] == 0:
-        if gargs.debug:
-            prt += '\n\t skipping\n' + "=" * 20
-            print(prt)
-        return
-    else:
-        if gargs.debug: print("%d: not skipping " % key2)
-        prt += '\n\t n categ: %d' % dict_of_categ[key]
-
-    # shapes.evaluateSystematics() ; shapes.getNShapes()  # gives final number of shapes
+        if gargs.debug: print("%d: getNShapes %d(%d)" % (key, dict_of_categ[key], shapes.getNShapes()))
 
     cmnd = 'python utils/produce_shapes_mssm.py --log-level info'
     cmnd = ' '.join([cmnd, '--year', gargs.year]) if gargs.year != 'default' else cmnd
@@ -266,6 +270,7 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
     cmnd = ' '.join([cmnd, '--use-grid-categories']) if gargs.use_grid_categories is not None else cmnd
     cmnd = ' '.join([cmnd, '--use-single-categories']) if gargs.use_single_categories is not None else cmnd
 
+    cmnd = ' '.join([cmnd, '--single-categories "%s"' % str(single_categories)]) if single_categories is not None else cmnd
     # Define name of the output file
     name_parts = [
         '_'.join([gargs.year]),
@@ -284,10 +289,16 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
     cmnd = ' '.join([cmnd, '--output-file-name', output_file_name])
 
     prt += '\n\t id%d : %s\n' % (id_counter.value, cmnd) + "=" * 20
-    print(prt)
-    arguments.append(cmnd)
-    # arguments.append(" ".join([str(id_counter.value), cmnd, "\n"]))
-    id_counter.value += 1
+    if dict_of_categ[key] == 0:
+        if gargs.debug:
+            prt = '\n\t skipping: %s \n' % key_in + "=" * 20 + prt
+            print(prt)
+    else:
+        if gargs.debug: print("%d: not skipping " % key)
+        prt = '\n\t n categ: %d' % dict_of_categ[key] + prt
+        print(prt)
+        arguments.append(cmnd)
+        id_counter.value += 1
 
 
 def getPrepareDirectory(args):
@@ -411,10 +422,14 @@ def main(args):
 
         # print shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH
         # continue
+        if args.filter_channels_grid is not None and channel in args.filter_channels_grid \
+            and any(i in args.filter_channels_grid[channel] for i in [pZeta, mt_1, btag]):
+            print 'filter: %s ' % [channel, pZeta, mt_1, btag]
+            continue
         if args.n_threads != 1:
-            results.append(pool.apply_async(prepare_command, args=(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH))) # , callback=callback
+            results.append(pool.apply_async(prepare_command, args=(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories))) # , callback=callback
         else:
-            prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH)
+            prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories)
 
     if args.n_threads != 1:
         for result in results:
