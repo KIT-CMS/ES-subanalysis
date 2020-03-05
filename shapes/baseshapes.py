@@ -560,11 +560,14 @@ class Shapes(object):
             # prompt options overrule per-year definitions in the config
 
             # prompt options overrule per-channel definitions in the config
-            if 'methods_collection_key' in prompt_args.keys():
-                logging.getLogger(__name__).warning('methods_collection_key was used in terminal -> updating all channel-specific values!')
-                for channel in config['channel_specific'].keys():
-                    if 'methods_collection_key' in config['channel_specific'][channel]:
-                        config['channel_specific'][channel].pop('methods_collection_key')
+            options_prompt_overrides_channels = ['methods_collection_key', 'single_categories', 'grid_categories']
+            if any(i in prompt_args.keys() for i in options_prompt_overrides_channels):
+                # pops the corresponding options from channels settings letting it to fall back to updated global ones
+                for option in options_prompt_overrides_channels:
+                    logging.getLogger(__name__).warning('%s was used in terminal -> updating all channel-specific values!' % option)
+                    for channel in config['channel_specific'].keys():
+                        if option in config['channel_specific'][channel]:
+                            config['channel_specific'][channel].pop(option)
 
         if debug:
             print 'config:'
