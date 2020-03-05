@@ -770,7 +770,9 @@ class MSSM(Shapes):
             if 'ZES' in self._shifts and channel_name in ["et", "mt"]:
                 self._logger.info('\n\n ZES reweighting')
 
-                if channel_name == 'mt' or self._fes_et_setup != 2020:
+                if channel_name == 'mt':
+                    lep_fake_es_variations = []  # TEMP -> missing in artus ntuples
+                elif channel_name == 'mt' or self._fes_et_setup != 2020:
                     fakelep_dict = {"et": "Ele", "mt": "Mu"}
                     lep_fake_es_variations = create_systematic_variations("CMS_ZLShape_%s_1prong_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProng" % fakelep_dict[channel_name], DifferentPipeline)
                     lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_%s_1prong1pizero_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProngPiZeros" % fakelep_dict[channel_name], DifferentPipeline)
