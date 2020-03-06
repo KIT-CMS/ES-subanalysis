@@ -1,6 +1,7 @@
 #!/bin/bash
 
 prep_resubmit_silent() {
+    # TODO: add filelock on creation to prevent from prepresub those jobs that aren't checked as not running
     if [[ $# -eq 0 ]] ; then
         arguments=$(pwd)/arguments.txt
     elif [[ $# -eq 1 ]] ; then
@@ -24,14 +25,14 @@ prep_resubmit_silent() {
     if [[ -e ${dirpath}/${name}.${ext} || -L ${dirpath}/${name}.${ext} ]] ; then
         i=0
         while [[ -e ${dirpath}/${i}  || -e ${dirpath}/${name}-${i}.${ext} || -L ${dirpath}/${name}-${i}.${ext} ]] ; do
-            printf "exist..++\\n"
+            # printf "exist..++\\n"
             let i++
         done
         name=${name}-${i}
     fi
     if [[ -e ${dirpath}/${i} || -L ${dirpath}/${i} ]] ; then
         echo "${dirpath}/${i} already exist! Something is wrong - check manually"
-        return 1
+        return
     else
         mkdir ${dirpath}/${i}
     fi
@@ -92,7 +93,6 @@ prep_resubmit_silent() {
     done
     sed -i '/^$/d' ${arguments}  # remove empty lines
     sort -u -o ${arguments} ${arguments}  # sort and remove duplicates if met
-
     # echo "${ERRORED_MYID[@]}"
     # echo "${ERRORRED_COMMANDS[@]}"
     # return
@@ -143,8 +143,9 @@ check_logs() {
     do
         filename="${fullfile##*/}"
         extension="${filename##*.}"
-        condorid="${filename#*.}"
-        condorid="${condorid%.*}"
+        # condorid="${filename#*.}"
+        # condorid="${condorid%.*}"
+        condorid="${filename%.*}"
         jobid="${filename%%.*}"
         if [[ ! $(tail -n 1 $fullfile) == "done"* ]]
         then
