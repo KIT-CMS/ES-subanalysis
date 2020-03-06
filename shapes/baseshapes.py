@@ -560,10 +560,15 @@ class Shapes(object):
             # prompt options overrule per-year definitions in the config
 
             # prompt options overrule per-channel definitions in the config
-            options_prompt_overrides_channels = ['methods_collection_key', 'single_categories', 'grid_categories']
+            options_prompt_overrides_channels = [
+                'methods_collection_key',
+                'single_categories', 'grid_categories',
+                'no_single_categories', 'no_grid_categories',
+                'use_single_categories', 'use_grid_categories',
+            ]
             if any(i in prompt_args.keys() for i in options_prompt_overrides_channels):
                 # pops the corresponding options from channels settings letting it to fall back to updated global ones
-                for option in options_prompt_overrides_channels:
+                for option in Shapes.intersection(prompt_args.keys(), options_prompt_overrides_channels):
                     logging.getLogger(__name__).warning('%s was used in terminal -> updating all channel-specific values!' % option)
                     for channel in config['channel_specific'].keys():
                         if option in config['channel_specific'][channel]:
@@ -1447,10 +1452,29 @@ class Shapes(object):
             # categories specific for the channel
             if channel_name in channel_specific.keys():
                 ch = channel_specific[channel_name]
+
+                assert not('no_grid_categories' in ch and 'use_grid_categories' in ch and cd['no_grid_categories'] and ch['use_grid_categories']), "Contradicting parameters for grid_categories"
+                assert not('no_single_categories' in ch and 'use_single_categories' in ch and cd['no_single_categories'] and ch['use_single_categories']), "Contradicting parameters for single_categories"
+
+                gr_c = ch['grid_categories'] if 'grid_categories' in ch.keys() else {}
+                sg_c = ch['single_categories'] if 'single_categories' in ch.keys() else {}
+
+                if 'no_grid_categories' in ch or 'use_grid_categories' in ch:
+                    if ('no_grid_categories' in ch and ch['no_grid_categories']) or ('use_grid_categories' in ch and ch['use_grid_categories'] is False):
+                        gr_c = {}
+                elif (not self._use_grid_categories and self._use_grid_categories is not None) or self._no_grid_categories:
+                    gr_c = {}
+
+                if 'no_single_categories' in ch or 'use_single_categories' in ch:
+                    if ('no_single_categories' in ch and ch['no_single_categories']) or ('use_single_categories' in ch and ch['use_single_categories'] is False):
+                        sg_c = {}
+                elif (not self._use_single_categories and self._use_single_categories is not None) or self._no_single_categories:
+                    sg_c = {}
+
                 categories += self.getCategorries(
                     channel_holder=channel_holder,
-                    grid_categories=ch['grid_categories'] if 'grid_categories' in ch.keys() else {}, # TODO: 'and use_grid_categories'
-                    single_categories=ch['single_categories'] if 'single_categories' in ch.keys() else {}, # TODO: 'and use_single_categories'
+                    grid_categories=gr_c,  # TODO: 'and use_grid_categories': testing
+                    single_categories=sg_c,  # TODO: 'and use_single_categories': testing
                     channel_specific={},
                 )
 
