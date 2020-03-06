@@ -813,6 +813,10 @@ class MSSM(Shapes):
                             era=self.era
                         )
 
+        if 'nominal' not in self._shifts:
+            self._logger.warning("Nominal shapes will not be produced")
+            self._systematics._systematics = [i for i in self._systematics._systematics if i._variation._name != 'Nominal']
+
     def upplyFesCuts(self, pipeline, depth):
         '''
         Upplying cuts that are only for fes shifts
@@ -830,6 +834,7 @@ class MSSM(Shapes):
             or ('ThreeProngShift' in pipeline and len(MSSM.intersection(shift_systematic.category.cuts.names, ['alldm', 'dm0', 'dm1'])) != 0):
                 self._logger.debug("Removing systematic shift %s from production because of unmatching dm in categorisation" % (shift_systematic.name))
                 self._systematics._systematics.remove(shift_systematic)
+
 
 if __name__ == '__main__':
     args = MSSM.parse_arguments()
