@@ -149,7 +149,7 @@ def parse_arguments():
 def convertToNumberSum(l):
     n = 0
     for i in l:
-        n += convertToNumber(i)
+        n += convertToNumber(str(i))
     return n
 
 
@@ -174,24 +174,44 @@ def convertFromNumber(n):
         return n.to_bytes(math.ceil(n.bit_length() / 8), 'little').decode()
 
 
-def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, single_categories=None):
+def prepare_command(config_initial, idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, single_categories=None):
     # shared across processes
     global dict_of_categ
     global id_counter
     global arguments
-    global config_initial
     global gargs
     # print('channel: %s, shifts: %s, var: %s, mask_pZetaMissVis: %s, mask_mt_1: %s, mask_btag: %s' % (channel, shift, variables, pZeta, mt_1, btag))
 
-    if process != 'default':
-        key_in = [shift, channel, pZeta, mt_1, btag]
+    cat_add = 0
+    for i, k in enumerate(["use_single_categories", "use_grid_categories"]):
+        if k not in config_initial.keys() or config_initial[k] is None:
+            continue
+        else:
+            cat_add += (1 + i * 10) if config_initial[k] else (2 + i * 10) if config_initial[k] else 0
+
+    no_grid_cat = None
+    if ('use_grid_categories' in config_initial and config_initial['use_grid_categories'] is False) or ('no_grid_categories' in config_initial.keys() and config_initial['no_grid_categories'] is True):
+        no_grid_cat = True
+    elif ('no_grid_categories' in config_initial and config_initial['no_grid_categories'] is False) or ('use_grid_categories' in config_initial.keys() and config_initial['use_grid_categories'] is True):
+        no_grid_cat = False
+
+    if process == 'default':
+        if no_grid_cat:
+            key_in = [shift, channel, cat_add]
+        else:
+            key_in = [shift, channel, pZeta, mt_1, btag, cat_add]
 
     else:
-        key_in = [shift, channel, process, pZeta, mt_1, btag]
+        if no_grid_cat:
+            key_in = [shift, channel, process, cat_add]
+        else:
+            key_in = [shift, channel, process, pZeta, mt_1, btag, cat_add]
+
     key = convertToNumberSum(key_in)
 
     prt = '\n' + '=' * 20
     # prt += 'channel: %s, shifts: %s, var: %s, mask_pZetaMissVis: %s, mask_mt_1: %s, mask_btag: %s' % (channel, shift, variables, pZeta, mt_1, btag)
+
     if key not in dict_of_categ:
         prt += '\n\t(new init)'
         if gargs.debug: print("%d: init " % idd)
@@ -218,10 +238,6 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
             config['mass_susy_ggH'] = [mass_susy_ggH]
 
         # print config['mask_grid_categories']['mask_pZetaMissVis_region'] ; exit(1)
-        if gargs.no_grid_categories is not None: config['no_grid_categories'] = True
-        if gargs.no_single_categories is not None: config['no_single_categories'] = True
-        if gargs.use_grid_categories is not None: config['use_grid_categories'] = True
-        if gargs.use_single_categories is not None: config['use_single_categories'] = True
 
         # print config.keys(); exit(1)
         shapes = analysis_shapes_mssm(**config)
@@ -233,15 +249,15 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
             logger=shapes._logger,
             danger=DANGER.enabled,
         )
-        if gargs.debug: print("%d: evaluateEra " % key)
         shapes.evaluateEra()
-        if gargs.debug: print("%d: importEstimationMethods " % key)
         shapes.importEstimationMethods()
-        if gargs.debug: print("%d: evaluateChannels " % key)
         shapes.evaluateChannels()  # after this
         shapes.evaluateSystematics()  # gives final number of shapes
-        dict_of_categ[key] = shapes.getNShapes()
-        if gargs.debug: print("%d: getNShapes %d(%d)" % (key, dict_of_categ[key], shapes.getNShapes()))
+        dict_of_categ[key] = {
+            'n': shapes.getNShapes(),
+            'ncategories': shapes.getNCategories(),
+            'v': [idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, single_categories]
+        }
 
     cmnd = 'python utils/produce_shapes_mssm.py --log-level info'
     cmnd = ' '.join([cmnd, '--year', gargs.year]) if gargs.year != 'default' else cmnd
@@ -265,10 +281,10 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
 
     cmnd = ' '.join([cmnd, '--output-file-dir', gargs.output_file_dir]) if gargs.output_file_dir is not None and gargs.output_file_dir != '' else cmnd
 
-    cmnd = ' '.join([cmnd, '--no-grid-categories']) if gargs.no_grid_categories is not None else cmnd
-    cmnd = ' '.join([cmnd, '--no-single-categories']) if gargs.no_single_categories is not None else cmnd
-    cmnd = ' '.join([cmnd, '--use-grid-categories']) if gargs.use_grid_categories is not None else cmnd
-    cmnd = ' '.join([cmnd, '--use-single-categories']) if gargs.use_single_categories is not None else cmnd
+    cmnd = ' '.join([cmnd, '--no-grid-categories']) if "no_grid_categories" in config_initial.keys() and config_initial["no_grid_categories"] is True else cmnd
+    cmnd = ' '.join([cmnd, '--no-single-categories']) if "no_single_categories" in config_initial.keys() and config_initial["no_single_categories"] is True else cmnd
+    cmnd = ' '.join([cmnd, '--use-grid-categories']) if "use_grid_categories" in config_initial.keys() and config_initial["use_grid_categories"] is True else cmnd
+    cmnd = ' '.join([cmnd, '--use-single-categories']) if "use_single_categories" in config_initial.keys() and config_initial["use_single_categories"] is True else cmnd
 
     cmnd = ' '.join([cmnd, '--single-categories "%s"' % str(single_categories)]) if single_categories is not None else cmnd
     # Define name of the output file
@@ -278,6 +294,7 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
         '_'.join([shift]),
         # '_'.join([process]),
     ]
+    name_parts.append('_'.join(["categ_param", str(cat_add)]))
     if process != 'default': name_parts.append('_'.join(['processes', process]))
     if variables != 'default': name_parts.append('_'.join(['variables_names', variables]))
     if pZeta != 'default': name_parts.append('_'.join(['mask_pZetaMissVis_region', pZeta]))
@@ -288,14 +305,14 @@ def prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, 
 
     cmnd = ' '.join([cmnd, '--output-file-name', output_file_name])
 
-    prt += '\n\t id%d : %s\n' % (id_counter.value, cmnd) + "=" * 20
-    if dict_of_categ[key] == 0:
+    prt += '\n\t id%d : %s\n' % (id_counter.value, cmnd) + "-" * 20
+    if dict_of_categ[key]['n'] == 0:
         if gargs.debug:
-            prt = '\n\t skipping: %s \n' % key_in + "=" * 20 + prt
+            prt = '\n\t (skipping) n shapes: %d ; n categories: %d' % (dict_of_categ[key]['n'], dict_of_categ[key]['ncategories']) + prt
+            prt = prt.replace(' python ', ' SKIPPING python ')
             print(prt)
     else:
-        if gargs.debug: print("%d: not skipping " % key)
-        prt = '\n\t n categ: %d' % dict_of_categ[key] + prt
+        prt = '\n\t n shapes: %d ; n categories: %d' % (dict_of_categ[key]['n'], dict_of_categ[key]['ncategories']) + prt
         print(prt)
         arguments.append(cmnd)
         id_counter.value += 1
@@ -374,6 +391,8 @@ def main(args):
     global arguments
     global config_initial
     global gargs
+    global skip_per_channel_record
+    skip_per_channel_record = {}
     gargs = args
     # shared modified
     manager = Manager()
@@ -403,6 +422,14 @@ def main(args):
     if args.use_single_categories is not None:
         config_initial['use_single_categories'] = args.use_single_categories
 
+    if args.no_grid_categories is not None and args.grid_categories is not None and args.no_grid_categories and args.grid_categories:
+        raise Exception("Contradicting parameters (grid_categories)")
+
+    if args.no_single_categories is not None and args.single_categories is not None and args.no_single_categories and args.single_categories:
+        raise Exception("Contradicting parameters (single_categories)")
+
+    separate_singles_and_grid = True if args.use_single_categories and args.use_grid_categories else  False
+
     pool = Pool(processes=args.n_threads)
     if args.mass_susy_qqH == []:
         args.mass_susy_qqH = [[]]
@@ -424,12 +451,42 @@ def main(args):
         # continue
         if args.filter_channels_grid is not None and channel in args.filter_channels_grid \
             and any(i in args.filter_channels_grid[channel] for i in [pZeta, mt_1, btag]):
-            print 'filter: %s ' % [channel, pZeta, mt_1, btag]
             continue
-        if args.n_threads != 1:
-            results.append(pool.apply_async(prepare_command, args=(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories))) # , callback=callback
+
+        if separate_singles_and_grid:
+
+            # for drid categ
+            config_initial_grid_categ = copy.deepcopy(config_initial)
+            config_initial_grid_categ['no_single_categories'] = True
+            config_initial_grid_categ['use_single_categories'] = False
+
+            if args.n_threads != 1:
+                results.append(pool.apply_async(prepare_command, args=(copy.deepcopy(config_initial_grid_categ), idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories))) # , callback=callback
+            else:
+                prepare_command(copy.deepcopy(config_initial_grid_categ), idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories)
+
+            # for singles
+            config_initial_single_categ = copy.deepcopy(config_initial)
+            config_initial_single_categ['no_grid_categories'] = True
+            config_initial_single_categ['use_grid_categories'] = False
+
+            key_in = [shift, channel, process, variables, mass_susy_qqH, mass_susy_ggH]
+            key = convertToNumberSum(key_in)
+            if key not in skip_per_channel_record.keys():
+                skip_per_channel_record[key] = [shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH]
+                if args.n_threads != 1:
+                    results.append(pool.apply_async(prepare_command, args=(copy.deepcopy(config_initial_single_categ), idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories))) # , callback=callback
+                else:
+                    prepare_command(copy.deepcopy(config_initial_single_categ), idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories)
+            else:
+                pass
+                # if args.debug: print 'Skipping for --use-single-categories %s because added %s' % ([shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH], skip_per_channel_record[key])
+
         else:
-            prepare_command(idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories)
+            if args.n_threads != 1:
+                results.append(pool.apply_async(prepare_command, args=(copy.deepcopy(config_initial), idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories))) # , callback=callback
+            else:
+                prepare_command(copy.deepcopy(config_initial), idd, shift, channel, process, variables, pZeta, mt_1, btag, mass_susy_qqH, mass_susy_ggH, args.single_categories)
 
     if args.n_threads != 1:
         for result in results:
