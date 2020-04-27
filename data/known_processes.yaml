@@ -1,14 +1,25 @@
-tes_sys_processes: ["ZTT", "TTT", "TTL", "VVT", "EWKT", "VVL", "EMB", "DYJetsToLL",
+tes_sys_processes: ["ZTT", 'ZL',
+                    "TTT", "TTL",
+                    "VVT", "VVL",
+                    "EWKT", "EMB", "DYJetsToLL",
                     "jetFakes", "jetFakesEMB",
+                    "jetFakesLT", "jetFakesTT",
                     QCDSStoOS, QCDSStoOSEMB, QCDEMB,
                     W
                   ]
+tauid_sys_processes: [
+  EMB, VVL, TTL,
+  ZTT, VVT, TTT,
+]
 # tes_shifts_sys_processes: ['ZTT', "EWKT"]
 fes_sys_processes: ['ZL', 'DYJetsToLL']
 emb_sys_processes: ['EMB']
 zpt_sys_processes: ['ZTT', 'ZL', 'ZJ']
 # zttptt_sys_processes: ['EMB']  #['bg?']  # ['ZTTpTTTauTauUp', 'ZTTpTTTauTauDown'] #?
-qcdem_sys_processes: ['QCD', 'QCDSStoOS', 'QCDSStoOSEMB', 'QCDEMB']
+qcdem_sys_processes: [
+'QCD', 'QCDEMB',
+'QCDSStoOS', 'QCDSStoOSEMB',
+'QCDSStoOSEM', 'QCDSStoOSEMEMB'] # obsolete -> matching to QCD is used
 # trg_sys_processes : ["ZTT", "TTT", "TTL", "VVT", "VVL", "jetFakes", "EMB"]
 met_sys_processes: ["TTL", "VVL"]
 ees_sys_processes: ["EMB", 'ZTT', 'ZL', 'ZJ', 'TTT', 'TTL', 'TTJ', 'VVT', 'VVL', 'VVJ', 'W'] # should also be data?
@@ -19,9 +30,9 @@ jet_to_tau_fake_sys_processes: ['ZJ', 'TTJ', 'VVJ', 'W']
 # DECORRELATION
 # //// per ERA
 # // MC uncorrelated uncertainty
-tes_sys_processes_mc_uncor: ["ZTT", "TTT", "TTL", "VVT", "VVL", "EWKT", "DYJetsToLL", "jetFakes", "jetFakesEMB"]
+tes_sys_processes_mc_uncor: ["ZTT", "TTT", "TTL", "VVT", "VVL", "EWKT", "DYJetsToLL", "jetFakes", "jetFakesEMB", "jetFakesLT", "jetFakesTT",]
 # // Embedded uncorrelated uncertainty
-tes_sys_processes_mc_uncor: ["EMB", "jetFakes", "jetFakes", "jetFakesEMB"]
+tes_sys_processes_mc_uncor: ["EMB", "jetFakes", "jetFakes", "jetFakesEMB", "jetFakesLT", "jetFakesTT",]
 # // MC + embedded correlated uncertainty
 
 _complexEstimationMethods: [
@@ -116,7 +127,17 @@ _known_processes:
   VVL                     : VVLEstimation
   VVJ                     : VVJEstimation
 
+  # Higgs backgrounds
+  ggHWW125                : ggHWWEstimation
+  qqHWW125                : qqHWWEstimation
+  WHWW125                 : WHWWEstimation
+  ZHWW125                 : ZHWWEstimation
+
   # SM Signals
+  VH125                   : VHEstimation
+  WH125                   : WHEstimation
+  ZH125                   : ZHEstimation
+  ttH125                  : ttHEstimation
   ggH125                  : ggHEstimation
   qqH125                  : qqHEstimation
   ggH_0J125               : ggHEstimation_0J
@@ -136,7 +157,7 @@ _known_processes:
   qqH_VH2JET125           : qqHEstimation_VH2JET
   qqH_PTJET1_GT200125     : qqHEstimation_PTJET1_GT200
 
-
+  # MSSM Signals
   SUSYggH                 : SUSYggHEstimation
   SUSYggH_i               : SUSYggHEstimation
   SUSYggA_i               : SUSYggHEstimation
