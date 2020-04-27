@@ -94,6 +94,7 @@ class Shapes(object):
                  channels=None,
                  debug=None,
                  dry=None,
+                 no_higgs=None,
                  danger=False,
                  era=None,
                  et_friend_directory=None,
@@ -131,6 +132,7 @@ class Shapes(object):
                  etau_es_shifts=None,
                  mtau_es_shifts=None,
                  shifts=None,
+                 skip_shifts=None,
                  grid_categories={},
                  parser_grid_categories={},
                  mask_grid_categories={},
@@ -150,7 +152,7 @@ class Shapes(object):
             try:
                 self._directory = directory[era]
             except:
-                self._logger('directory is a dict but era "%s" is not a key:' % era)
+                self._logger('ntuples: directory is a dict but era "%s" is not a key:' % era)
                 pp.pprint(directory)
                 raise Exception
         else:
@@ -162,7 +164,7 @@ class Shapes(object):
             try:
                 self._etau_es_shifts = etau_es_shifts[era]
             except:
-                self._logger('etau_es_shifts is a dict but era "%s" is not a key:' % era)
+                self._logger('FES shifts: etau_es_shifts is a dict but era "%s" is not a key:' % era)
                 pp.pprint(etau_es_shifts)
                 raise Exception
         else:
@@ -187,6 +189,7 @@ class Shapes(object):
         self._channels_key = channels
         self._debug = debug
         self._dry = dry
+        self._no_higgs = no_higgs
         self._danger = danger
         self._era_name = era
 
@@ -225,6 +228,13 @@ class Shapes(object):
                 self._mass_susy_qqH = self._mass_susy_qqH['default']
             else:
                 raise Exception('Couldn\'t initialize the self._mass_susy_qqH')
+        if isinstance(self._mass_susy_ggH, dict):
+            if era in self._mass_susy_ggH:
+                self._mass_susy_ggH = self._mass_susy_ggH[era]
+            elif 'default' in self._mass_susy_ggH:
+                self._mass_susy_ggH = self._mass_susy_ggH['default']
+            else:
+                raise Exception('Couldn\'t initialize the self._mass_susy_ggH')
 
         self._generator_qqH = kwargs['generator_qqH'] if 'generator_qqH' in kwargs.keys() else None
         if isinstance(self._generator_qqH, list):
@@ -264,7 +274,7 @@ class Shapes(object):
                 try:
                     setattr(self, k, [os.path.expandvars(i) for i in v[era]])
                 except:
-                    self._logger('%s is a dict but era "%s" is not a key:' % (k, era))
+                    self._logger.critical('%s is a dict but era "%s" is not a key:' % (k, era))
                     pp.pprint(v)
                     raise Exception
             else:
@@ -379,7 +389,7 @@ class Shapes(object):
             'tes_sys_processes', 'fes_sys_processes', 'emb_sys_processes',
             'zpt_sys_processes', 'qcdem_sys_processes', 'met_sys_processes',
             'ees_sys_processes', 'zl_sys_processes', 'z_recoil_sys_processes',
-            'tpt_sys_processes', 'jet_to_tau_fake_sys_processes',
+            'tpt_sys_processes', 'jet_to_tau_fake_sys_processes', 'tauid_sys_processes',
         ]
         for sys_process in sys_processes:
             setattr(
@@ -388,6 +398,11 @@ class Shapes(object):
                 kwargs[sys_process] if sys_process in kwargs.keys() else None)
 
         self._shifts = shifts
+        self._skip_shifts = skip_shifts
+        if self._skip_shifts is not None and self._shifts is not None:
+            self._logger.warning('shifts are remooved on request: %s' % self._skip_shifts)
+            for remove_shift in self._skip_shifts:
+                self._shifts.remove(remove_shift)
 
         # set the grid categories
         if (not self._no_grid_categories and self._no_grid_categories is not None) or self._use_grid_categories:
@@ -601,9 +616,10 @@ class Shapes(object):
         parser.add_argument("--era", "--year", type=str, help="Experiment era.")
         parser.add_argument("--gof-variable", type=str, help="Variable for goodness of fit shapes.")
         parser.add_argument("--gof-channel", type=str, help="Channel for goodness of fit shapes.")
-        parser.add_argument("--et-friend-directory", type=str, help="Directory containing a friend tree for et.")
-        parser.add_argument("--mt-friend-directory", type=str, help="Directory containing a friend tree for mt.")
-        parser.add_argument("--tt-friend-directory", type=str, help="Directory containing a friend tree for tt.")
+        parser.add_argument("--et-friend-directory", nargs='*', type=str, help="Directory containing a friend tree for et.")
+        parser.add_argument("--mt-friend-directory", nargs='*', type=str, help="Directory containing a friend tree for mt.")
+        parser.add_argument("--tt-friend-directory", nargs='*', type=str, help="Directory containing a friend tree for tt.")
+        parser.add_argument("--em-friend-directory", nargs='*', type=str, help="Directory containing a friend tree for em.")
         parser.add_argument("--fake-factor-friend-directory", type=str, help="Directory containing friend trees to data files with FF.")
         parser.add_argument("--fes-friend-directory", type=str, help="Fes shifts.")
         parser.add_argument("--extra-chain", type=str, help="Extra pipelines")
@@ -638,6 +654,7 @@ class Shapes(object):
         # parser.add_argument("--emb-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
 
         parser.add_argument("--shifts", nargs='+', type=str, help="Pipelines, uncertainties variations, shifts : processed is the intersection of this list with list from _known_estimation_methods")
+        parser.add_argument("--skip-shifts", nargs='+', type=str, help="Pipelines, uncertainties variations, shifts : processed is the intersection of this list with list from _known_estimation_methods")
         parser.add_argument("--binning-key", type=str, help="Used only to pick the binning! example: gof, control")
         parser.add_argument("--log-level", type=str, help="Log level")
         parser.add_argument("--mass-susy-ggH", default=None, nargs='*', type=int, help="SUSY ggH masspoints")
@@ -755,6 +772,7 @@ class Shapes(object):
 
         # Arguments with defaults that can NOT be changed in the config file
         parser.add_argument('--dry', action='store_true', default=False, help='dry run')
+        parser.add_argument('--no-higgs', action='store_true', default=False, help='no higgs samples')
         parser.add_argument('--danger', action='store_true', default=False, help='danger level, to raise on root errors')
 
         parser.add_argument('--debug', action='store_true', default=False, help='cherry-debug')
@@ -1174,7 +1192,7 @@ class Shapes(object):
 
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**ZTTpTTTauTau_parameters_list))
 
-            elif estimation_method in ['SUSYggHEstimation', 'SUSYbbHEstimation']:
+            elif estimation_method in ['SUSYggHEstimation', 'SUSYbbHEstimation'] and not self._no_higgs:
                 if key == "SUSYggH":
                     subkey_names = []
                     contributions = [
@@ -1233,7 +1251,15 @@ class Shapes(object):
 
                     processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
+            elif estimation_method in ['ggHEstimation', 'qqHEstimation'] and not self._no_higgs:
+                HEstimation_parameters_list = copy.deepcopy(parameters_list)
+                HEstimation_parameters_list['name'] = 'ggH125' if 'ggH' in estimation_method else 'qqH125'
+                processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**HEstimation_parameters_list))
+
             else:
+                if self._no_higgs and 'H' in key:
+                    self._logger.warning("Higgs process ignored on request: %s" % key)
+                    continue
                 # if key == 'ZL': print '-->getProcesses::', key, parameters_list
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
 

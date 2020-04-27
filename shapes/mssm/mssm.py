@@ -1,5 +1,6 @@
 import sys
 import importlib
+import itertools
 import logging
 from collections import OrderedDict
 
@@ -120,6 +121,7 @@ class MSSM(Shapes):
             channel_holder._categorries = self.getCategorries(
                 channel_holder=channel_holder
             )
+            # import pdb; pdb.set_trace()
 
             self._logger.info('...getChannelSystematics')
             channel_holder._systematics = self.getChannelSystematics(
@@ -216,6 +218,22 @@ class MSSM(Shapes):
             # signals (as for MSSM)
             signal_processes = set([key for key in channel_holder._processes.keys() if 'SUSY' in channel_holder._processes[key].name])
 
+            sm_vh_processes = set([key for key in channel_holder._processes.keys() if any(p in key for p in ["WH125", "ZH125", "VH125", "ttH125"])])
+
+            sm_gghww_processes = set([key for key in channel_holder._processes.keys() if any(p in key for p in ["ggHWW125"])])
+            sm_qqhww_processes = set([key for key in channel_holder._processes.keys() if any(p in key for p in ["qqHWW125"])])
+            sm_vvhww_processes = set([key for key in channel_holder._processes.keys() if any(p in key for p in ['WHWW125', 'ZHWW125'])])
+            sm_hww_processes = sm_gghww_processes | sm_qqhww_processes | sm_vvhww_processes
+
+            sm_ggh_processes = set([key for key in channel_holder._processes.keys() if any(p in key and 'SUSY' not in key for p in ["ggH125"])])
+            # print "sm_ggh_processes:", sm_ggh_processes
+            sm_qqh_processes = set([key for key in channel_holder._processes.keys() if any(p in key and 'SUSY' not in key for p in ["qqH125"])])
+            # print "sm_qqh_processes:", sm_qqh_processes
+            sm_h_processes = sm_qqh_processes | sm_ggh_processes
+
+            sm_h_processes = sm_vh_processes | sm_hww_processes | sm_h_processes
+            # sm_htt_signals_nicks = [ggH_htxs for ggH_htxs in ggHEstimation.htxs_dict] + [qqH_htxs for qqH_htxs in qqHEstimation.htxs_dict]
+
             # sm_ggH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["ggH125", "ggH_GG2H", "ggHToWW"])]
             # sm_qqH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["qqH125", "qqH_GG2H", "qqHToWW"])]
             # sm_VH_processes = [key for key in channel_holder._processes.keys() if any(x in key for x in ["WH125", "ZH125", "ttH125"])]
@@ -250,7 +268,7 @@ class MSSM(Shapes):
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
                     proc_intersection = set(self._tes_sys_processes) & set(channel_holder._processes.keys())
                     self._logger.debug('\n\nTES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                    for process_nick in signal_processes | proc_intersection:
+                    for process_nick in signal_processes | sm_h_processes | proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
@@ -282,6 +300,51 @@ class MSSM(Shapes):
                 #                 channel=channel_holder._channel_obj,
                 #                 era=self.era
                 #             )
+
+            # Tau ID: TODO: NOT DEBUGED
+            if 'TauID' in self._shifts and channel_name in ['mt', 'et', 'tt']:
+                self._logger.info('\n\nTauID...')
+                tau_id_variations = []
+                tau_id_variations_emb = []
+                if channel_name == 'tt':
+                    for idd, (shift, dm) in enumerate(itertools.product(['Up', 'Down'], [0, 1, 10])):
+                        weightstr = "(((decayMode_1=={dm})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_1)+((decayMode_1!={dm})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_1)*((decayMode_2=={dm})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_2)+((decayMode_2!={dm})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_2))".format(dm=dm, shift=shift)
+                        tau_id_variations.append(ReplaceWeight("CMS_eff_t_dm%d_Run%s" % (dm, channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
+                        tau_id_variations_emb.append(ReplaceWeight("CMS_emb_eff_t_dm%d_Run%s" % (dm, channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
+                else:
+                    pt_ranges = [30, 35, 40, 500, 1000, "inf"]
+                    pt_bins = [((i), (i + 1)) for i in range(len(pt_ranges) - 1)]
+                    for idd, (shift, (bin_low, bin_high)) in enumerate(itertools.product(['Up', 'Down'], pt_bins)):
+                        weightstr = "(((pt_2 >= {bin_low} && pt_2 <= {bin_high})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_2)+((pt_2 < {bin_low} || pt_2 > {bin_high})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_2))".format(
+                            bin_low=bin_low,
+                            bin_high=bin_high,
+                            shift=shift).replace(' && pt_2 <= inf', '').replace(' || pt_2 > inf', '')
+                        # todo bin_low, bin_high -> pt_ranges[bin_low], pt_ranges[bin_high]
+                        tau_id_variations.append(ReplaceWeight("CMS_eff_t_%s-%s_Run%s" % (pt_ranges[bin_low], pt_ranges[bin_high], channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
+                        tau_id_variations_emb.append(ReplaceWeight("CMS_eff_emb_t_%s-%s_Run%s" % (pt_ranges[bin_low], pt_ranges[bin_high], channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
+                        # tau_id_variations.append(ReplaceWeight("CMS_eff_t_%d-%d_Run%s" % (bin_low, bin_high, channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
+                        # tau_id_variations_emb.append(ReplaceWeight("CMS_eff_emb_t_%d-%d_Run%s" % (bin_low, bin_high, channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
+
+                if 'EMB' in channel_holder._processes.keys():
+                    self._logger.debug('\n\nTauID::variation name: %s\nintersection self._tauid_sys_processes: [EMB]' % (variation.name))
+                    for variation in tau_id_variations_emb:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes['EMB'],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+                for variation in tau_id_variations:
+                    proc_intersection = set(self._tauid_sys_processes) & set(channel_holder._processes.keys())
+                    self._logger.debug('\n\nTauID::variation name: %s\nintersection self._tauid_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in signal_processes | sm_h_processes | proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
 
             # EMB charged track correction uncertainty (DM-dependent): Ele energy scale : not applied to signals
             if 'EMB' in self._shifts and channel_name in ['mt', 'et', 'tt']:
@@ -349,7 +412,8 @@ class MSSM(Shapes):
                 for updownvar in ['Up', 'Down']:
                     prefiring_variations.append(
                         ReplaceWeight(
-                            "CMS_prefiring_Run%s" % channel_holder._year,
+                            # "CMS_prefiring_Run%s" % channel_holder._year,
+                            "CMS_prefiring",
                             "prefireWeight",
                             Weight(
                                 "prefiringweight%s" % updownvar.lower(),
@@ -417,23 +481,23 @@ class MSSM(Shapes):
 
                 if channel_name in ['mt', 'et']:
                     for systematic_shift in [
-                            "ff_qcd{ch}_syst{runyear}{shift}",
-                            "ff_qcd_dm0_njet0{ch}_stat{runyear}{shift}",
-                            "ff_qcd_dm0_njet1{ch}_stat{runyear}{shift}",
-                            "ff_w_syst{runyear}{shift}",
-                            "ff_w_dm0_njet0{ch}_stat{runyear}{shift}",
-                            "ff_w_dm0_njet1{ch}_stat{runyear}{shift}",
-                            "ff_tt_syst{runyear}{shift}",
-                            "ff_tt_dm0_njet0_stat{runyear}{shift}",
-                            "ff_tt_dm0_njet1_stat{runyear}{shift}",
+                            "ff_qcd_syst{ch}{runyear}{shift}",
+                            "ff_qcd_dm0_njet0_stat{ch}{runyear}{shift}",
+                            "ff_qcd_dm0_njet1_stat{ch}{runyear}{shift}",
+                            "ff_w_syst{ch}{runyear}{shift}",
+                            "ff_w_dm0_njet0_stat{ch}{runyear}{shift}",
+                            "ff_w_dm0_njet1_stat{ch}{runyear}{shift}",
+                            "ff_tt_syst{ch}{runyear}{shift}",
+                            "ff_tt_dm0_njet0_stat{ch}{runyear}{shift}",
+                            "ff_tt_dm0_njet1_stat{ch}{runyear}{shift}",
                     ]:
                         for shift_direction in ["Up", "Down"]:
                             fake_factor_variations.append(
                                 ReplaceWeight(
                                     "CMS_%s" % (systematic_shift.format(
-                                        ch="",
+                                        ch='_' + channel_name,
                                         shift="",
-                                        runyear='').replace("_dm0", "")),
+                                        runyear="_%s" % channel_holder._year).replace("_dm0", "")),
                                     "fake_factor",
                                     Weight(
                                         "ff2_{syst}".format(
@@ -445,11 +509,13 @@ class MSSM(Shapes):
                                     shift_direction))
 
                 elif channel_name == 'tt':
+                    # todo: rename
                     for systematic_shift in [
                             "ff_qcd{ch}_syst{runyear}{shift}",
                             "ff_qcd_dm0_njet0{ch}_stat{runyear}{shift}",
                             "ff_qcd_dm0_njet1{ch}_stat{runyear}{shift}",
-                            "ff_w{ch}_syst{runyear}{shift}", "ff_tt{ch}_syst{runyear}{shift}",
+                            "ff_w{ch}_syst{runyear}{shift}",
+                            "ff_tt{ch}_syst{runyear}{shift}",
                             "ff_w_frac{ch}_syst{runyear}{shift}",
                             "ff_tt_frac{ch}_syst{runyear}{shift}"
                     ]:
@@ -459,7 +525,7 @@ class MSSM(Shapes):
                                     "CMS_%s" % (systematic_shift.format(
                                         ch='_' + channel_name,
                                         shift="",
-                                        runyear='').replace("_dm0", "")),
+                                        runyear="_%s" % channel_holder._year).replace("_dm0", "")),
                                     "fake_factor",
                                     Weight(
                                         "(0.5*ff1_{syst}*(byTightIsolationMVArun2017v2DBoldDMwLT2017_1<0.5)+0.5*ff2_{syst}*(byTightIsolationMVArun2017v2DBoldDMwLT2017_2<0.5))".format(
@@ -484,25 +550,25 @@ class MSSM(Shapes):
                 for shift in ['Up', 'Down']:
                     if self._qcdem_setup == 2020:
                         # rate
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight" % shift, "qcd_weight"), shift))
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_rate%s_Weight" % shift, "qcd_weight"), shift))
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_rate%s_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight" % shift.lower(), "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_rate%s_Weight" % shift.lower(), "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_rate%s_Weight" % shift.lower(), "qcd_weight"), shift))
 
                         # shape
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight" % shift, "qcd_weight"), shift))
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight" % shift, "qcd_weight"), shift))
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_shape%s_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight" % shift.lower(), "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight" % shift.lower(), "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_shape%s_Weight" % shift.lower(), "qcd_weight"), shift))
 
                     else:
                         # rate
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift.lower(), "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift.lower(), "qcd_weight"), shift))
+                        # qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_rate_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_rate%s_Weight*em_qcd_extrap_uncert_Weight" % shift.lower(), "qcd_weight"), shift))
 
                         # shape
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
-                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift, "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_0jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_0jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift.lower(), "qcd_weight"), shift))
+                        qcd_variations.append(ReplaceWeight("CMS_htt_qcd_1jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_1jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift.lower(), "qcd_weight"), shift))
+                        # qcd_variations.append(ReplaceWeight("CMS_htt_qcd_2jet_shape_Run{year}".format(year=channel_holder._year), "qcd_weight", Weight("em_qcd_osss_2jet_shape%s_Weight*em_qcd_extrap_uncert_Weight" % shift.lower(), "qcd_weight"), shift))
 
                 for year_correlation in ['', '_Run{year}'.format(year=channel_holder._year)]:
                     if self._qcdem_setup == 2020:
@@ -513,7 +579,8 @@ class MSSM(Shapes):
                         qcd_variations.append(ReplaceWeight("CMS_htt_qcd_iso%s" % year_correlation, "qcd_weight", Weight("em_qcd_osss_binned_Weight", "qcd_weight"), "Down"))
 
                 for variation in qcd_variations:
-                    proc_intersection = MSSM.intersection(self._qcdem_sys_processes, channel_holder._processes.keys())
+                    # proc_intersection = MSSM.intersection(self._qcdem_sys_processes, channel_holder._processes.keys())
+                    proc_intersection = [pr for pr in channel_holder._processes.keys() if 'QCD' in pr]
                     self._logger.debug('\n QCDem::variation name: %s\nintersection self._qcdem_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in proc_intersection:
                         self._systematics.add_systematic_variation(
@@ -554,7 +621,7 @@ class MSSM(Shapes):
                     # ggh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("(1.0/{})".format(unc), "{}_weight".format(unc)), "Down"))
                     ggh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("(2.0-{})".format(unc), "{}_weight".format(unc)), "Down"))
 
-                for process_nick, variation in product(sm_ggH_processes, ggh_variations):  # if "ggH" in nick and "HWW" not in nick
+                for process_nick, variation in product(sm_ggh_processes, ggh_variations):  # if "ggH" in nick and "HWW" not in nick
                     self._systematics.add_systematic_variation(
                         variation=variation,
                         process=channel_holder._processes[process_nick],
@@ -573,7 +640,7 @@ class MSSM(Shapes):
                     qqh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("({})".format(unc), "{}_weight".format(unc)), "Up"))
                     qqh_variations.append(AddWeight(unc, "{}_weight".format(unc), Weight("(2.0-{})".format(unc), "{}_weight".format(unc)), "Down"))
 
-                for process_nick, variation in product(sm_ggH_processes, ggh_variations):  # if "qqH" in nick and "qqHWW" not in nick
+                for process_nick, variation in product(sm_qqh_processes, qqh_variations):  # if "qqH" in nick and "qqHWW" not in nick
                     self._systematics.add_systematic_variation(
                         variation=variation,
                         process=channel_holder._processes[process_nick],
@@ -674,19 +741,46 @@ class MSSM(Shapes):
                             era=self.era
                         )
 
-            # Splitted JES shapes: todo
+            # Splitted JES shapes
             if 'JES' in self._shifts:
                 self._logger.info('\n\n JES reweighting')
-                jet_es_variations = create_systematic_variations(name="CMS_scale_j_eta0to3_Run2017", property_name="jecUncEta0to3", systematic_variation=DifferentPipeline)
-                jet_es_variations += create_systematic_variations(name="CMS_scale_j_eta0to5_Run2017", property_name="jecUncEta0to5", systematic_variation=DifferentPipeline)
-                jet_es_variations += create_systematic_variations(name="CMS_scale_j_eta3to5_Run2017", property_name="jecUncEta3to5", systematic_variation=DifferentPipeline)
-                jet_es_variations += create_systematic_variations(name="CMS_scale_j_RelativeBal_Run2017", property_name="jecUncRelativeBal", systematic_variation=DifferentPipeline)
-                jet_es_variations += create_systematic_variations(name="CMS_scale_j_RelativeSample_Run2017", property_name="jecUncRelativeSample", systematic_variation=DifferentPipeline)
+                # jet_es_variations = create_systematic_variations(name="CMS_scale_j_eta0to3_Run%s" % channel_holder._year, property_name="jecUncEta0to3", systematic_variation=DifferentPipeline)
+                # jet_es_variations += create_systematic_variations(name="CMS_scale_j_eta0to5_Run%s" % channel_holder._year, property_name="jecUncEta0to5", systematic_variation=DifferentPipeline)
+                # jet_es_variations += create_systematic_variations(name="CMS_scale_j_eta3to5_Run%s" % channel_holder._year, property_name="jecUncEta3to5", systematic_variation=DifferentPipeline)
+                # jet_es_variations += create_systematic_variations(name="CMS_scale_j_RelativeBal_Run%s" % channel_holder._year, property_name="jecUncRelativeBal", systematic_variation=DifferentPipeline)
+                # jet_es_variations += create_systematic_variations(name="CMS_scale_j_RelativeSample_Run%s" % channel_holder._year, property_name="jecUncRelativeSample", systematic_variation=DifferentPipeline)
+
+                jet_es_variations = create_systematic_variations(name="CMS_scale_j_Absolute", property_name="jecUncAbsolute", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_Absolute_Run%s" % channel_holder._year, property_name="jecUncAbsoluteYear", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_BBEC1", property_name="jecUncBBEC1", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_BBEC1_Run%s" % channel_holder._year, property_name="jecUncBBEC1Year", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_EC2", property_name="jecUncEC2", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_EC2_Run%s" % channel_holder._year, property_name="jecUncEC2Year", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_FlavorQCD", property_name="jecUncFlavorQCD", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_HF", property_name="jecUncHF", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_HF_Run%s" % channel_holder._year, property_name="jecUncHFYear", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_RelativeBal", property_name="jecUncRelativeBal", systematic_variation=DifferentPipeline)
+                jet_es_variations += create_systematic_variations(name="CMS_scale_j_RelativeSample_Run%s" % channel_holder._year, property_name="jecUncRelativeSampleYear", systematic_variation=DifferentPipeline)
+
+                # jet_es_variations += create_systematic_variations(name="CMS_res_j_%s" % channel_holder._year, property_name="jerUnc", systematic_variation=DifferentPipeline)
 
                 for variation in jet_es_variations:
                     # TODO: + signal_nicks:; keep a list of affected shapes in a separate config file
                     # proc_intersection = set(self._jes_sys_processes) & set(channel_holder._processes.keys())
                     # self._logger.debug('\n\n JES::variation name: %s\nintersection self._tes_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in mc_processes:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+            if 'JER' in self._shifts:
+                self._logger.info('\n\n JER reweighting')
+
+                jet_es_variations = create_systematic_variations(name="CMS_res_j_%s" % channel_holder._year, property_name="jerUnc", systematic_variation=DifferentPipeline)
+
+                for variation in jet_es_variations:
                     for process_nick in mc_processes:
                         self._systematics.add_systematic_variation(
                             variation=variation,
@@ -770,9 +864,7 @@ class MSSM(Shapes):
             if 'ZES' in self._shifts and channel_name in ["et", "mt"]:
                 self._logger.info('\n\n ZES reweighting')
 
-                if channel_name == 'mt':
-                    lep_fake_es_variations = []  # TEMP -> missing in artus ntuples
-                elif channel_name == 'mt' or self._fes_et_setup != 2020:
+                if channel_name == 'mt' or self._fes_et_setup != 2020:
                     fakelep_dict = {"et": "Ele", "mt": "Mu"}
                     lep_fake_es_variations = create_systematic_variations("CMS_ZLShape_%s_1prong_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProng" % fakelep_dict[channel_name], DifferentPipeline)
                     lep_fake_es_variations += create_systematic_variations("CMS_ZLShape_%s_1prong1pizero_Run%s" % (channel_name, channel_holder._year), "tau%sFakeEsOneProngPiZeros" % fakelep_dict[channel_name], DifferentPipeline)
@@ -805,7 +897,7 @@ class MSSM(Shapes):
                 proc_intersection = set(self._z_recoil_sys_processes) & set(channel_holder._processes.keys())
                 for variation in recoil_variations:
                     self._logger.debug('\n\n Recoil::variation name: %s\nintersection self._z_recoil_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
-                    for process_nick in signal_processes | proc_intersection:
+                    for process_nick in signal_processes | sm_h_processes | proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
                             process=channel_holder._processes[process_nick],
@@ -815,6 +907,7 @@ class MSSM(Shapes):
 
         if 'nominal' not in self._shifts:
             self._logger.warning("Nominal shapes will not be produced")
+            # import pdb; pdb.set_trace() # !import code; code.interact(local=vars())
             self._systematics._systematics = [i for i in self._systematics._systematics if i._variation._name != 'Nominal']
 
     def upplyFesCuts(self, pipeline, depth):
