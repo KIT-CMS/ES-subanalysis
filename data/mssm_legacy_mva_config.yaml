@@ -14,7 +14,9 @@ binning_key: control
 era: '2017'
 tag: mssm
 context_analysis: mssmMVA
+# methods_collection_key: Legacy_MSSM_with_QCDSStoOS
 methods_collection_key: Legacy_MSSM_with_FFLT # Legacy_MSSM_with_QCDSStoOS
+
 
 output_file: Null  # keep it empty for auto-naming
 output_file_name: Null  # keep it empty for auto-naming: era + context_analysis + methods_collection_key
@@ -40,15 +42,32 @@ user_specific:
         Null
     glusheno:
       naf:
+        # v2
         # '2016': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged /ceph/ohlushch/ETauFakeES_deeptau_v0/2016/merged_noshifts/2016
-        '2017': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2017
-        '2018': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2018
+        # '2017': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2017
+        # '2018': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2018
+        # v3
+        # '2016': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM_mva_v3/merged_copy/2016
+        # '2017': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM_mva_v3/merged_copy/2017
+        # '2018': /nfs/dust/cms/group/higgs-kit/Legacy/MSSM/mva/linked_to_pnfs/2018
+        '2016': /nfs/dust/cms/group/higgs-kit/Legacy/MSSM/mva_v3/merged/2016
+        '2017': /nfs/dust/cms/group/higgs-kit/Legacy/MSSM/mva_v3/merged/2017
+        '2018': /nfs/dust/cms/group/higgs-kit/Legacy/MSSM/mva_v3/merged/2018
       bird:
-        '2017': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2017
-        '2018': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2018
+        # v2
+        # '2017': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2017
+        # '2018': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/merged/2018
+        # v3
+        # '2016': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM_mva_v3/merged_copy/2016
+        # '2017': /pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM_mva_v3/merged_copy/2017
+        # '2018': /nfs/dust/cms/group/higgs-kit/Legacy/MSSM/mva/linked_to_pnfs/2018
+        '2016': /nfs/dust/cms/group/higgs-kit/Legacy/MSSM/mva_v3/merged/2016
+        '2017': /nfs/dust/cms/group/higgs-kit/Legacy/MSSM/mva_v3/merged/2017
+        '2018': /nfs/dust/cms/group/higgs-kit/Legacy/MSSM/mva_v3/merged/2018
     #TODO: check on how to use $ARTUS_OUTPUTS_2017 and shifts with common friends
     ohlushch:
       bms:
+        # v2
         # '2016': /ceph/ohlushch/ETauFakeES_deeptau_v0/2016/merged_noshifts/2016
         '2017': /ceph/ohlushch/MSSM_Legacy_mva_v0/merged/2017
         '2018': /ceph/ohlushch/MSSM_Legacy_mva_v0/merged/2018
@@ -57,11 +76,21 @@ user_specific:
     byhost:
       default: []
       naf:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v2
+        #   '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        #   '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v3
+        '2016' : []
+        '2017' : [] # [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/Zpt_rew_v3/2017/htt_scalefactors_v17_6/ZPtMReweighting_workspace_workdir/ZPtMReweighting_workspace_collected]
+        '2018' : []
       bird:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v2
+        #   '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        #   '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v3
+        '2016' : []
+        '2017' : [] # [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/Zpt_rew_v3/2017/htt_scalefactors_v17_6/ZPtMReweighting_workspace_workdir/ZPtMReweighting_workspace_collected]
+        '2018' : []
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
@@ -69,11 +98,21 @@ user_specific:
     byhost:
       default: []
       naf:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v2
+        #   '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        #   '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v3
+        '2016' : []
+        '2017' : [] # [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/Zpt_rew_v3/2017/htt_scalefactors_v17_6/ZPtMReweighting_workspace_workdir/ZPtMReweighting_workspace_collected]
+        '2018' : []
       bird:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v2
+        #   '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        #   '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v3
+        '2016' : []
+        '2017' : [] # [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/Zpt_rew_v3/2017/htt_scalefactors_v17_6/ZPtMReweighting_workspace_workdir/ZPtMReweighting_workspace_collected]
+        '2018' : []
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
@@ -81,11 +120,21 @@ user_specific:
     byhost:
       default: []
       naf:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v2
+        #   '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        #   '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v3
+        '2016' : []
+        '2017' : [] # [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/Zpt_rew_v3/2017/htt_scalefactors_v17_6/ZPtMReweighting_workspace_workdir/ZPtMReweighting_workspace_collected]
+        '2018' : []
       bird:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v2
+        #   '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        #   '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v3
+        '2016' : []
+        '2017' : [] # [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/Zpt_rew_v3/2017/htt_scalefactors_v17_6/ZPtMReweighting_workspace_workdir/ZPtMReweighting_workspace_collected]
+        '2018' : []
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
@@ -93,28 +142,48 @@ user_specific:
     byhost:
       default: []
       naf:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v2
+        # '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        # '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v3
+        '2016' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/extraWeightsProducer_workdir/2016/extraWeightsProducer_workdir/extraWeightsProducer_collected]
+        '2017' : [] # [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/Zpt_rew_v3/2017/htt_scalefactors_v17_6/ZPtMReweighting_workspace_workdir/ZPtMReweighting_workspace_collected]
+        '2018' : []
       bird:
-        '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
-        '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v2
+        # '2017' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2017]
+        # '2018' : [/pnfs/desy.de/cms/tier2/store/user/ohlushch/MSSM/SVFit_KIT_DCACHE/merged/2018]
+        ## v3
+        '2016' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/extraWeightsProducer_workdir/2016/extraWeightsProducer_workdir/extraWeightsProducer_collected]
+        '2017' : [] # [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/Zpt_rew_v3/2017/htt_scalefactors_v17_6/ZPtMReweighting_workspace_workdir/ZPtMReweighting_workspace_collected]
+        '2018' : []
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
 
   fake_factor_friend_directory:
     byhost:
-      default: ["$ARTUS_FRIENDS_FAKE_FACTOR_INCL_2017"]
+      default: []
       naf:
-        '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
-        '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
-        # '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
-        # '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
+        # # v2
+        # '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        # '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        # # '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
+        # # '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
+        # # v3
+        '2016' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir_v3/2016/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir_v3/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir_v3/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
       bird:
-        '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
-        '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
-        # '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
-        # '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
+        # # v2
+        # '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        # '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        # # '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2017/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
+        # # '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir/2018/njets2bins_mt_1_puppi/FakeFactors_workdir/FakeFactors_collected]
+        # # v3
+        '2016' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir_v3/2016/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        '2017' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir_v3/2017/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
+        '2018' : [/nfs/dust/cms/user/glusheno/afs/RWTH/KIT/FriendTreeProducer/CMSSW_10_2_14/src/FakeFactors_workdir_v3/2018/njets2bins_mvis/FakeFactors_workdir/FakeFactors_collected]
       bms:
         '2017' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2017]
         '2018' : [/ceph/ohlushch/MSSM_Legacy_mva_v0/SVFit_KIT_DCACHE/merged/2018]
@@ -220,24 +289,25 @@ shifts: [
 
   prefiring,
   TrgEff,
-  QCDem, #: todo
-  # WG1, : todo?
-  FF, # : todo
+  QCDem,
+  WG1,
+  FF,
   Recoil,
   JetToTauFake,
 
   TES,
-  # TauID, : todo once switched to split in pt id
+  TauID,
   BTag,
   METES,
   EES,
   #
-  # JES, # : todo, not yet in the artus ntuples
+  JES,
+  JER,
 
   # Shouldn't be applied to signals:
   Zpt,
   Tpt,
-  ZES, # : todo: need to update with My numbers
+  ZES,
 ]
 
 ## Weights
@@ -273,33 +343,50 @@ single_categories:
 
   inclusive: {}  # signal region
 
+# v2
 # 2019 : Denny, where 'up' are actually nominals are
 # em_qcd_osss_binned_Weight - down
 # em_qcd_extrap_uncert_Weight - nominal
 # em_qcd_extrap_up_Weight*em_qcd_extrap_uncert_Weight - up
 # so em_qcd_extrap_up_Weight is em_qcd_osss_binned_Weight*em_qcd_extrap_uncert_Weight
 # em_qcd_osss_binned_Weight*em_qcd_extrap_uncert_Weight^2 - up
-qcdem_setup: 2019
-fes_et_setup: 2019
-trgeff_setup: 2019
+# qcdem_setup: 2019
+# fes_et_setup: 2019
+# trgeff_setup: 2019
+# v3
+qcdem_setup: 2020
+fes_et_setup: 2020
+trgeff_setup: 2020
 
-# generator_ggH:
-mass_susy_ggH: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
-# default: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
-# '2016': default: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
-# '2017': default: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
-# '2018': default: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
 
 generator_qqH:
   default: "amcatnlo-pythia8"
   # '2016': "amcatnlo-pythia8"
-  '2017': "^pythia8"
-  '2018': "^pythia8"
+  # '2017': "^pythia8"  # v2
+  # '2018': "^pythia8"  # v2
+
 mass_susy_qqH:
-  'default': [90, 110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1800, 2000, 2300, 2600, 3200]
-  # '2016': [90, 110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1800, 2000, 2300, 2600, 3200]
-  '2017': [90, 110, 120, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1800, 2000, 2300, 2600, 3200]
-  '2018': [90, 110, 120, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1800, 2000, 2300, 2600, 3200]
+  default: [    90,      110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400,       1800, 2000, 2300, 2600,       3200]
+  '2016':  [80, 90,      110, 120,      130, 140, 160, 180, 200, 250,      350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+  '2017':  [80, 90,      110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2300, 2600, 2900, 3200, 3500]
+  '2018':  [80, 90, 100, 110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 2300, 2600, 2900, 3200, 3500]
+  # v2
+  # # '2016': [90, 110, 120, 125, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1800, 2000, 2300, 2600, 3200]
+  # '2017': [90, 110, 120, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1800, 2000, 2300, 2600, 3200]
+  # '2018': [90, 110, 120, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1800, 2000, 2300, 2600, 3200]
+
+# python -c "print(sorted([100,110,1200,120,130,1400,140,1500,1600,160,1800,180,2000,200,2300,250,2600,2900,300,3200,350,400,450,600,700,800,80,900,90]))"
+# generator_ggH:
+mass_susy_ggH:
+  'default': [        100, 110, 120, 130, 140,      180, 200, 250, 300, 350, 400, 450,      600, 700, 800, 900,       1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+  '2016':    [80, 90, 100, 110, 120, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+  '2017':    [80, 90, 100, 110, 120, 130, 140,      180, 200, 250, 300, 350, 400, 450,      600, 700, 800, 900,       1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+  '2018':    [80, 90, 100, 110, 120, 130, 140, 160, 180, 200, 250, 300, 350, 400, 450,      600, 700, 800, 900,       1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+  # v2
+  # default: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+  # '2016': default: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+  # '2017': default: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
+  # '2018': default: [100, 110, 120, 130, 140, 180, 200, 250, 300, 350, 400, 450, 600, 700, 800, 900, 1200, 1400, 1500, 1600, 1800, 2000, 2300, 2600, 2900, 3200]
 
 # generator_qqH: "^amcatnlo-pythia8"
 # mass_susy_qqH:
@@ -374,15 +461,15 @@ channel_specific:
 
     # todo: https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2?rev=89
     # https://indico.cern.ch/event/836421/contributions/3507675/attachments/1884267/3166728/Yuta_TauPOG_20190925_v2.pdf
-    replace_weights:
-      default:
-        taubyIsoIdWeight : "((gen_match_2 == 5)*0.89 + (gen_match_2 != 5))"
-      '2016':
-        taubyIsoIdWeight : "((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
-      '2017':
-        taubyIsoIdWeight : "((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
-      '2018':
-        taubyIsoIdWeight : "((gen_match_2 == 5)*0.90 + (gen_match_2 != 5))"
+    # replace_weights:
+    #   default:
+    #     taubyIsoIdWeight : "((gen_match_2 == 5)*0.89 + (gen_match_2 != 5))"
+    #   '2016':
+    #     taubyIsoIdWeight : "((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
+    #   '2017':
+    #     taubyIsoIdWeight : "((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
+    #   '2018':
+    #     taubyIsoIdWeight : "((gen_match_2 == 5)*0.90 + (gen_match_2 != 5))"
 
   mt:
     # SMHTT: FF or QCDEstimation_SStoOS_MTETEM
@@ -407,19 +494,19 @@ channel_specific:
 
     # todo: https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2?rev=89
     # inclusive: https://indico.cern.ch/event/803792/contributions/3346123/attachments/1809416/2954490/Yuta_TauPOG_20190307.pdf
-    replace_weights:
+    # replace_weights:
 
-      default:
-        taubyIsoIdWeight : "((gen_match_2 == 5)*0.89 + (gen_match_2 != 5))"
+    #   default:
+    #     taubyIsoIdWeight : "((gen_match_2 == 5)*0.89 + (gen_match_2 != 5))"
 
-      '2016':
-        taubyIsoIdWeight : "((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
+    #   '2016':
+    #     taubyIsoIdWeight : "((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
 
-      '2017':
-        taubyIsoIdWeight : "((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
+    #   '2017':
+    #     taubyIsoIdWeight : "((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
 
-      '2018':
-        taubyIsoIdWeight : "((gen_match_2 == 5)*0.90 + (gen_match_2 != 5))"
+    #   '2018':
+    #     taubyIsoIdWeight : "((gen_match_2 == 5)*0.90 + (gen_match_2 != 5))"
 
   tt:
     # SMHTT: FF or QCDEstimation_ABCD_TT_ISO2 (2017,2018)-> Legacy_MSSM_with_QCDABCD
@@ -427,19 +514,19 @@ channel_specific:
     methods_collection_key: Legacy_MSSM_with_FFTT # Legacy_MSSM_with_QCDABCD
 
     # need another expression since tt uses dm-dependant SF
-    replace_weights:
+    # replace_weights:
 
-      default:
-        taubyIsoIdWeight : "((gen_match_1 == 5)*0.89 + (gen_match_1 != 5))*((gen_match_2 == 5)*0.89 + (gen_match_2 != 5))"
+    #   default:
+    #     taubyIsoIdWeight : "((gen_match_1 == 5)*0.89 + (gen_match_1 != 5))*((gen_match_2 == 5)*0.89 + (gen_match_2 != 5))"
 
-      '2016':
-        taubyIsoIdWeight : "((gen_match_1 == 5)*0.87 + (gen_match_1 != 5))*((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
+    #   '2016':
+    #     taubyIsoIdWeight : "((gen_match_1 == 5)*0.87 + (gen_match_1 != 5))*((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
 
-      '2017':
-        taubyIsoIdWeight : "((gen_match_1 == 5)*0.87 + (gen_match_1 != 5))*((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
+    # '2017':
+    #   taubyIsoIdWeight : "((gen_match_1 == 5)*0.87 + (gen_match_1 != 5))*((gen_match_2 == 5)*0.87 + (gen_match_2 != 5))"
 
-      '2018':
-        taubyIsoIdWeight : "((gen_match_1 == 5)*0.90 + (gen_match_1 != 5))*((gen_match_2 == 5)*0.90 + (gen_match_2 != 5))"
+    #   '2018':
+    #     taubyIsoIdWeight : "((gen_match_1 == 5)*0.90 + (gen_match_1 != 5))*((gen_match_2 == 5)*0.90 + (gen_match_2 != 5))"
 
     # replace_weights:
     #     taubyIsoIdWeight : "((decayMode_1 == 0)*((gen_match_1 == 5)*0.820363 + (gen_match_1 != 5))+ (decayMode_1 == 1)*((gen_match_1 == 5)*0.875932 + (gen_match_1 != 5))+ (decayMode_1 == 10)*((gen_match_1 == 5)*0.863203 + (gen_match_1 != 5)))*((decayMode_2 == 0)*((gen_match_2 == 5)*0.820363 + (gen_match_2 != 5))+ (decayMode_2 == 1)*((gen_match_2 == 5)*0.875932 + (gen_match_2 != 5))+ (decayMode_2 == 10)*((gen_match_2 == 5)*0.863203 + (gen_match_2 != 5)))"
