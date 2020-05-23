@@ -582,6 +582,7 @@ class Shapes(object):
                 'single_categories', 'grid_categories',
                 'no_single_categories', 'no_grid_categories',
                 'use_single_categories', 'use_grid_categories',
+                'replace_weights'
             ]
             if any(i in prompt_args.keys() for i in options_prompt_overrides_channels):
                 # pops the corresponding options from channels settings letting it to fall back to updated global ones
