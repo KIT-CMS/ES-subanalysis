@@ -713,7 +713,7 @@ class Shapes(object):
         defaultArguments['output_file_name'] = ''
         defaultArguments['output_file_dir'] = ''
         defaultArguments['skip_systematic_variations'] = False
-        defaultArguments['skip_processes'] = False
+        defaultArguments['skip_processes'] = ['SUSYggH']
         defaultArguments['context_analysis'] = 'etFes'
         defaultArguments['yaml_conf'] = 'data/et_fes_legacy2017_config.yaml'
 
