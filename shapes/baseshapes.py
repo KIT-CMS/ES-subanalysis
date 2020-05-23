@@ -111,6 +111,7 @@ class Shapes(object):
                  gof_variable=None,
                  num_threads=None,
                  skip_systematic_variations=None,
+                 skip_processes=["SUSYggH"],
                  tag=None,
                  output_file=None,
                  output_file_name=None,
@@ -198,6 +199,7 @@ class Shapes(object):
         self._gof_variable = gof_variable
         self._num_threads = num_threads
         self._skip_systematic_variations = skip_systematic_variations
+        self._skip_processes = skip_processes if skip_processes is not None else []
         self._tag = tag
         self._context_analysis = context_analysis
         self._variables_names = variables_names
@@ -648,6 +650,7 @@ class Shapes(object):
         parser.add_argument("--output-file-name", type=str, help="Output file name for file with final shapes that enter datacards. If none is given context_analysis is used as a root for this name")
         parser.add_argument("--output-file-dir", type=str, help="Output file directory")
         parser.add_argument("--skip-systematic-variations", type=str, help="Do not produce the systematic variations.")
+        parser.add_argument("--skip-processes", nargs='+', type=str, help="Do not produce the process.")
 
         # parser.add_argument("--tes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
         # parser.add_argument("--fes-sys-processes", nargs='+', type=str, help="Typical processes affected by systematic variation")
@@ -710,6 +713,7 @@ class Shapes(object):
         defaultArguments['output_file_name'] = ''
         defaultArguments['output_file_dir'] = ''
         defaultArguments['skip_systematic_variations'] = False
+        defaultArguments['skip_processes'] = False
         defaultArguments['context_analysis'] = 'etFes'
         defaultArguments['yaml_conf'] = 'data/et_fes_legacy2017_config.yaml'
 
@@ -1087,6 +1091,10 @@ class Shapes(object):
                 print "Key added in list of processes twice. channel: " + channel_name + "; key:" + key
                 continue
 
+            if key in self._skip_processes:
+                self._logger.warning("Skipping on request: %s" % key)
+                continue
+
             if estimation_method in ['WEstimationWithQCD', 'QCDEstimationWithW']:
                 bg_processes = {}
                 bg_processes = [processes[process] for process in self._complexEstimationMethodsRequirements[key][estimation_method]]  # ["EMB", "ZL", "ZJ", "TTL", "TTJ", "VVL", "VVJ"]]
@@ -1199,6 +1207,7 @@ class Shapes(object):
                         "ggH_t", "ggH_b", "ggH_i",
                         "ggA_i", "ggA_t", "ggA_b",
                         "ggh_i", "ggh_t", "ggh_b",
+                        "ggH"
                     ]
                     for contribution in contributions:
                         for mass in self._mass_susy_ggH:
@@ -1206,6 +1215,9 @@ class Shapes(object):
                             susy_parameters_list['mass'] = str(mass)
                             susy_parameters_list['contribution'] = contribution.replace('gg', '')
                             subkey_name = "SUSYgg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
+                            if subkey_name in self._skip_processes:
+                                self._logger.warning("Skipping on request: %s" % subkey_name)
+                                continue
                             subkey_names.append(subkey_name)
 
                             processes[subkey_name] = Process(subkey_name, self._estimation_methods[estimation_method](**susy_parameters_list))
@@ -1222,6 +1234,9 @@ class Shapes(object):
                         susy_parameters_list['mass'] = str(mass)
                         susy_parameters_list['contribution'] = '_'.join(copy.deepcopy(key).replace('SUSYgg', '').split('_')[:2])
                         subkey_name = "SUSYgg%s_%s" % (susy_parameters_list['contribution'], susy_parameters_list['mass'])
+                        if subkey_name in self._skip_processes:
+                            self._logger.warning("Skipping on request: %s" % subkey_name)
+                            continue
                         subkey_names.append(subkey_name)
 
                         processes[subkey_name] = Process(subkey_name, self._estimation_methods[estimation_method](**susy_parameters_list))
@@ -1237,18 +1252,27 @@ class Shapes(object):
                         susy_parameters_list = copy.deepcopy(parameters_list)
                         susy_parameters_list['mass'] = str(mass)
                         subkey_name = "SUSYbbH_%s" % susy_parameters_list['mass']
+                        if subkey_name in self._skip_processes:
+                            self._logger.warning("Skipping on request: %s" % subkey_name)
+                            continue
                         subkey_names.append(subkey_name)
 
                         processes[subkey_name] = Process(subkey_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
                         if self._generator_qqH is not None:
+                            # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
+                            # new_weights
                             processes[subkey_name]._estimation_method.queries[0]['generator'] = self._generator_qqH
+                            # print processes[subkey_name]._estimation_method.get_files()
+                            # exit(1)
                 # not tested
                 else:
                     self._logger.critical("NOT TESTED SETUP FOR SUSY")
                     susy_parameters_list = copy.deepcopy(parameters_list)
                     susy_parameters_list['mass'] = key.split('_')[-1]
-
+                    if key in self._skip_processes:
+                        self._logger.warning("Skipping on request: %s" % key)
+                        continue
                     processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**susy_parameters_list))
 
             elif estimation_method in ['ggHEstimation', 'qqHEstimation'] and not self._no_higgs:
