@@ -805,9 +805,10 @@ class MSSM(Shapes):
                         )
 
             # MET energy scale. Note: only those variations for non-resonant processes are used in the stat. inference
+            # are used in the stat. inference, uncorrelated across the years, see https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETRun2Corrections#Uncertainty_correlations_among_y
             if 'METES' in self._shifts:
                 self._logger.info('\n\n METES reweighting')
-                met_unclustered_variations = create_systematic_variations("CMS_scale_met_unclustered", "metUnclusteredEn", DifferentPipeline)
+                met_unclustered_variations = create_systematic_variations("CMS_scale_met_unclustered_Run%s" % channel_holder._year, "metUnclusteredEn", DifferentPipeline)
 
                 # proc_intersection = set(self._met_sys_processes) & set(channel_holder._processes.keys())
                 # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
@@ -875,6 +876,47 @@ class MSSM(Shapes):
                 proc_intersection = MSSM.intersection(self._zl_sys_processes, channel_holder._processes.keys())
                 for variation in lep_fake_es_variations:
                     self._logger.debug('\n\n ZES::variation name: %s\n intersection self._zl_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
+                    for process_nick in proc_intersection:
+                        self._systematics.add_systematic_variation(
+                            variation=variation,
+                            process=channel_holder._processes[process_nick],
+                            channel=channel_holder._channel_obj,
+                            era=self.era
+                        )
+
+            # only for the e->tau
+            if 'ZFR' in self._shifts and channel_name in ["et"]:
+                self._logger.info('\n\n ZFR reweighting')
+
+                # Zll l to tau fake uncertainties:
+                # wd: v4_noele27_rebinning5GeVbelow110GeV_15GeVabove110GeV_5_bin
+                efake_dict = {
+                    "2016": {
+                        "BA_dm0": "0.1005*(decayMode_2==0)*(abs(eta_2)<1.448)",
+                        "BA_dm1": "0.1175*(decayMode_2==1)*(abs(eta_2)<1.448)",
+                        "EC_dm0": "0.1950*(decayMode_2==0)*(abs(eta_2)>1.448)",
+                        "EC_dm1": "0.2040*(decayMode_2==1)*(abs(eta_2)>1.448)"
+                    },
+                    "2017": {
+                        "BA_dm0": "0.1175*(decayMode_2==0)*(abs(eta_2)<1.448)",
+                        "BA_dm1": "0.0910*(decayMode_2==1)*(abs(eta_2)<1.448)",
+                        "EC_dm0": "0.1845*(decayMode_2==0)*(abs(eta_2)>1.448)",
+                        "EC_dm1": "0.1735*(decayMode_2==1)*(abs(eta_2)>1.448)"
+                    },
+                    "2018": {
+                        "BA_dm0": "0.1155*(decayMode_2==0)*(abs(eta_2)<1.448)",
+                        "BA_dm1": "0.0840*(decayMode_2==1)*(abs(eta_2)<1.448)",
+                        "EC_dm0": "0.1405*(decayMode_2==0)*(abs(eta_2)>1.448)",
+                        "EC_dm1": "0.1405*(decayMode_2==1)*(abs(eta_2)>1.448)"
+                    }
+                }
+                lep_fake_rate_variations = []
+                for eta_region, weight in efake_dict[channel_holder._year].items():
+                    lep_fake_rate_variations.append(AddWeight(name="CMS_fake_e_%s_Run%s" % (eta_region, channel_holder._year,), weight_name="eFakeTau_reweight", new_weight=Weight("(1.0+%s)" % weight, "eFakeTau_reweight"), direction="Up"))
+                    lep_fake_rate_variations.append(AddWeight(name="CMS_fake_e_%s_Run%s" % (eta_region, channel_holder._year,), weight_name="eFakeTau_reweight", new_weight=Weight("(1.0-%s)" % weight, "eFakeTau_reweight"), direction="Down"))
+                proc_intersection = MSSM.intersection(self._zl_sys_processes, channel_holder._processes.keys())
+                for variation in lep_fake_rate_variations:
+                    self._logger.debug('\n\n ZFR::variation name: %s\n intersection self._zl_sys_processes: [%s]' % (variation.name, ', '.join(proc_intersection)))
                     for process_nick in proc_intersection:
                         self._systematics.add_systematic_variation(
                             variation=variation,
