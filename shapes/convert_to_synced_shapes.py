@@ -104,6 +104,40 @@ for base in bases:
                 "{SYST}_{ERA}".format(SYST=base, ERA=year),
                 "{SYST}".format(SYST=base),
             ]
+# temp : create copies of shapes for combine
+basestemp = [
+    'CMS_ff_qcd',
+    # 'CMS_ff_tt_njet1_stat',
+    'CMS_ff_w',
+    'CMS_ff_tt',
+]
+for base in basestemp:
+    for year in ['2016', '2017', '2018']:
+        for channel in ['tt']:
+            dict_copy_proc["{SYST}_{CH}_syst_{ERA}".format(SYST=base, CH=channel, ERA=year)] = [
+                "{SYST}_syst_{CH}_{ERA}".format(SYST=base, CH=channel, ERA=year),
+                "{SYST}_syst_{CH}".format(SYST=base, CH=channel),
+                "{SYST}_syst_{ERA}".format(SYST=base, ERA=year),
+                "{SYST}_syst".format(SYST=base),
+            ]
+for base in ['CMS_ff_tt_njet1', 'CMS_ff_qcd_njet0', 'CMS_ff_qcd_njet1']:
+    for year in ['2016', '2017', '2018']:
+        for channel in ['tt']:
+            dict_copy_proc["{SYST}_{CH}_stat_{ERA}".format(SYST=base, CH=channel, ERA=year)] = [
+                "{SYST}_stat_{CH}_{ERA}".format(SYST=base, CH=channel, ERA=year),
+                "{SYST}_stat_{CH}".format(SYST=base, CH=channel),
+                "{SYST}_stat_{ERA}".format(SYST=base, ERA=year),
+                "{SYST}_stat".format(SYST=base),
+            ]
+for base in ['CMS_scale_met_unclustered',
+             'CMS_scale_t_1prong', 'CMS_scale_t_1prong1pizero', 'CMS_scale_t_3prong']:
+    for year in ['2016', '2017', '2018']:
+        dict_copy_proc["{SYST}_{ERA}".format(SYST=base, ERA=year)] = [
+            "{SYST}".format(SYST=base),
+        ]
+
+
+
 
 fes_shifts_indicators = {
     'TauEsInclusiveShift': 'alldm',
@@ -381,14 +415,20 @@ def convertToSynced(variables, input_path, output_dir='', debug=False, same_name
 
                             output_names.append(extra_name_output)
                             # Store the histogram in the root file
-                            tmp = hist.Rebin(len(bins) - 1, extra_name_output, x)
+                            if '#mt_tot#' in name or '#mt_tot_puppi#' in name:
+                                tmp = hist.Rebin(len(bins) - 1, extra_name_output, x)
+                            else:
+                                tmp = hist
                             tmp.SetTitle(extra_name_output)
                             tmp.SetName(extra_name_output)
                             tmp.Write()
                 output_names.append(name_output)
 
                 # Store the histogram in the root file
-                tmp = hist.Rebin(len(bins) - 1, name_output, x)
+                if '#mt_tot#' in name or '#mt_tot_puppi#' in name:
+                    tmp = hist.Rebin(len(bins) - 1, name_output, x)
+                else:
+                    tmp = hist
                 tmp.SetTitle(name_output)
                 tmp.SetName(name_output)
                 tmp.Write()
