@@ -310,7 +310,8 @@ class MSSM(Shapes):
                 tau_id_variations_emb = []
                 if channel_name == 'tt':
                     for idd, (shift, dm) in enumerate(itertools.product(['Up', 'Down'], [0, 1, 10])):
-                        weightstr = "(((decayMode_1=={dm})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_1)+((decayMode_1!={dm})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_1)*((decayMode_2=={dm})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_2)+((decayMode_2!={dm})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_2))".format(dm=dm, shift=shift)
+                        # weightstr = "(((decayMode_1=={dm})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_1)+((decayMode_1!={dm})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_1)*((decayMode_2=={dm})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_2)+((decayMode_2!={dm})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_2))".format(dm=dm, shift=shift)
+                        weightstr = "(((decayMode_1=={dm})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_1+ (decayMode_1!={dm})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_1)*((decayMode_2=={dm})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_2+(decayMode_2!={dm})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_2))".format(dm=dm, shift=shift)
                         tau_id_variations.append(ReplaceWeight("CMS_eff_t_dm%d_Run%s" % (dm, channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
                         tau_id_variations_emb.append(ReplaceWeight("CMS_emb_eff_t_dm%d_Run%s" % (dm, channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
                 else:
@@ -318,10 +319,9 @@ class MSSM(Shapes):
                     pt_bins = [((i), (i + 1)) for i in range(len(pt_ranges) - 1)]
                     for idd, (shift, (bin_low, bin_high)) in enumerate(itertools.product(['Up', 'Down'], pt_bins)):
                         weightstr = "(((pt_2 >= {bin_low} && pt_2 <= {bin_high})*tauIDScaleFactorWeight{shift}_tight_MVAoldDM2017v2_2)+((pt_2 < {bin_low} || pt_2 > {bin_high})*tauIDScaleFactorWeight_tight_MVAoldDM2017v2_2))".format(
-                            bin_low=bin_low,
-                            bin_high=bin_high,
+                            bin_low=pt_ranges[bin_low],
+                            bin_high=pt_ranges[bin_high],
                             shift=shift).replace(' && pt_2 <= inf', '').replace(' || pt_2 > inf', '')
-                        # todo bin_low, bin_high -> pt_ranges[bin_low], pt_ranges[bin_high]
                         tau_id_variations.append(ReplaceWeight("CMS_eff_t_%s-%s_Run%s" % (pt_ranges[bin_low], pt_ranges[bin_high], channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
                         tau_id_variations_emb.append(ReplaceWeight("CMS_eff_emb_t_%s-%s_Run%s" % (pt_ranges[bin_low], pt_ranges[bin_high], channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
                         # tau_id_variations.append(ReplaceWeight("CMS_eff_t_%d-%d_Run%s" % (bin_low, bin_high, channel_holder._year), "taubyIsoIdWeight", Weight(weightstr, "taubyIsoIdWeight"), shift))
