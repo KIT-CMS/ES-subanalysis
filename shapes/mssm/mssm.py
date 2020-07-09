@@ -112,6 +112,8 @@ class MSSM(Shapes):
             )
             self._logger.info('...getVariables')
             self._logger.info('...binning')
+            if channel_holder._channel_obj._name not in self.binning[self._binning_key]:
+                raise Exception("Binning for %s undefined" % channel_holder._channel_obj._name)
             channel_holder._variables = self.getVariables(
                 channel_obj=channel_holder._channel_obj,
                 variable_names=variables,
