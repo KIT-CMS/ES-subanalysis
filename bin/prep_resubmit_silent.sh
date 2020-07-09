@@ -82,22 +82,35 @@ set -e
     echo "expecting $w logs (found ${n_logs}) --> ${n_periodic_removed} jobs removed by condor"
     if [ $w -gt 1 ] ; then
         let w=w-1
+        for htcoondor_job_i in $(seq 0 $w) ; do
+            [ $(ls -l ${dirpath}/${i}/out/${htcoondor_job_i}.* 2> /dev/null | wc -l ) -gt 1 ]  && (echo "Multiple iterations:" ; ls -l ${dirpath}/${i}/out/${htcoondor_job_i}.* )
+            # if [[ ! ls ${dirpath}/${i}/out/${htcoondor_job_i}.* &> /dev/null ]] ; then
+            if ! ls ${dirpath}/${i}/out/${htcoondor_job_i}.* 1> /dev/null 2>&1; then
+                let flag=flag+1
+                echo "${htcoondor_job_i} [condorid] out -> check periodic removed jobs first"
+                ((j=htcoondor_job_i + 1))
+                # this gets line Number -> jobs numbers are given by line number
+                sed -n ${j}p ${arguments_finished}  >> ${arguments}
+            fi
+            # this gets the line Matching
+            # sed -n -e "/^${i} /p" ${arguments_finished}  >> ${arguments}
+        done
     else
         w=0
     fi
-    for htcoondor_job_i in $(seq 0 $w) ; do
-        [ $(ls -l ${dirpath}/${i}/out/${htcoondor_job_i}.* 2> /dev/null | wc -l ) -gt 1 ]  && (echo "Multiple iterations:" ; ls -l ${dirpath}/${i}/out/${htcoondor_job_i}.* )
-        # if [[ ! ls ${dirpath}/${i}/out/${htcoondor_job_i}.* &> /dev/null ]] ; then
-        if ! ls ${dirpath}/${i}/out/${htcoondor_job_i}.* 1> /dev/null 2>&1; then
-            let flag=flag+1
-            echo "${htcoondor_job_i} [condorid] out -> check periodic removed jobs first"
-            ((j=htcoondor_job_i + 1))
-            # this gets line Number -> jobs numbers are given by line number
-            sed -n ${j}p ${arguments_finished}  >> ${arguments}
-        fi
-        # this gets the line Matching
-        # sed -n -e "/^${i} /p" ${arguments_finished}  >> ${arguments}
-    done
+    # for htcoondor_job_i in $(seq 0 $w) ; do
+    #     [ $(ls -l ${dirpath}/${i}/out/${htcoondor_job_i}.* 2> /dev/null | wc -l ) -gt 1 ]  && (echo "Multiple iterations:" ; ls -l ${dirpath}/${i}/out/${htcoondor_job_i}.* )
+    #     # if [[ ! ls ${dirpath}/${i}/out/${htcoondor_job_i}.* &> /dev/null ]] ; then
+    #     if ! ls ${dirpath}/${i}/out/${htcoondor_job_i}.* 1> /dev/null 2>&1; then
+    #         let flag=flag+1
+    #         echo "${htcoondor_job_i} [condorid] out -> check periodic removed jobs first"
+    #         ((j=htcoondor_job_i + 1))
+    #         # this gets line Number -> jobs numbers are given by line number
+    #         sed -n ${j}p ${arguments_finished}  >> ${arguments}
+    #     fi
+    #     # this gets the line Matching
+    #     # sed -n -e "/^${i} /p" ${arguments_finished}  >> ${arguments}
+    # done
     echo "after missed check : $flag"
     sed -i '/^$/d' ${arguments}  # remove empty lines
     sort -u -o ${arguments} ${arguments}  # sort and remove duplicates if met
