@@ -461,11 +461,7 @@ class MSSM(Shapes):
             # top pt reweighting : not applied to signals
             if 'Tpt' in self._shifts:
                 self._logger.info('\n\ntop pt reweighting')
-                tpt_variations = create_systematic_variations(
-                    name="CMS_htt_ttbarShape",
-                    property_name="topPtReweightWeight",
-                    systematic_variation=SquareAndRemoveWeight,
-                )
+                tpt_variations = create_systematic_variations(name="CMS_htt_ttbarShape", property_name="topPtReweightWeight", systematic_variation=SquareAndRemoveWeight,)
 
                 for variation in tpt_variations:
                     for process_nick in MSSM.intersection(self._tpt_sys_processes, channel_holder._processes.keys()):
@@ -513,13 +509,13 @@ class MSSM(Shapes):
                 elif channel_name == 'tt':
                     # todo: rename
                     for systematic_shift in [
-                            "ff_qcd{ch}_syst{runyear}{shift}",
-                            "ff_qcd_dm0_njet0{ch}_stat{runyear}{shift}",
-                            "ff_qcd_dm0_njet1{ch}_stat{runyear}{shift}",
-                            "ff_w{ch}_syst{runyear}{shift}",
-                            "ff_tt{ch}_syst{runyear}{shift}",
-                            "ff_w_frac{ch}_syst{runyear}{shift}",
-                            "ff_tt_frac{ch}_syst{runyear}{shift}"
+                            "ff_qcd_syst{ch}{runyear}{shift}",
+                            "ff_qcd_dm0_njet0_stat{ch}{runyear}{shift}",
+                            "ff_qcd_dm0_njet1_stat{ch}{runyear}{shift}",
+                            "ff_w_syst{ch}{runyear}{shift}",
+                            "ff_tt_syst{ch}{runyear}{shift}",
+                            "ff_w_frac_syst{ch}{runyear}{shift}",
+                            "ff_tt_frac_syst{ch}{runyear}{shift}"
                     ]:
                         for shift_direction in ["Up", "Down"]:
                             fake_factor_variations.append(
