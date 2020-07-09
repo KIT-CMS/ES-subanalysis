@@ -57,6 +57,7 @@ set -e
     # arguments_resubmit=${dirpath}/${f}_resubmit.txt
     # echo arguments: $arguments
     # echo arguments: $arguments
+    errored_all=()
     ERRORED_MYID=()
     ERRORED_CONDORID=()
     ERRORRED_COMMANDS=()
@@ -85,9 +86,17 @@ set -e
         for htcoondor_job_i in $(seq 0 $w) ; do
             [ $(ls -l ${dirpath}/${i}/out/${htcoondor_job_i}.* 2> /dev/null | wc -l ) -gt 1 ]  && (echo "Multiple iterations:" ; ls -l ${dirpath}/${i}/out/${htcoondor_job_i}.* )
             # if [[ ! ls ${dirpath}/${i}/out/${htcoondor_job_i}.* &> /dev/null ]] ; then
-            if ! ls ${dirpath}/${i}/out/${htcoondor_job_i}.* 1> /dev/null 2>&1; then
+            if ! ls ${dirpath}/${i}/out/${htcoondor_job_i}.* 1> /dev/null 2>&1 ; then
                 let flag=flag+1
                 echo "${htcoondor_job_i} [condorid] out -> check periodic removed jobs first"
+                errored_all+=( ${htcoondor_job_i} )
+                ((j=htcoondor_job_i + 1))
+                # this gets line Number -> jobs numbers are given by line number
+                sed -n ${j}p ${arguments_finished}  >> ${arguments}
+            elif [ ! -s ${dirpath}/${i}/out/${htcoondor_job_i}.*.out ] ; then
+                let flag=flag+1
+                echo "${htcoondor_job_i} [condorid] out -> the output is empty and something went wrong: ${dirpath}/${i}/out/${htcoondor_job_i}.*.out"
+                errored_all+=( ${htcoondor_job_i} )
                 ((j=htcoondor_job_i + 1))
                 # this gets line Number -> jobs numbers are given by line number
                 sed -n ${j}p ${arguments_finished}  >> ${arguments}
@@ -132,6 +141,7 @@ set -e
             then
                 # printf "\\t in file $fullfile : errored\\n"
                 ERRORED_MYID+=($jobid)
+                errored_all+=( ${jobid} )
                 ERRORED_CONDORID+=($condorid)
                 first_line=$(head -n 1 ${fullfile})
                 prefix="@ :  "
