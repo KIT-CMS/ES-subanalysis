@@ -7,9 +7,12 @@ import importlib
 import copy
 import logging
 import copy
+import ROOT
 from itertools import product
 from rootpy import log
 from rootpy.logger.magic import DANGER
+
+ROOT.gSystem.Load('libGenVector')
 
 from guppy import hpy
 import yaml
@@ -76,11 +79,147 @@ class Shapes(object):
 
     # todo: move to config
     em_closureweight = {
-        '2016': 1.2,
-        '2017': 1.1,
-        '2018': 1.2,
+        '2016': 1.0,
+        '2017': 1.0,
+        '2018': 1.0,
+        # '2016': 1.2,
+        # '2017': 1.1,
+        # '2018': 1.2,
+    }
+    # from SM, nbtag=0
+    qcd_aisoiso_string = {
+        '2016': "*(1.0*(pt_1>=150.0||pt_2>=150.0)+0.889611*(pt_1>=0.0&&pt_1<20.0&&pt_2>=20.0&&pt_2<25.0)+0.906323*(pt_1>=0.0&&pt_1<20.0&&pt_2>=25.0&&pt_2<30.0)+0.838287*(pt_1>=0.0&&pt_1<20.0&&pt_2>=30.0&&pt_2<150.0)+0.900872*(pt_1>=20.0&&pt_1<25.0&&pt_2>=0.0&&pt_2<20.0)+0.918876*(pt_1>=20.0&&pt_1<25.0&&pt_2>=20.0&&pt_2<25.0)+0.857904*(pt_1>=20.0&&pt_1<25.0&&pt_2>=25.0&&pt_2<30.0)+0.833439*(pt_1>=20.0&&pt_1<25.0&&pt_2>=30.0&&pt_2<150.0)+0.956127*(pt_1>=25.0&&pt_1<30.0&&pt_2>=0.0&&pt_2<20.0)+0.863690*(pt_1>=25.0&&pt_1<30.0&&pt_2>=20.0&&pt_2<25.0)+1.060816*(pt_1>=25.0&&pt_1<30.0&&pt_2>=25.0&&pt_2<30.0)+0.938181*(pt_1>=25.0&&pt_1<30.0&&pt_2>=30.0&&pt_2<150.0)+0.993274*(pt_1>=30.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<20.0)+0.936018*(pt_1>=30.0&&pt_1<150.0&&pt_2>=20.0&&pt_2<25.0)+0.864106*(pt_1>=30.0&&pt_1<150.0&&pt_2>=25.0&&pt_2<30.0)+0.954102*(pt_1>=30.0&&pt_1<150.0&&pt_2>=30.0&&pt_2<150.0))",
+        '2017': "*(1.0*(pt_1>=150.0||pt_2>=150.0)+0.878304*(pt_1>=0.0&&pt_1<20.0&&pt_2>=20.0&&pt_2<25.0)+0.916277*(pt_1>=0.0&&pt_1<20.0&&pt_2>=25.0&&pt_2<30.0)+0.853211*(pt_1>=0.0&&pt_1<20.0&&pt_2>=30.0&&pt_2<150.0)+0.920458*(pt_1>=20.0&&pt_1<25.0&&pt_2>=0.0&&pt_2<20.0)+0.872271*(pt_1>=20.0&&pt_1<25.0&&pt_2>=20.0&&pt_2<25.0)+0.957983*(pt_1>=20.0&&pt_1<25.0&&pt_2>=25.0&&pt_2<30.0)+0.910988*(pt_1>=20.0&&pt_1<25.0&&pt_2>=30.0&&pt_2<150.0)+0.935900*(pt_1>=25.0&&pt_1<30.0&&pt_2>=0.0&&pt_2<20.0)+0.903964*(pt_1>=25.0&&pt_1<30.0&&pt_2>=20.0&&pt_2<25.0)+0.888112*(pt_1>=25.0&&pt_1<30.0&&pt_2>=25.0&&pt_2<30.0)+0.872235*(pt_1>=25.0&&pt_1<30.0&&pt_2>=30.0&&pt_2<150.0)+0.927075*(pt_1>=30.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<20.0)+0.983504*(pt_1>=30.0&&pt_1<150.0&&pt_2>=20.0&&pt_2<25.0)+0.921924*(pt_1>=30.0&&pt_1<150.0&&pt_2>=25.0&&pt_2<30.0)+0.881401*(pt_1>=30.0&&pt_1<150.0&&pt_2>=30.0&&pt_2<150.0))",
+        '2018': "*(1.0*(pt_1>=150.0||pt_2>=150.0)+0.847702*(pt_1>=0.0&&pt_1<20.0&&pt_2>=20.0&&pt_2<25.0)+0.878120*(pt_1>=0.0&&pt_1<20.0&&pt_2>=25.0&&pt_2<30.0)+0.887496*(pt_1>=0.0&&pt_1<20.0&&pt_2>=30.0&&pt_2<150.0)+0.874935*(pt_1>=20.0&&pt_1<25.0&&pt_2>=0.0&&pt_2<20.0)+0.829801*(pt_1>=20.0&&pt_1<25.0&&pt_2>=20.0&&pt_2<25.0)+0.922954*(pt_1>=20.0&&pt_1<25.0&&pt_2>=25.0&&pt_2<30.0)+0.954270*(pt_1>=20.0&&pt_1<25.0&&pt_2>=30.0&&pt_2<150.0)+0.935953*(pt_1>=25.0&&pt_1<30.0&&pt_2>=0.0&&pt_2<20.0)+0.908383*(pt_1>=25.0&&pt_1<30.0&&pt_2>=20.0&&pt_2<25.0)+0.927804*(pt_1>=25.0&&pt_1<30.0&&pt_2>=25.0&&pt_2<30.0)+0.917511*(pt_1>=25.0&&pt_1<30.0&&pt_2>=30.0&&pt_2<150.0)+0.983508*(pt_1>=30.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<20.0)+0.952974*(pt_1>=30.0&&pt_1<150.0&&pt_2>=20.0&&pt_2<25.0)+0.945860*(pt_1>=30.0&&pt_1<150.0&&pt_2>=25.0&&pt_2<30.0)+0.858417*(pt_1>=30.0&&pt_1<150.0&&pt_2>=30.0&&pt_2<150.0))",
+    }
+    qcd_weight_string = {
+        '2016': "((-0.1138*(njets==0)+(-0.07938)*(njets==1)+(-0.02602)*(njets>=2))*((DiTauDeltaR-3.0)**2.0-3.0)+(-0.2287*(njets==0)+(-0.3251)*(njets==1)+(-0.2802)*(njets>=2))*(DiTauDeltaR-3.0)+(1.956*(njets==0)+(1.890)*(njets==1)+(1.753)*(njets>=2)))*(1.0*(pt_1>=150.0||pt_2>=150.0)+1.132149*(pt_1>=0.0&&pt_1<24.0&&pt_2>=24.0&&pt_2<30.0)+1.118163*(pt_1>=0.0&&pt_1<24.0&&pt_2>=30.0&&pt_2<40.0)+1.142240*(pt_1>=0.0&&pt_1<24.0&&pt_2>=40.0&&pt_2<150.0)+1.004560*(pt_1>=24.0&&pt_1<30.0&&pt_2>=0.0&&pt_2<24.0)+1.055802*(pt_1>=24.0&&pt_1<30.0&&pt_2>=24.0&&pt_2<30.0)+1.171731*(pt_1>=24.0&&pt_1<30.0&&pt_2>=30.0&&pt_2<40.0)+1.351143*(pt_1>=24.0&&pt_1<30.0&&pt_2>=40.0&&pt_2<150.0)+0.921943*(pt_1>=30.0&&pt_1<40.0&&pt_2>=0.0&&pt_2<24.0)+1.078412*(pt_1>=30.0&&pt_1<40.0&&pt_2>=24.0&&pt_2<30.0)+1.096989*(pt_1>=30.0&&pt_1<40.0&&pt_2>=30.0&&pt_2<40.0)+1.222142*(pt_1>=30.0&&pt_1<40.0&&pt_2>=40.0&&pt_2<150.0)+0.848351*(pt_1>=40.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<24.0)+0.852887*(pt_1>=40.0&&pt_1<150.0&&pt_2>=24.0&&pt_2<30.0)+0.891202*(pt_1>=40.0&&pt_1<150.0&&pt_2>=30.0&&pt_2<40.0)+0.913323*(pt_1>=40.0&&pt_1<150.0&&pt_2>=40.0&&pt_2<150.0))%s" % qcd_aisoiso_string['2016'],
+        '2017': "((-0.1430*(njets==0)+(-0.05544)*(njets==1)+(0.03128)*(njets>=2))*((DiTauDeltaR-3.0)**2.0-3.0)+(-0.1949*(njets==0)+(-0.3685)*(njets==1)+(-0.3531)*(njets>=2))*(DiTauDeltaR-3.0)+(1.928*(njets==0)+(2.020)*(njets==1)+(1.855)*(njets>=2)))*(1.0*(pt_1>=150.0||pt_2>=150.0)+1.155767*(pt_1>=0.0&&pt_1<24.0&&pt_2>=24.0&&pt_2<30.0)+1.136188*(pt_1>=0.0&&pt_1<24.0&&pt_2>=30.0&&pt_2<40.0)+1.163907*(pt_1>=0.0&&pt_1<24.0&&pt_2>=40.0&&pt_2<150.0)+0.988366*(pt_1>=24.0&&pt_1<30.0&&pt_2>=0.0&&pt_2<24.0)+1.198820*(pt_1>=24.0&&pt_1<30.0&&pt_2>=24.0&&pt_2<30.0)+1.134818*(pt_1>=24.0&&pt_1<30.0&&pt_2>=30.0&&pt_2<40.0)+1.051062*(pt_1>=24.0&&pt_1<30.0&&pt_2>=40.0&&pt_2<150.0)+0.917948*(pt_1>=30.0&&pt_1<40.0&&pt_2>=0.0&&pt_2<24.0)+1.042672*(pt_1>=30.0&&pt_1<40.0&&pt_2>=24.0&&pt_2<30.0)+0.973973*(pt_1>=30.0&&pt_1<40.0&&pt_2>=30.0&&pt_2<40.0)+1.143160*(pt_1>=30.0&&pt_1<40.0&&pt_2>=40.0&&pt_2<150.0)+0.845711*(pt_1>=40.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<24.0)+0.853038*(pt_1>=40.0&&pt_1<150.0&&pt_2>=24.0&&pt_2<30.0)+0.890487*(pt_1>=40.0&&pt_1<150.0&&pt_2>=30.0&&pt_2<40.0)+1.037247*(pt_1>=40.0&&pt_1<150.0&&pt_2>=40.0&&pt_2<150.0))%s" % qcd_aisoiso_string['2017'],
+        '2018': "((-0.1249*(njets==0)+(-0.04374)*(njets==1)+(-0.00606)*(njets>=2))*((DiTauDeltaR-3.0)**2.0-3.0)+(-0.1644*(njets==0)+(-0.3172)*(njets==1)+(-0.3627)*(njets>=2))*(DiTauDeltaR-3.0)+(1.963*(njets==0)+(2.014)*(njets==1)+(1.757)*(njets>=2)))*(1.0*(pt_1>=150.0||pt_2>=150.0)+1.163939*(pt_1>=0.0&&pt_1<24.0&&pt_2>=24.0&&pt_2<30.0)+1.128795*(pt_1>=0.0&&pt_1<24.0&&pt_2>=30.0&&pt_2<40.0)+1.083493*(pt_1>=0.0&&pt_1<24.0&&pt_2>=40.0&&pt_2<150.0)+1.006878*(pt_1>=24.0&&pt_1<30.0&&pt_2>=0.0&&pt_2<24.0)+1.078046*(pt_1>=24.0&&pt_1<30.0&&pt_2>=24.0&&pt_2<30.0)+1.080539*(pt_1>=24.0&&pt_1<30.0&&pt_2>=30.0&&pt_2<40.0)+1.080385*(pt_1>=24.0&&pt_1<30.0&&pt_2>=40.0&&pt_2<150.0)+0.930821*(pt_1>=30.0&&pt_1<40.0&&pt_2>=0.0&&pt_2<24.0)+1.077226*(pt_1>=30.0&&pt_1<40.0&&pt_2>=24.0&&pt_2<30.0)+1.030334*(pt_1>=30.0&&pt_1<40.0&&pt_2>=30.0&&pt_2<40.0)+0.940508*(pt_1>=30.0&&pt_1<40.0&&pt_2>=40.0&&pt_2<150.0)+0.836243*(pt_1>=40.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<24.0)+0.878972*(pt_1>=40.0&&pt_1<150.0&&pt_2>=24.0&&pt_2<30.0)+0.867798*(pt_1>=40.0&&pt_1<150.0&&pt_2>=30.0&&pt_2<40.0)+0.910642*(pt_1>=40.0&&pt_1<150.0&&pt_2>=40.0&&pt_2<150.0))%s" % qcd_aisoiso_string['2018'],
+    }
+    # QCD for em parabolas parameters
+    # constant parameter
+    p0_ = {
+        "2016": {
+            "0j": {"nom": "1.956", "Up": "2.018", "Down": "1.894"},
+            "1j": {"nom": "1.890", "Up": "1.930", "Down": "1.850"},
+            "2j": {"nom": "1.753", "Up": "1.814", "Down": "1.692"},
+        },
+        "2017": {
+            "0j": {"nom": "1.928", "Up": "1.993", "Down": "1.863"},
+            "1j": {"nom": "2.020", "Up": "2.060", "Down": "1.980"},
+            "2j": {"nom": "1.855", "Up": "1.914", "Down": "1.796"},
+        },
+        "2018": {
+            "0j": {"nom": "1.963", "Up": "2.010", "Down": "1.916"},
+            "1j": {"nom": "2.014", "Up": "2.045", "Down": "1.983"},
+            "2j": {"nom": "1.757", "Up": "1.794", "Down": "1.720"},
+        }
+    }
+    # linear parameter
+    p1_ = {
+        "2016": {
+            "0j": {"nom": "-0.2287", "Up": "-0.1954", "Down": "-0.2620"},
+            "1j": {"nom": "-0.3251", "Up": "-0.2972", "Down": "-0.3530"},
+            "2j": {"nom": "-0.2802", "Up": "-0.2402", "Down": "-0.3202"},
+        },
+        "2017": {
+            "0j": {"nom": "-0.1949", "Up": "-0.1617", "Down": "-0.2281"},
+            "1j": {"nom": "-0.3685", "Up": "-0.3445", "Down": "-0.3925"},
+            "2j": {"nom": "-0.3531", "Up": "-0.3154", "Down": "-0.3908"},
+        },
+        "2018": {
+            "0j": {"nom": "-0.1644", "Up": "-0.1402", "Down": "-0.1886"},
+            "1j": {"nom": "-0.3172", "Up": "-0.2977", "Down": "-0.3367"},
+            "2j": {"nom": "-0.3627", "Up": "-0.3389", "Down": "-0.3865"},
+        }
+    }
+    # quadratic parameter
+    p2_ = {
+        "2016": {
+            "0j": {"nom": "-0.11380", "Up": "-0.09220", "Down": "-0.13540"},
+            "1j": {"nom": "-0.07938", "Up": "-0.06242", "Down": "-0.09634"},
+            "2j": {"nom": "-0.02602", "Up": "-0.00307", "Down": "-0.04897"},
+        },
+        "2017": {
+            "0j": {"nom": "-0.14300", "Up": "-0.12000", "Down": "-0.16600"},
+            "1j": {"nom": "-0.05544", "Up": "-0.03986", "Down": "-0.07102"},
+            "2j": {"nom": "0.031280", "Up": "0.054090", "Down": "0.008470"},
+        },
+        "2018": {
+            "0j": {"nom": "-0.12490", "Up": "-0.10830", "Down": "-0.141500"},
+            "1j": {"nom": "-0.04374", "Up": "-0.03139", "Down": "-0.056090"},
+            "2j": {"nom": "-0.00606", "Up": "0.005143", "Down": "-0.024355"},
+        }
     }
 
+    # # from SM, nbtag=1
+    # qcd_aisoiso_string = {
+    #     '2016': "*(1.0*(pt_1>=150.0||pt_2>=150.0)+0.767421*(pt_1>=0.0&&pt_1<20.0&&pt_2>=20.0&&pt_2<150.0)+0.968708*(pt_1>=20.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<20.0)+0.848641*(pt_1>=20.0&&pt_1<150.0&&pt_2>=20.0&&pt_2<150.0))",
+    #     '2017': "*(1.0*(pt_1>=150.0||pt_2>=150.0)+0.883249*(pt_1>=0.0&&pt_1<20.0&&pt_2>=20.0&&pt_2<150.0)+0.925161*(pt_1>=20.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<20.0)+0.997453*(pt_1>=20.0&&pt_1<150.0&&pt_2>=20.0&&pt_2<150.0))",
+    #     '2018': "*(1.0*(pt_1>=150.0||pt_2>=150.0)+0.960198*(pt_1>=0.0&&pt_1<20.0&&pt_2>=20.0&&pt_2<150.0)+0.987588*(pt_1>=20.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<20.0)+0.729727*(pt_1>=20.0&&pt_1<150.0&&pt_2>=20.0&&pt_2<150.0))",
+    # }
+    # qcd_weight_string = {
+    #     '2016': "((-0.06938*(njets==0)+(-0.01966)*(njets==1)+(-0.09821)*(njets>=2))*((DiTauDeltaR-3.0)**2.0-3.0)+(-0.113*(njets==0)+(-0.2715)*(njets==1)+(-0.397)*(njets>=2))*(DiTauDeltaR-3.0)+(1.361*(njets==0)+(1.645)*(njets==1)+(1.432)*(njets>=2)))*(1.0*(pt_1>=150.0||pt_2>=150.0)+0.913392*(pt_1>=0.0&&pt_1<24.0&&pt_2>=24.0&&pt_2<150.0)+0.992858*(pt_1>=24.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<24.0)+1.119160*(pt_1>=24.0&&pt_1<150.0&&pt_2>=24.0&&pt_2<150.0))%s" % qcd_aisoiso_string['2016'],
+    #     '2017': "((-0.1209*(njets==0)+(-0.04244)*(njets==1)+(-0.0268)*(njets>=2))*((DiTauDeltaR-3.0)**2.0-3.0)+(-0.142*(njets==0)+(-0.2626)*(njets==1)+(-0.3231)*(njets>=2))*(DiTauDeltaR-3.0)+(1.518*(njets==0)+(1.577)*(njets==1)+(1.559)*(njets>=2)))*(1.0*(pt_1>=150.0||pt_2>=150.0)+1.053479*(pt_1>=0.0&&pt_1<24.0&&pt_2>=24.0&&pt_2<150.0)+0.961059*(pt_1>=24.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<24.0)+1.063705*(pt_1>=24.0&&pt_1<150.0&&pt_2>=24.0&&pt_2<150.0))%s" % qcd_aisoiso_string['2017'],
+    #     '2018': "((-0.07762*(njets==0)+(-0.00639)*(njets==1)+(-0.0429)*(njets>=2))*((DiTauDeltaR-3.0)**2.0-3.0)+(-0.1623*(njets==0)+(-0.2799)*(njets==1)+(-0.3575)*(njets>=2))*(DiTauDeltaR-3.0)+(1.372*(njets==0)+(1.538)*(njets==1)+(1.4)*(njets>=2)))*(1.0*(pt_1>=150.0||pt_2>=150.0)+1.013320*(pt_1>=0.0&&pt_1<24.0&&pt_2>=24.0&&pt_2<150.0)+0.941853*(pt_1>=24.0&&pt_1<150.0&&pt_2>=0.0&&pt_2<24.0)+1.129069*(pt_1>=24.0&&pt_1<150.0&&pt_2>=24.0&&pt_2<150.0))%s" % qcd_aisoiso_string['2018'],
+    # }
+
+    # # QCD for em parabolas parameters
+    # # constant parameter
+    # p0_ = {
+    #     "2016": {
+    #         "0j": {"nom": "1.361", "Up": "1.498", "Down": "1.224"},
+    #         "1j": {"nom": "1.645", "Up": "1.741", "Down": "1.549"},
+    #         "2j": {"nom": "1.432", "Up": "1.498", "Down": "1.366"},
+    #     },
+    #     "2017": {
+    #         "0j": {"nom": "1.518", "Up": "1.633", "Down": "1.403"},
+    #         "1j": {"nom": "1.577", "Up": "1.64", "Down": "1.514"},
+    #         "2j": {"nom": "1.559", "Up": "1.627", "Down": "1.491"},
+    #     },
+    #     "2018": {
+    #         "0j": {"nom": "1.372", "Up": "1.473", "Down": "1.271"},
+    #         "1j": {"nom": "1.538", "Up": "1.593", "Down": "1.483"},
+    #         "2j": {"nom": "1.4", "Up": "1.4", "Down": "1.4"},
+    #     }
+    # }
+    # # linear parameter
+    # p1_ = {
+    #     "2016": {
+    #         "0j": {"nom": "-0.113", "Up": "-0.029", "Down": "-0.197"},
+    #         "1j": {"nom": "-0.2715", "Up": "-0.2116", "Down": "-0.3314"},
+    #         "2j": {"nom": "-0.397", "Up": "-0.357", "Down": "-0.437"},
+    #     },
+    #     "2017": {
+    #         "0j": {"nom": "-0.142", "Up": "-0.075", "Down": "-0.209"},
+    #         "1j": {"nom": "-0.2626", "Up": "-0.2226", "Down": "-0.3026"},
+    #         "2j": {"nom": "-0.3231", "Up": "-0.2813", "Down": "-0.3649"},
+    #     },
+    #     "2018": {
+    #         "0j": {"nom": "-0.1623", "Up": "-0.107", "Down": "-0.2176"},
+    #         "1j": {"nom": "-0.2799", "Up": "-0.2464", "Down": "-0.3134"},
+    #         "2j": {"nom": "-0.3575", "Up": "-0.332", "Down": "-0.383"},
+    #     }
+    # }
+    # # quadratic parameter
+    # p2_ = {
+    #     "2016": {
+    #         "0j": {"nom": "-0.06938", "Up": "-0.01701", "Down": "-0.12175"},
+    #         "1j": {"nom": "-0.01966", "Up": "0.01752", "Down": "-0.05684"},
+    #         "2j": {"nom": "-0.09821", "Up": "-0.07059", "Down": "-0.12583"},
+    #     },
+    #     "2017": {
+    #         "0j": {"nom": "-0.1209", "Up": "-0.0791", "Down": "-0.1627"},
+    #         "1j": {"nom": "-0.04244", "Up": "-0.01763", "Down": "-0.06725"},
+    #         "2j": {"nom": "-0.0268", "Up": "-0.0016", "Down": "-0.052"},
+    #     },
+    #     "2018": {
+    #         "0j": {"nom": "-0.07762", "Up": "-0.03913", "Down": "-0.11611"},
+    #         "1j": {"nom": "-0.00639", "Up": "0.01582", "Down": "-0.0286"},
+    #         "2j": {"nom": "-0.0429", "Up": "-0.026", "Down": "-0.0598"},
+    #     }
+    # }
     # @inidecorator   # TODO: TEST
     # TODO: needs a splitting between init and setup
     def __init__(self,
@@ -218,6 +357,7 @@ class Shapes(object):
         self._nominal_folder = nominal_folder
 
         self._qcdem_setup = kwargs['qcdem_setup']
+        self._qcdem_manual = kwargs['qcdem_manual']
         self._fes_et_setup = kwargs['fes_et_setup']
         self._trgeff_setup = kwargs['trgeff_setup']
 
@@ -1124,14 +1264,22 @@ class Shapes(object):
                 qcdsstoos_parameters_list['extrapolation_factor'] = 1.00  # 1.00  # QCD extrapolation_factor 1.17 for mt et 2016
 
                 if 'em' in channel_obj.name:
+                    qcdsstoos_parameters_list['extrapolation_factor'] = 1.00
                     if self._qcdem_setup == 2020:
                         # latest sm-htt
                         # year = copy.deepcopy(self.era.name).replace('Run', '')
                         if self._era_name not in self.em_closureweight.keys():
                             raise Exception("self.em_closureweight not set for '%s' year" % self._era_name)
-                        qcdsstoos_parameters_list['qcd_weight'] = Weight("{closureweight}*em_qcd_osss_binned_Weight".format(closureweight=self.em_closureweight[self._era_name]), "qcd_weight")
+                        if self._qcdem_manual:
+
+                            ROOT.v5.TFormula.SetMaxima(3000)
+                            qcdsstoos_parameters_list['qcd_weight'] = Weight(self.qcd_weight_string[self._era_name], "qcd_weight")
+                        else:
+                            qcdsstoos_parameters_list['qcd_weight'] = Weight("{closureweight}*em_qcd_osss_binned_Weight".format(closureweight=self.em_closureweight[self._era_name]), "qcd_weight")
                     else:
                         qcdsstoos_parameters_list['qcd_weight'] = Weight("em_qcd_extrap_up_Weight", "qcd_weight")
+                elif ('et' in channel_obj.name or 'mt' in channel_obj.name) and self._era_name == '2016':
+                    qcdsstoos_parameters_list['extrapolation_factor'] = 1.17  # 1.00  # QCD extrapolation_factor 1.17 for mt et 2016
 
                 try:
                     qcdsstoos_parameters_list['data_process'] = processes['data_obs']
@@ -1287,11 +1435,23 @@ class Shapes(object):
                     continue
                 # if key == 'ZL': print '-->getProcesses::', key, parameters_list
                 processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
+                # try:
+                #     import pdb; pdb.set_trace()  # !
+                #     processes[key] = Process(combine_name, self._estimation_methods[estimation_method](**parameters_list))
+                # except:
+                #     import inspect
+
+                #     # signature = inspect.signature(self._estimation_methods[estimation_method].__init__)
+                #     # for name, parameter in signature.items():
+                #     #     print(name, parameter.default, parameter.annotation, parameter.kind)
+
+                #     import pdb; pdb.set_trace()  # !
+                #     import code; code.interact(local=vars())
 
             # import pdb; pdb.set_trace()  # !import code; code.interact(local=vars())
             if channel_name in self._channel_specific.keys() and 'replace_weights' in self._channel_specific[channel_name].keys():
                 replace_weights = self._channel_specific[channel_name]['replace_weights']
-                self._logger.info("replace_weights in channel %s " % (channel_name))
+                self._logger.info("replace_weights in channel %s [channel specific]" % (channel_name))
             else:
                 replace_weights = self._replace_weights
                 self._logger.info("replace_weights key in channel %s [global]" % (channel_name))
