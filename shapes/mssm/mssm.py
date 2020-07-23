@@ -461,7 +461,7 @@ class MSSM(Shapes):
             # top pt reweighting : not applied to signals
             if 'Tpt' in self._shifts:
                 self._logger.info('\n\ntop pt reweighting')
-                tpt_variations = create_systematic_variations(name="CMS_htt_ttbarShape", property_name="topPtReweightWeight", systematic_variation=SquareAndRemoveWeight,)
+                tpt_variations = create_systematic_variations(name="CMS_htt_ttbarShape", property_name="topPtReweightWeightRun1", systematic_variation=SquareAndRemoveWeight,)
 
                 for variation in tpt_variations:
                     for process_nick in MSSM.intersection(self._tpt_sys_processes, channel_holder._processes.keys()):
