@@ -1486,6 +1486,15 @@ class Shapes(object):
                         self._logger.debug('... new assigned weights: %s\n%s' % (processes[key_i]._estimation_method.get_weights, str(processes[key_i]._estimation_method.get_weights())))
                         self._logger.debug('\t\t ... address:%s' % (hex(id(processes[key_i]._estimation_method.get_weights))))
 
+
+                        for cuti, cut in enumerate(processes[key_i]._estimation_method._channel._cuts._cutstrings):
+                            if cut.name == replace_weights_key:
+                                self._logger.debug('\t\t ... old cut: %s [%s]' % (str(cut), hex(id(cut))))
+                                processes[key_i]._estimation_method._channel._cuts._cutstrings[cuti] = Cut(replace_weights_value, replace_weights_key)
+                        for cut in processes[key_i]._estimation_method._channel._cuts._cutstrings:
+                            if cut.name == replace_weights_key:
+                                self._logger.debug('\t\t ... new cut: %s [%s]' % (str(cut), hex(id(cut))))
+
                     except NotImplementedError:
                         self._logger.warning("The get_weights() wasn't implemented in estimation_methods: " + key_i + "\n \t replace_weights_key: " + replace_weights_key + "\n\t replace_weights_value" + replace_weights_value + "\n " + processes[key_i]._estimation_method.__str__())
                         # if 'QCDSStoOS' in key_i:
